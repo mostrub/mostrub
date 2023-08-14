@@ -1,16 +1,25 @@
-### Hi there 👋
+# LoloHannsen
+<h2> Hi, I'm Marc! <img src="https://media.giphy.com/media/1C8bHHJturSx2/giphy.gif" width="50"></h2>
 
-<!--
-**mostrub/mostrub** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+<p><em> i work as a  01010011011110010111001101110100011001010110110100100000010000010111001001100011011010000110100101110100011001010110001101110100
 
-Here are some ideas to get you started:
+</em></p>
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+
+
+###  sudo apt update ...  
+
+```javascript
+const CH  = {
+  pronouns: "..,
+  code: [Typescript, HTML, CSS, Ruby, Python, Java, PowerShell],
+  tools: [Linux, Redux, Node, VS Code , Styled-Components, Jest, Docker],
+  architecture: ["microservices", "event-driven", "design system pattern"],
+  techCommunities: {
+                        coorganizer: "myHome",
+                        speaker: "EN,DE",
+                        mentor: "Kali Linux"
+                      },
+ challenge: "im a 50 year old Manager/Geek, Father of 3 Boy's with Autism, Python my real 😍 "
+}
+```
