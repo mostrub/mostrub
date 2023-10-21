@@ -9,7 +9,7 @@
 
 ###  sudo apt update ...  
 
-```javascript
+```
 const CH  = {
   pronouns: "..,
   code: [Typescript, HTML, CSS, Ruby, Python, Java, PowerShell],
