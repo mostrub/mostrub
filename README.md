@@ -20,6 +20,6 @@ const CH  = {
                         speaker: "EN,DE",
                         mentor: "Kali Linux"
                       },
- challenge: "im a 50 year old Manager/Geek, Father of 3, Breaking things with Python my real 😍 "
+ challenge: "the real world  😍 "
 }
 ```
