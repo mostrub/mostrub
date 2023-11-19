@@ -13,13 +13,13 @@
 const CH  = {
   pronouns: "..,
   code: [Typescript, HTML, CSS, Ruby, Python, Java, PowerShell],
-  tools: [Linux, Redux, Node, VS Code , Styled-Components, Jest, Docker],
+  tools: [Linux, Redux, Node, VS Code , Styled-Components, Jest, Docker, API],
   architecture: ["microservices", "event-driven", "design system pattern"],
   techCommunities: {
                         coorganizer: "myHome",
                         speaker: "EN,DE",
                         mentor: "Kali Linux"
                       },
- challenge: "the real world  😍 "
+ challenge: "the real world vr humanity  😍 "
 }
 ```
