@@ -18,7 +18,7 @@ const CH  = {
   techCommunities: {
                         coorganizer: "myHome",
                         speaker: "EN,DE",
-                        mentor: "Kali Linux"
+                        mentor: " Ubuntu Linux"
                       },
  challenge: "the real world vr humanity  😍 "
 }
