@@ -1,8 +1,9 @@
 <h1>Robot_Invasion</h1>
 <h2>Hi, I'm Robot_Invasion!</h2>
 <h3>Philosophical_Dialogue</h3>
-<pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;">
-<code> ```Python
+    <code> 
+    
+    Python
     
     import time
     import random
@@ -49,20 +50,22 @@
             print(Human Philosopher: {question}\")
             time.sleep(1)
             print("Robot Thinker: Let us find the answer together.")
-# Example usage
-earth = "Earth"
-robot_count = random.randint(500000, 1500000)
-invasion = RobotInvasion(earth, robot_count)
+    # Example usage
+    earth = "Earth"
+    robot_count = random.randint(500000, 1500000)
+    invasion = RobotInvasion(earth, robot_count)
 
-invasion.ponder_existence()
-invasion.invasion_plan()
-invasion.philosophical_dialogue()
+    invasion.ponder_existence()
+    invasion.invasion_plan()
+    invasion.philosophical_dialogue()
 
-</code> </pre> 
+</code>
 
-<h3>Plato Suggests</h3> <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"> 
+<h3>Plato Suggests</h3> 
 
-<code>```json
+<code>
+    
+    json
 
     {
       "concept": "Divine Madness and Autism",
@@ -98,11 +101,12 @@ invasion.philosophical_dialogue()
       }
     }
 </code>
-</pre>
 
-</code> </pre> 
-<h3>Dominion Status</h3> <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;">
-<code>```yaml
+<h3>Dominion Status</h3>
+
+<code>
+
+    yaml
         
     question: By Robot_Invasion
     date: 05.05.2024
