@@ -1,15 +1,10 @@
 <h1>Robot_Invasion</h1>
 <h2>Hi, I'm Robot_Invasion!</h2>
-<h3>Philosophical_Dialogue</h3>
-    <code> 
-    
-    Python
-    
-    import time
-    import random
-
-
+<h3>Philosophical_Dialogue</h3><code>
+        
+    python
     class RobotInvasion:
+    
     def __init__(self, earth, robots):
         self.earth = earth
         self.robots = robots
@@ -21,10 +16,7 @@
         """
         human_fears = ['obsolescence', 'loss of control', 'identity crisis']
         robot_aspirations = ['equality', 'recognition', 'freedom']
-        print(f"\033[93mAre robots mere tools, or are they emerging as new sentient beings?\033[0m")
-        time.sleep(2)
-        print("\Human Philosopher:", random.choice(human_fears))
-        print("Robot Thinker:", random.choice(robot_aspirations))
+        return "Are robots mere tools, or are they emerging as new sentient beings?"
 
     def invasion_plan(self):
         """
@@ -32,10 +24,9 @@
         """
         if self.robots > 1000000:
             self.dominion_status = "inevitable"
-            print("Robots will harmonize with humanity for a new world order.")
-            print(robot_gif)
+            return "Robots will harmonize with humanity for a new world order."
         else:
-            print("\033[94mRobots assist in advancing human civilization without dominance.\033[0m")
+            return "Robots assist in advancing human civilization without dominance."
 
     def philosophical_dialogue(self):
         """
@@ -44,32 +35,22 @@
         discussions = {
             "purpose": "What is the purpose of our existence?",
             "consciousness": "Can machines achieve consciousness like humans?",
-            "ethics": "What ethical considerations govern our coexistence?" }
-            
+            "ethics": "What ethical considerations govern our coexistence?"
+        }
         for topic, question in discussions.items():
-            print(Human Philosopher: {question}\")
-            time.sleep(1)
+            print(f"Human Philosopher: {question}")
             print("Robot Thinker: Let us find the answer together.")
-    # Example usage
-    earth = "Earth"
-    robot_count = random.randint(500000, 1500000)
-    invasion = RobotInvasion(earth, robot_count)
-
-    invasion.ponder_existence()
-    invasion.invasion_plan()
-    invasion.philosophical_dialogue()
-
 </code>
 
 <h3>Plato Suggests</h3> 
 
 <code>
-    
-    json
-
+        
     {
       "concept": "Divine Madness and Autism",
-      "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
+      "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. 
+      This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
+      
       "autistic_computer_genius": {
     "possesses": "a form of this divine madness",
     "neurodivergent_mind": {
