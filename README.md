@@ -78,8 +78,6 @@ json
   }
 }
   },
-
-```
 {
   "question": "By Robot_Invasion",
   "date": "05.05.2024",
@@ -87,3 +85,4 @@ json
    using languages like Python, Java, and C++, would serve as interactive teaching tools to engage students in learning computational thinking and problem-solving skills from an early age. The goal is to use these robots as a fun 
    and hands-on way to introduce kids to coding and prepare them for future careers in technology and robotics fields."
 }
+```
