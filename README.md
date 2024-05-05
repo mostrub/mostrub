@@ -1,7 +1,9 @@
 # Robot_Invasion
-<h2> Hi, I'm Robot_Invasion! <img src="https://giphy.com/embed/elasZ4ibZDAE8" width="100"></h2>
+## Hi, I'm Robot_Invasion!
 
-<p><em> RobotInvasion:
+<p><em> 
+    # python
+    class RobotInvasion:
     def __init__(self, earth, robots):
         self.earth = earth
         self.robots = robots
