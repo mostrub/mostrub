@@ -3,7 +3,9 @@
 
 <p><em> 
     # python
+    
     class RobotInvasion:
+    
     def __init__(self, earth, robots):
         self.earth = earth
         self.robots = robots
