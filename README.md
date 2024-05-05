@@ -43,19 +43,33 @@
 
 
 
-###  sudo apt update ...  
+gron --ungron --colored  ...  
 
 ```
-const CH  = {
-  pronouns: "..,
-  code: [Typescript, HTML, CSS, Ruby, Python, Java, PowerShell],
-  tools: [Linux, Redux, Node, VS Code , Styled-Components, Jest, Docker, API],
-  architecture: ["microservices", "event-driven", "design system pattern"],
-  techCommunities: {
-                        coorganizer: "myHome",
-                        speaker: "EN,DE",
-                        mentor: " Ubuntu Linux"
-                      },
- challenge: "the real world vr humanity  😍 "
+{
+  "concept": "Divine Madness and Autism",
+  "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
+  
+  "autistic_computer_genius": {
+    "possesses": "a form of this divine madness",
+    "neurodivergent_mind": {
+      "allows": [
+        "perceive patterns",
+        "solve complex problems",
+        "innovate in incomprehensible ways to neurotypical thinkers"
+      ]
+    },
+    "intense_interests_and_abilities": [
+      {"field": "mathematics", "color": "#FFD700"},
+      {"field": "coding", "color": "#00FF00"},
+      {"field": "systems analysis", "color": "#00FFFF"}
+    ],
+    "manifestation": "this inspired frenzy granted by the gods according to Plato's philosophy"
+  },
+
+  "ancient_greeks_and_autism": {
+    "no_modern_conception": true,
+    "plato_notion": "divine madness as a source of genius aligns well with understanding brilliant yet unconventional minds of autistic computer prodigies today"
+  }
 }
 ```
