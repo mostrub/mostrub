@@ -1,5 +1,5 @@
 # Robot_Invasion
-<h2> Hi, I'm Robot_Invasion! <img src="https://giphy.com/embed/elasZ4ibZDAE8" width="50"></h2>
+<h2> Hi, I'm Robot_Invasion! <img src="https://giphy.com/embed/elasZ4ibZDAE8" width="100"></h2>
 
 <p><em> RobotInvasion:
     def __init__(self, earth, robots):
