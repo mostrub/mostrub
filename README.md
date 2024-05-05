@@ -1,6 +1,7 @@
 <h1>Robot_Invasion</h1>
 <h2>Hi, I'm Robot_Invasion!</h2>
-<h3>Philosophical_Dialogue</h3><code>
+<h3>Philosophical_Dialogue</h3> 
+
         
     python
     class RobotInvasion:
@@ -40,16 +41,15 @@
         for topic, question in discussions.items():
             print(f"Human Philosopher: {question}")
             print("Robot Thinker: Let us find the answer together.")
-</code>
 
-<h3>Plato Suggests</h3> 
+<h3>Divine Madness</h3> 
 
-<code>
-        
-    {
-      "concept": "Divine Madness and Autism",
-      "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. 
-      This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
+
+        json
+        {     
+        "concept": "Divine Madness and Autism",
+        "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. 
+        This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
       
       "autistic_computer_genius": {
     "possesses": "a form of this divine madness",
@@ -81,11 +81,8 @@
     "plato_notion": "divine madness as a source of genius aligns well with understanding brilliant yet unconventional minds of autistic computer prodigies today"
       }
     }
-</code>
 
-<h3>Dominion Status</h3>
-
-<code>
+<h3>Dominion Status <img src='https://media.giphy.com/media/elasZ4ibZDAE8/giphy.gif' alt='Robot GIF' width='50' style='float:right; margin-left:10px;'></h3>
 
     yaml
         
