@@ -1,50 +1,46 @@
-# Robot_Invasion
-## Hi, I'm Robot_Invasion!
+<h1>Robot_Invasion</h1>
+<h2>Hi, I'm Robot_Invasion!</h2>
 
-<p><em> 
-    
-    python
-    
-    class RobotInvasion:
-    
+<p><em>
+<pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;">
+<code>
+```python
+class RobotInvasion:
     def __init__(self, earth, robots):
         self.earth = earth
         self.robots = robots
-        self.dominion_status = "pending"
+        self.dominion_status = "<span style="color: #cc7832;">pending</span>"
 
     def ponder_existence(self):
-        """
+        <span style="color: #6a8759;">"""
         Contemplates the philosophical impact of robots on human existence.
-        """
-        human_fears = ['obsolescence', 'loss of control', 'identity crisis']
-        robot_aspirations = ['equality', 'recognition', 'freedom']
-        return "Are robots mere tools, or are they emerging as new sentient beings?"
+        """</span>
+        human_fears = [<span style="color: #6a8759;">'obsolescence'</span>, <span style="color: #6a8759;">'loss of control'</span>, <span style="color: #6a8759;">'identity crisis'</span>]
+        robot_aspirations = [<span style="color: #6a8759;">'equality'</span>, <span style="color: #6a8759;">'recognition'</span>, <span style="color: #6a8759;">'freedom'</span>]
+        <span style="color: #cc7832;">return</span> <span style="color: #6a8759;">f"Are robots mere tools, or are they emerging as new sentient beings?"</span>
 
     def invasion_plan(self):
-        """
+        <span style="color: #6a8759;">"""
         Strategizes the peaceful coexistence or takeover.
-        """
-        if self.robots > 1000000:
-            self.dominion_status = "inevitable"
-            return "Robots will harmonize with humanity for a new world order."
-        else:
-            return "Robots assist in advancing human civilization without dominance."
+        """</span>
+        <span style="color: #cc7832;">if</span> self.robots > <span style="color: #d19a66;">1000000</span>:
+            self.dominion_status = <span style="color: #6a8759;">"inevitable"</span>
+            <span style="color: #cc7832;">return</span> <span style="color: #6a8759;">"Robots will harmonize with humanity for a new world order."</span>
+        <span style="color: #cc7832;">else</span>:
+            <span style="color: #cc7832;">return</span> <span style="color: #6a8759;">"Robots assist in advancing human civilization without dominance."</span>
 
     def philosophical_dialogue(self):
-        """
+        <span style="color: #6a8759;">"""
         Generates a dialogue between a human philosopher and a robot thinker.
-        """
+        """</span>
         discussions = {
-            "purpose": "What is the purpose of our existence?",
-            "consciousness": "Can machines achieve consciousness like humans?",
-            "ethics": "What ethical considerations govern our coexistence?"
+            <span style="color: #6a8759;">"purpose"</span>: <span style="color: #6a8759;">"What is the purpose of our existence?"</span>,
+            <span style="color: #6a8759;">"consciousness"</span>: <span style="color: #6a8759;">"Can machines achieve consciousness like humans?"</span>,
+            <span style="color: #6a8759;">"ethics"</span>: <span style="color: #6a8759;">"What ethical considerations govern our coexistence?"</span>
         }
-        for topic, question in discussions.items():
-            print(f"Human Philosopher: {question}")
-            print("Robot Thinker: Let us find the answer together.")
-
-</em></p>
-
+        <span style="color: #cc7832;">for</span> topic, question <span style="color: #cc7832;">in</span> discussions.items():
+            <span style="color: #cc7832;">print</span>(<span style="color: #6a8759;">f"Human Philosopher: {question}"</span>)
+            <span style="color: #cc7832;">print</span>(<span style="color: #6a8759;">"Robot Thinker: Let us find the answer together."</span>)
 
 
  copy and use  ```gron --ungron --colored ``` to convert me ... or ```gron /path/to/file.json ``` 
