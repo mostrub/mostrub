@@ -82,7 +82,7 @@
       }
     }
 
-<h3>Dominion Status <img src='https://media.giphy.com/media/elasZ4ibZDAE8/giphy.gif' alt='Robot GIF' width='50' style='float:right; margin-left:10px;'></h3>
+<h3>Dominion Status</h3>
 
     yaml
         
@@ -97,6 +97,6 @@
       early age. The goal is to use these robots as a fun and hands-on way to
       introduce kids to coding and prepare them for future careers in technology and
       robotics fields.
+
 </code> 
 </pre>
-<img src='https://media.giphy.com/media/elasZ4ibZDAE8/giphy.gif' alt='Robot GIF' width='50' style='float:right; margin-left:10px;'>
