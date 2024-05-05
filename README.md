@@ -43,9 +43,10 @@
 
 
 
- copy and use " gron --ungron --colored " to convert me ... or gron /path/to/file.json  
+ copy and use  ```gron --ungron --colored ``` to convert me ... or ```gron /path/to/file.json ``` 
 
 ```
+json
 {
   "concept": "Divine Madness and Autism",
   "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
@@ -66,5 +67,14 @@
     ],
     "manifestation": "this inspired frenzy granted by the gods according to Plato's philosophy"
   },
+
+  "ancient_greeks_and_autism": {
+    "no_modern_conception": true,
+    "plato_notion": "divine madness as a source of genius aligns well with understanding brilliant yet unconventional minds of autistic computer prodigies today"
+  }
+}
+  },
+
+```
 
   "ancient_greeks_and_autism": {
