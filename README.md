@@ -1,8 +1,7 @@
 # Robot_Invasion
-<h2> Hi, I'm Robot_Invasion! <img src="https://media.giphy.com/media/1C8bHHJturSx2/giphy.gif" width="50"></h2>
+<h2> Hi, I'm Robot_Invasion! <img src="https://media.giphy.com/media/1C8bHHJturSx2/giphy.gif" width="50"></h2> <iframe src="https://giphy.com/embed/elasZ4ibZDAE8" width="480" height="388" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/maudit-maudit-robot-the-day-earth-stood-still-elasZ4ibZDAE8">via GIPHY</a></p>
 
-<p><em> RobotInvasion 
-
+<p><em> RobotInvasion:
     def __init__(self, earth, robots):
         self.earth = earth
         self.robots = robots
@@ -14,7 +13,7 @@
         """
         human_fears = ['obsolescence', 'loss of control', 'identity crisis']
         robot_aspirations = ['equality', 'recognition', 'freedom']
-        return f"Are robots mere tools, or are they emerging as new sentient beings?"
+        return "Are robots mere tools, or are they emerging as new sentient beings?"
 
     def invasion_plan(self):
         """
@@ -37,7 +36,7 @@
         }
         for topic, question in discussions.items():
             print(f"Human Philosopher: {question}")
-            print("Robot Thinker: Let us find the answer together."
+            print("Robot Thinker: Let us find the answer together.")
 
 </em></p>
 
