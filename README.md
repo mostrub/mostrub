@@ -43,7 +43,7 @@
 
 
 
-gron --ungron --colored  ...  
+ copy and use " gron --ungron --colored " to convert me ...  
 
 ```
 {
