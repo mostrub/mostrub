@@ -1,11 +1,7 @@
 # Robot_Invasion
 <h2> Hi, I'm Robot_Invasion! <img src="https://media.giphy.com/media/1C8bHHJturSx2/giphy.gif" width="50"></h2>
 
-<p><em>class RobotInvasion:
-    """
-    A philosophical representation of the 1950s style sci-fi theme.
-    Exploring existential questions about technology and humanity.
-    """
+<p><em> RobotInvasion 
 
     def __init__(self, earth, robots):
         self.earth = earth
@@ -41,12 +37,7 @@
         }
         for topic, question in discussions.items():
             print(f"Human Philosopher: {question}")
-            print("Robot Thinker: Let us find the answer together.")
-
-# Example of using the class
-sci_fi_theme = RobotInvasion(earth="Earth", robots=1500000)
-print(sci_fi_theme.ponder_existence())
-sci_fi_theme.philosophical_dialogue() 
+            print("Robot Thinker: Let us find the answer together."
 
 </em></p>
 
