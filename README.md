@@ -1,5 +1,5 @@
 # Robot_Invasion
-<h2> Hi, I'm Robot_Invasion! <img src="https://media.giphy.com/media/1C8bHHJturSx2/giphy.gif" width="50"></h2> <iframe src="https://giphy.com/embed/elasZ4ibZDAE8" width="480" height="388" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/maudit-maudit-robot-the-day-earth-stood-still-elasZ4ibZDAE8">via GIPHY</a></p>
+<h2> Hi, I'm Robot_Invasion! <img src="https://giphy.com/embed/elasZ4ibZDAE8" width="50"></h2>
 
 <p><em> RobotInvasion:
     def __init__(self, earth, robots):
