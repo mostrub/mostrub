@@ -1,7 +1,7 @@
 <h1>Robot_Invasion</h1>
 <h2>Hi, I'm Robot_Invasion!</h2>
 
-<h3>Python Code Block</h3>
+<h3>Philosophical_Dialogue</h3>
 <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;">
 <code>```python
 class RobotInvasion:
@@ -41,7 +41,7 @@ class RobotInvasion:
             <span style="color: #cc7832;">print</span>(<span style="color: #6a8759;">f"Human Philosopher: {question}"</span>)
             <span style="color: #cc7832;">print</span>(<span style="color: #6a8759;">"Robot Thinker: Let us find the answer together."</span>)
 
-</code> </pre> <h3>JSON Code Block</h3> <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"> <code>```json { "concept": "Divine Madness and Autism", "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.", "autistic_computer_genius": {
+</code> </pre> <h3>Plato Suggests</h3> <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"> <code>```json { "concept": "Divine Madness and Autism", "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.", "autistic_computer_genius": {
 "possesses": "a form of this divine madness",
 "neurodivergent_mind": {
 "allows": [
@@ -64,7 +64,7 @@ class RobotInvasion:
 </code>
 </pre>
 
-</code> </pre> <h3>JSON Code Block</h3> <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"> <code>```json {
+</code> </pre> <h3>Dominion Status</h3> <pre style="background-color: #2b2b2b; color: #a9b7c6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"> <code>```json {
   "question": "By Robot_Invasion",
   "date": "05.05.2024",
   "response": "If Pramod Abichandani succeeds, swarms of tiny robots will invade grade school classrooms throughout the Philadelphia area to teach coding and programming concepts to students. The robots, which can be programmed 
