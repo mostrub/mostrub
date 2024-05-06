@@ -47,7 +47,7 @@
 
         json
         {     
-        "concept": "Divine Madness and Autism",
+        "concept": "Divine Madness",
         "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. 
         This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
       
@@ -63,15 +63,12 @@
     "intense_interests_and_abilities": [
       {
         "field": "mathematics",
-        "color": "#FFD700"
       },
       {
         "field": "coding",
-        "color": "#00FF00"
       },
       {
-        "field": "systems analysis",
-        "color": "#00FFFF"
+        "field": "systems analysis"
       }
     ],
     "manifestation": "this inspired frenzy granted by the gods according to Plato's philosophy"
