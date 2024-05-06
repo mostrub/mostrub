@@ -51,7 +51,7 @@
         "description": "Plato suggests that this divine madness allows the soul to break free from conventional ways of thinking and perceive higher truths. 
         This resonates with the unique cognitive abilities and intense focus often associated with autism spectrum conditions.",
       
-      "autistic_computer_genius": {
+      "autistic_computer_minds": {
     "possesses": "a form of this divine madness",
     "neurodivergent_mind": {
       "allows": [
