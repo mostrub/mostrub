@@ -137,9 +137,9 @@ class PhilosophicalQuestions:
 
 <div align="center">
 
-[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/yourusername)
-[![Philosophical Blog](https://img.shields.io/badge/-Blog-FF5722?style=for-the-badge&logo=blogger&logoColor=white)](https://your-blog-url)
-[![Robot Network](https://img.shields.io/badge/-Robot_Network-00B388?style=for-the-badge&logo=robot&logoColor=white)](https://your-network)
+[![GitHub](https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white)]([https://github.com/yourusername](https://github.com/mostrub))
+[![Philosophical Blog](https://img.shields.io/badge/-Blog-FF5722?style=for-the-badge&logo=blogger&logoColor=white)]([https://your-blog-url](https://web.archive.org/web/20050103010836/http://www.planetsuse.org/))
+[![Robot Network](https://img.shields.io/badge/-Robot_Network-00B388?style=for-the-badge&logo=robot&logoColor=white)]([https://your-network](https://archive.org/details/pulpmagazinearchive))
 
 </div>
 
