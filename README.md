@@ -3,7 +3,7 @@
 > 
 
 ```python
-class RobotInvasion:
+class Robot:
     def __init__(self, earth, robots):
         self.earth = earth
         self.robots = robots
