@@ -1,4 +1,3 @@
-# 🤖The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight.
 
 > 
 
