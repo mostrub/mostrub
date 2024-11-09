@@ -3,8 +3,9 @@
 
 ```python
 #=======================================================================================================#
-#                            DIGITAL ORACLE: CONSCIOUSNESS MATRIX v2.24                      20.07.1973 # 
-# The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight  # 
+#                            DIGITAL ORACLE: CONSCIOUSNESS MATRIX v2.24                                 # 
+# The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight  #
+#                                                                                           20.07.1973  # 
 #=======================================================================================================#
 
 class Robot:
