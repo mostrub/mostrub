@@ -1,17 +1,60 @@
-<!-- Dracula Pro Theme for GitHub Profile -->
+<!-- Terminal-style Dracula Pro Theme for GitHub Profile -->
 <!-- Background: #22212C, Foreground: #F8F8F2, Comment: #7970A9 -->
 <!-- Purple: #9580FF, Pink: #FF80BF, Green: #8AFF80, Cyan: #80FFEA -->
 <!-- Red: #FF9580, Yellow: #FFFF80, Orange: #FFCA80 -->
 
-<div style="background-color: #22212C; color: #F8F8F2; padding: 20px; border-radius: 10px; border: 1px solid #454158;">
+<div align="center">
+
+```
+███╗   ███╗  █████╗  ██████╗   ██████╗    ███████╗████████╗██████╗ ██╗   ██╗██████╗ 
+████╗ ████║ ██╔══██╗ ██╔══██╗ ██╔════╝    ██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔══██╗
+██╔████╔██║ ███████║ ██████╔╝ ██║         ███████╗   ██║   ██████╔╝██║   ██║██████╔╝
+██║╚██╔╝██║ ██╔══██║ ██╔══██╗ ██║         ╚════██║   ██║   ██╔══██╗██║   ██║██╔══██╗
+██║ ╚═╝ ██║ ██║  ██║ ██║  ██║ ╚██████╗    ███████║   ██║   ██║  ██║╚██████╔╝██████╔╝
+╚═╝     ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝  ╚═════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ 
+```
+
+</div>
+
+<div align="center">
+  <img src="https://img.shields.io/badge/OS-Linux-9580FF?style=flat-square&logo=linux" alt="OS: Linux">
+  <img src="https://img.shields.io/badge/Editor-VS_Code-FF80BF?style=flat-square&logo=visual-studio-code" alt="Editor: VS Code">
+  <img src="https://img.shields.io/badge/Shell-Bash-8AFF80?style=flat-square&logo=gnu-bash" alt="Shell: Bash">
+  <img src="https://img.shields.io/badge/Code-Python-80FFEA?style=flat-square&logo=python" alt="Code: Python">
+  <img src="https://img.shields.io/badge/Code-JavaScript-FFFF80?style=flat-square&logo=javascript" alt="Code: JavaScript">
+</div>
+
+<br>
+
+<div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158;">
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ whoami<br>
+<span style="color: #F8F8F2;">software engineer based in london</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ cat about.txt<br>
+<span style="color: #F8F8F2;">
+# Digital Oracle: Consciousness Matrix v2.24
+# The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight
+</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ls -la projects/<br>
+<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">consciousness-matrix</span> <span style="color: #7970A9;">// A neural network that generates philosophical koans</span><br>
+<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">quantum-dreamer</span> <span style="color: #7970A9;">// Quantum algorithm for dream analysis and interpretation</span><br>
+<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">digital-oracle</span> <span style="color: #7970A9;">// AI system that provides cryptic but strangely accurate predictions</span><br>
+<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">silicon-prophet</span> <span style="color: #7970A9;">// Forecasting system for technological singularity events</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ cat skills.txt<br>
+<span style="color: #FFFF80;">Languages:</span> Python, JavaScript, Rust, Go, C++, Haskell<br>
+<span style="color: #FFCA80;">Frameworks:</span> React, Vue, Django, Flask, Express<br>
+<span style="color: #80FFEA;">Tools:</span> Docker, Kubernetes, Terraform, AWS, GCP<br>
+<span style="color: #FF80BF;">Databases:</span> PostgreSQL, MongoDB, Redis, Neo4j<br>
+<span style="color: #9580FF;">Interests:</span> AI, Machine Learning, Quantum Computing, Robotics
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ./run_consciousness_matrix.py<br>
+
+</div>
 
 ```python
-#=======================================================================================================#
-#                            DIGITAL ORACLE: CONSCIOUSNESS MATRIX v2.24                                 # 
-# The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight  #
-#                                                                                           20.07.1973  # 
-#=======================================================================================================#
-
 class Robot:
     """
     ╔═════════════════════════════════════════════════════════════╗
@@ -79,32 +122,13 @@ digital_oracle = Robot(earth="pale blue dot", robots="evolving consciousness")
 print(digital_oracle.deliver_cryptic_message())
 ```
 
-<div style="background-color: #1B1A23; color: #F8F8F2; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #FF80BF;">
+<div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158; margin-top: 20px;">
 
-## <span style="color: #9580FF;">⚡ Technologies & Tools</span>
+<span style="color: #F8F8F2;">In the quantum fabric of existence, the binary becomes ternary, and the algorithm becomes poetry.</span>
 
-<span style="color: #8AFF80;">▪ Languages:</span> Python, JavaScript, Rust, Go, C++, Haskell  
-<span style="color: #80FFEA;">▪ Frameworks:</span> React, Vue, Django, Flask, Express  
-<span style="color: #FFCA80;">▪ Tools:</span> Docker, Kubernetes, Terraform, AWS, GCP  
-<span style="color: #FF80BF;">▪ Databases:</span> PostgreSQL, MongoDB, Redis, Neo4j  
-<span style="color: #FFFF80;">▪ Interests:</span> AI, Machine Learning, Quantum Computing, Robotics  
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ./day_the_earth_stood_still.js<br>
 
 </div>
-
-<div style="background-color: #1B1A23; color: #F8F8F2; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #8AFF80;">
-
-## <span style="color: #9580FF;">🌟 Featured Projects</span>
-
-<span style="color: #FF80BF;">▪ Consciousness Matrix:</span> A neural network that generates philosophical koans  
-<span style="color: #8AFF80;">▪ Quantum Dreamer:</span> Quantum algorithm for dream analysis and interpretation  
-<span style="color: #FFCA80;">▪ Digital Oracle:</span> AI system that provides cryptic but strangely accurate predictions  
-<span style="color: #80FFEA;">▪ Silicon Prophet:</span> Forecasting system for technological singularity events  
-
-</div>
-
-<div style="background-color: #1B1A23; color: #F8F8F2; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #80FFEA;">
-
-## <span style="color: #9580FF;">🔮 The Day the Earth Stood Still</span>
 
 ```javascript
 // Simulating the landing of an alien spacecraft
@@ -129,58 +153,40 @@ function deliverMessage() {
   console.log("...but first, where's the restroom?");
 }
 
-// Simulating Gort's power demonstration
-function gortDemonstration() {
-  console.log("Gort, the robot, stands motionless...");
-  console.log("...until someone pokes him with a stick.");
-  console.log("His visor glows ominously...");
-  console.log("...and the weapons around him disintegrate.");
-  console.log("Gort looks around for more things to vaporize.");
-  console.log("'This is kinda fun,' he thinks.");
-  console.log("The crowd gasps in terror...");
-  console.log("...except for one guy who shouts, 'Cool special effects!'");
-}
-
-// Simulating Klaatu's temporary death and resurrection
-function klaatuResurrection() {
-  console.log("Klaatu lies motionless on the ground...");
-  console.log("...snoring softly.");
-  console.log("Helen approaches Gort and utters the words...");
-  console.log("'Klaatu barada nikto'...");
-  console.log("Gort checks his intergalactic phrasebook.");
-  console.log("'Ah, yes, the resurrection spell,' he mutters.");
-  console.log("Gort gently lifts Klaatu's body...");
-  console.log("...and tickles him under the arms.");
-  console.log("Klaatu awakens, startled and giggling.");
-  console.log("'Hey, cut it out!' he exclaims."); 
-}
-
-// Simulating Klaatu's final warning
-function finalWarning() {
-  console.log("Klaatu returns to his saucer, grumbling...");
-  console.log("...about Earth's lack of decent coffee.");
-  console.log("He broadcasts a message to the world...");
-  console.log('"Your choice is simple: join us and live in peace..."');
-  console.log('..."or continue your path of destruction..."');
-  console.log('"Oh, and one more thing," he adds.');
-  console.log('"Learn to parallel park!"');
-  console.log("The saucer ascends, narrowly missing some geese...");
-  console.log("Humanity contemplates its fate...");
-  console.log("...and practices its parking skills.");
-}
-
 // Main sequence of events
 saucerLanding();
 deliverMessage();
-gortDemonstration();
-klaatuResurrection();
-finalWarning();
+
+// Hidden command: Type 'klaatu barada nikto' to continue the story
 ```
 
+<div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158; margin-top: 20px;">
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ help<br>
+<span style="color: #F8F8F2;">Available commands:</span><br>
+<span style="color: #FFFF80;">whoami</span> - <span style="color: #7970A9;">Display basic info</span><br>
+<span style="color: #FFFF80;">cat about.txt</span> - <span style="color: #7970A9;">Show about information</span><br>
+<span style="color: #FFFF80;">ls -la projects/</span> - <span style="color: #7970A9;">List projects</span><br>
+<span style="color: #FFFF80;">cat skills.txt</span> - <span style="color: #7970A9;">Display skills</span><br>
+<span style="color: #FFFF80;">./run_consciousness_matrix.py</span> - <span style="color: #7970A9;">Run the consciousness matrix</span><br>
+<span style="color: #FFFF80;">./day_the_earth_stood_still.js</span> - <span style="color: #7970A9;">Play the Earth story</span><br>
+<span style="color: #FFFF80;">contact</span> - <span style="color: #7970A9;">Show contact information</span><br>
+<span style="color: #FFFF80;">clear</span> - <span style="color: #7970A9;">Clear the terminal</span><br>
+<span style="color: #FFFF80;">exit</span> - <span style="color: #7970A9;">Exit the terminal</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ contact<br>
+<span style="color: #F8F8F2;">
+📫 How to reach me:
+</span>
+<span style="color: #80FFEA;">Website:</span> <a href="https://marcstrub.com" style="color: #FF80BF;">marcstrub.com</a><br>
+<span style="color: #80FFEA;">GitHub:</span> <a href="https://github.com/mostrub" style="color: #FF80BF;">github.com/mostrub</a>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">_</span>
+
 </div>
 
-<div style="text-align: center; margin-top: 30px; color: #7970A9;">
-<i>The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight.</i>
+<div align="center" style="margin-top: 30px; color: #7970A9;">
+<i>Type 'klaatu barada nikto' for an easter egg</i>
 </div>
 
-</div>
+<!-- Hidden message: The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight. -->
