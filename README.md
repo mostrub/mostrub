@@ -65,6 +65,13 @@
 
 <div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158; margin-top: 20px;">
 
+PERSONAL GITHUB
+--------------
+Welcome to my personal GitHub profile. Most of my professional work is maintained in private repositories.
+This profile serves as my library of personal developments. For privacy reasons, I also contribute to projects under different aliases and maintain separate GitHub accounts for various professional contributions.
+
+I am passionate about open source and giving back to the community. It's a life choice that supports freedom on the internet, freedom of technology, and the power of shared knowledge to humanity and peace.
+
 PROFESSIONAL SUMMARY
 -------------------
 Industrial Systems Engineer with 15+ years of experience in automation and control systems
