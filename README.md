@@ -5,7 +5,7 @@
 
 <div align="center">
 
-```
+```ascii
 ███╗   ███╗  █████╗  ██████╗   ██████╗    ███████╗████████╗██████╗ ██╗   ██╗██████╗ 
 ████╗ ████║ ██╔══██╗ ██╔══██╗ ██╔════╝    ██╔════╝╚══██╔══╝██╔══██╗██║   ██║██╔══██╗
 ██╔████╔██║ ███████║ ██████╔╝ ██║         ███████╗   ██║   ██████╔╝██║   ██║██████╔╝
@@ -17,41 +17,97 @@
 </div>
 
 <div align="center">
+  <!-- Operating System -->
   <img src="https://img.shields.io/badge/OS-Linux-9580FF?style=flat-square&logo=linux" alt="OS: Linux">
+  <img src="https://img.shields.io/badge/OS-Ubuntu-9580FF?style=flat-square&logo=ubuntu" alt="OS: Ubuntu">
+  
+  <!-- Editors -->
   <img src="https://img.shields.io/badge/Editor-VS_Code-FF80BF?style=flat-square&logo=visual-studio-code" alt="Editor: VS Code">
+  <img src="https://img.shields.io/badge/Editor-Vim-FF80BF?style=flat-square&logo=vim" alt="Editor: Vim">
+  
+  <!-- Shell -->
   <img src="https://img.shields.io/badge/Shell-Bash-8AFF80?style=flat-square&logo=gnu-bash" alt="Shell: Bash">
+  <img src="https://img.shields.io/badge/Shell-ZSH-8AFF80?style=flat-square&logo=gnu-bash" alt="Shell: ZSH">
+  
+  <!-- Languages -->
   <img src="https://img.shields.io/badge/Code-Python-80FFEA?style=flat-square&logo=python" alt="Code: Python">
   <img src="https://img.shields.io/badge/Code-JavaScript-FFFF80?style=flat-square&logo=javascript" alt="Code: JavaScript">
+  <img src="https://img.shields.io/badge/Code-TypeScript-80FFEA?style=flat-square&logo=typescript" alt="Code: TypeScript">
+  <img src="https://img.shields.io/badge/Code-Markdown-FF80BF?style=flat-square&logo=markdown" alt="Code: Markdown">
+  <img src="https://img.shields.io/badge/Code-Rust-FF9580?style=flat-square&logo=rust" alt="Code: Rust">
+  <img src="https://img.shields.io/badge/Code-Go-80FFEA?style=flat-square&logo=go" alt="Code: Go">
+  <img src="https://img.shields.io/badge/Code-C++-FFCA80?style=flat-square&logo=cplusplus" alt="Code: C++">
+  
+  <!-- Frameworks -->
+  <img src="https://img.shields.io/badge/Framework-React-FFFF80?style=flat-square&logo=react" alt="Framework: React">
+  <img src="https://img.shields.io/badge/Framework-Vue-8AFF80?style=flat-square&logo=vue.js" alt="Framework: Vue">
+  <img src="https://img.shields.io/badge/Framework-Django-9580FF?style=flat-square&logo=django" alt="Framework: Django">
+  <img src="https://img.shields.io/badge/Framework-Flask-FF80BF?style=flat-square&logo=flask" alt="Framework: Flask">
+  <img src="https://img.shields.io/badge/Framework-Express-80FFEA?style=flat-square&logo=express" alt="Framework: Express">
+  
+  <!-- Databases -->
+  <img src="https://img.shields.io/badge/DB-MySQL-FFFF80?style=flat-square&logo=mysql" alt="DB: MySQL">
+  <img src="https://img.shields.io/badge/DB-DuckDB-8AFF80?style=flat-square&logo=duckdb" alt="DB: DuckDB">
+  <img src="https://img.shields.io/badge/DB-PostgreSQL-9580FF?style=flat-square&logo=postgresql" alt="DB: PostgreSQL">
+  <img src="https://img.shields.io/badge/DB-MongoDB-FF80BF?style=flat-square&logo=mongodb" alt="DB: MongoDB">
+  
+  <!-- Tools -->
+  <img src="https://img.shields.io/badge/Tool-Docker-80FFEA?style=flat-square&logo=docker" alt="Tool: Docker">
+  <img src="https://img.shields.io/badge/Tool-Kubernetes-9580FF?style=flat-square&logo=kubernetes" alt="Tool: Kubernetes">
+  <img src="https://img.shields.io/badge/Tool-Terraform-FF80BF?style=flat-square&logo=terraform" alt="Tool: Terraform">
+  
+  <!-- Cloud -->
+  <img src="https://img.shields.io/badge/Cloud-AWS-FFFF80?style=flat-square&logo=amazon-aws" alt="Cloud: AWS">
+  <img src="https://img.shields.io/badge/Cloud-Azure-80FFEA?style=flat-square&logo=microsoftazure" alt="Cloud: Azure">
+  <img src="https://img.shields.io/badge/Cloud-GCP-FF9580?style=flat-square&logo=google-cloud" alt="Cloud: GCP">
+  
+  <!-- Industrial -->
+  <img src="https://img.shields.io/badge/Industrial-MQTT-FFCA80?style=flat-square&logo=mqtt" alt="Industrial: MQTT">
+  <img src="https://img.shields.io/badge/Industrial-OPC_UA-8AFF80?style=flat-square" alt="Industrial: OPC UA">
+  <img src="https://img.shields.io/badge/Industrial-Azure_IoT-9580FF?style=flat-square&logo=microsoftazure" alt="Industrial: Azure IoT">
+  <img src="https://img.shields.io/badge/Industrial-IIoT-FF80BF?style=flat-square" alt="Industrial: IIoT">
 </div>
 
 <br>
 
-<div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158;">
+<div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158; margin-top: 20px;">
 
 <span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ whoami<br>
-<span style="color: #F8F8F2;">software engineer based in london</span>
+<span style="color: #F8F8F2;">OT/IT Technical Leader bridging industrial systems with cutting-edge tech</span>
 
 <span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ cat about.txt<br>
 <span style="color: #F8F8F2;">
-# Digital Oracle: Consciousness Matrix v2.24
-# The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight
+Digital Oracle: Consciousness Matrix v2.24
+The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight
+
+Bridging the gap between IT and OT for over two decades, specializing in SCADA systems, 
+DCS for production control, and IIoT devices. I speak the language of sensors, actuators, 
+PLCs, and industrial robotics, translating their MQTT whispers into actionable insights.
 </span>
 
 <span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ls -la projects/<br>
-<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">consciousness-matrix</span> <span style="color: #7970A9;">// A neural network that generates philosophical koans</span><br>
-<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">quantum-dreamer</span> <span style="color: #7970A9;">// Quantum algorithm for dream analysis and interpretation</span><br>
-<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">digital-oracle</span> <span style="color: #7970A9;">// AI system that provides cryptic but strangely accurate predictions</span><br>
-<span style="color: #FF80BF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">silicon-prophet</span> <span style="color: #7970A9;">// Forecasting system for technological singularity events</span>
+<span style="color: #F8F8F2;">drwxr-xr-x consciousness-matrix // A neural network that generates philosophical koans</span><br>
+<span style="color: #F8F8F2;">drwxr-xr-x quantum-dreamer // Quantum algorithm for dream analysis and interpretation</span><br>
+<span style="color: #F8F8F2;">drwxr-xr-x digital-oracle // AI system that provides cryptic but strangely accurate predictions</span><br>
+<span style="color: #F8F8F2;">drwxr-xr-x silicon-prophet // Forecasting system for technological singularity events</span><br>
+<span style="color: #F8F8F2;">drwxr-xr-x industrial-nexus // Integration platform for IT/OT systems with real-time analytics</span><br>
+<span style="color: #F8F8F2;">drwxr-xr-x cyber-sentinel // Security framework for industrial control systems</span>
 
 <span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ cat skills.txt<br>
-<span style="color: #FFFF80;">Languages:</span> Python, JavaScript, Rust, Go, C++, Haskell<br>
-<span style="color: #FFCA80;">Frameworks:</span> React, Vue, Django, Flask, Express<br>
-<span style="color: #80FFEA;">Tools:</span> Docker, Kubernetes, Terraform, AWS, GCP<br>
-<span style="color: #FF80BF;">Databases:</span> PostgreSQL, MongoDB, Redis, Neo4j<br>
-<span style="color: #9580FF;">Interests:</span> AI, Machine Learning, Quantum Computing, Robotics
+<span style="color: #F8F8F2;">Languages: Python, JavaScript, TypeScript, Rust, Go, C++, Haskell, Markdown</span><br>
+<span style="color: #F8F8F2;">Frameworks: React, Vue, Django, Flask, Express</span><br>
+<span style="color: #F8F8F2;">Tools: Docker, Kubernetes, Terraform</span><br>
+<span style="color: #F8F8F2;">Databases: MySQL, DuckDB, PostgreSQL, MongoDB, Redis, Neo4j</span><br>
+<span style="color: #F8F8F2;">Cloud: AWS, Azure, GCP, Azure IoT</span><br>
+<span style="color: #F8F8F2;">Industrial: SCADA, DCS, PLCs, IIoT, MQTT, OPC-UA, Modbus</span><br>
+<span style="color: #F8F8F2;">Interests: AI, Machine Learning, Quantum Computing, Robotics, Industrial Automation</span>
 
 <span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ./run_consciousness_matrix.py<br>
-
+<span style="color: #F8F8F2;">Initializing consciousness matrix...</span><br>
+<span style="color: #F8F8F2;">Merging IT and OT domains...</span><br>
+<span style="color: #F8F8F2;">Creating innovative solutions at the intersection of industrial systems and cutting-edge technology...</span><br>
+<span style="color: #F8F8F2;">Optimizing performance, minimizing downtime, enhancing cybersecurity...</span><br>
+<span style="color: #F8F8F2;">Matrix stabilized. Ready to transform complex challenges into measurable results.</span>
 </div>
 
 ```python
@@ -164,12 +220,6 @@ deliverMessage();
 
 <span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ help<br>
 <span style="color: #F8F8F2;">Available commands:</span><br>
-<span style="color: #FFFF80;">whoami</span> - <span style="color: #7970A9;">Display basic info</span><br>
-<span style="color: #FFFF80;">cat about.txt</span> - <span style="color: #7970A9;">Show about information</span><br>
-<span style="color: #FFFF80;">ls -la projects/</span> - <span style="color: #7970A9;">List projects</span><br>
-<span style="color: #FFFF80;">cat skills.txt</span> - <span style="color: #7970A9;">Display skills</span><br>
-<span style="color: #FFFF80;">./run_consciousness_matrix.py</span> - <span style="color: #7970A9;">Run the consciousness matrix</span><br>
-<span style="color: #FFFF80;">./day_the_earth_stood_still.js</span> - <span style="color: #7970A9;">Play the Earth story</span><br>
 <span style="color: #FFFF80;">contact</span> - <span style="color: #7970A9;">Show contact information</span><br>
 <span style="color: #FFFF80;">clear</span> - <span style="color: #7970A9;">Clear the terminal</span><br>
 <span style="color: #FFFF80;">exit</span> - <span style="color: #7970A9;">Exit the terminal</span>
