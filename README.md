@@ -23,18 +23,21 @@
   <!-- Editors -->
   <img src="https://img.shields.io/badge/Editor-VS_Code-FF80BF?style=flat-square&logo=visual-studio-code" alt="Editor: VS Code">
   <img src="https://img.shields.io/badge/Editor-Vim-FF80BF?style=flat-square&logo=vim" alt="Editor: Vim">
+  <br>
   
-  <!-- Languages -->
-  <img src="https://img.shields.io/badge/Code-Python-80FFEA?style=flat-square&logo=python" alt="Code: Python">
+  <!-- Code Languages -->
+  <img src="https://img.shields.io/badge/Code-Python-FFCA80?style=flat-square&logo=python" alt="Code: Python">
   <img src="https://img.shields.io/badge/Code-JavaScript-FFFF80?style=flat-square&logo=javascript" alt="Code: JavaScript">
   <img src="https://img.shields.io/badge/Code-TypeScript-80FFEA?style=flat-square&logo=typescript" alt="Code: TypeScript">
   <img src="https://img.shields.io/badge/Code-Markdown-FF80BF?style=flat-square&logo=markdown" alt="Code: Markdown">
   <img src="https://img.shields.io/badge/Code-Rust-FF9580?style=flat-square&logo=rust" alt="Code: Rust">
   <img src="https://img.shields.io/badge/Code-Go-80FFEA?style=flat-square&logo=go" alt="Code: Go">
   <img src="https://img.shields.io/badge/Code-C++-FFCA80?style=flat-square&logo=cplusplus" alt="Code: C++">
+  <br>
   
   <!-- Frameworks -->
   <img src="https://img.shields.io/badge/Framework-React-FFFF80?style=flat-square&logo=react" alt="Framework: React">
+  <br>
 
   <!-- Databases -->
   <img src="https://img.shields.io/badge/DB-PostgreSQL-9580FF?style=flat-square&logo=postgresql" alt="DB: PostgreSQL">
@@ -43,15 +46,18 @@
   <img src="https://img.shields.io/badge/DB-Apache_Cassandra-80FFEA?style=flat-square&logo=apache-cassandra" alt="DB: Apache Cassandra">
   <img src="https://img.shields.io/badge/DB-Azure_SQL-80FFEA?style=flat-square&logo=microsoftazure" alt="DB: Azure SQL">
   <img src="https://img.shields.io/badge/DB-BigQuery-80FFEA?style=flat-square&logo=google-cloud" alt="DB: BigQuery">
+  <br>
   <img src="https://img.shields.io/badge/DB-ClickHouse-FF80BF?style=flat-square&logo=clickhouse" alt="DB: ClickHouse">
   <img src="https://img.shields.io/badge/DB-CockroachDB-8AFF80?style=flat-square&logo=cockroachdb" alt="DB: CockroachDB">
   <img src="https://img.shields.io/badge/DB-DynamoDB-FFFF80?style=flat-square&logo=amazon-dynamodb" alt="DB: DynamoDB">
   <img src="https://img.shields.io/badge/DB-IBM_Db2-FF9580?style=flat-square&logo=ibm" alt="DB: IBM Db2">
   <img src="https://img.shields.io/badge/DB-Microsoft_SQL_Server-FFFF80?style=flat-square&logo=microsoft-sql-server" alt="DB: Microsoft SQL Server">
+  <br>
   
   <!-- Tools -->
   <img src="https://img.shields.io/badge/Tool-Kubernetes-9580FF?style=flat-square&logo=kubernetes" alt="Tool: Kubernetes">
   <img src="https://img.shields.io/badge/Tool-Terraform-FF80BF?style=flat-square&logo=terraform" alt="Tool: Terraform">
+  <br>
   
   <!-- AI Development -->
   <img src="https://img.shields.io/badge/AI-Large_Language_Models-FF9580?style=flat-square" alt="AI: Large Language Models">
@@ -59,17 +65,20 @@
   <img src="https://img.shields.io/badge/AI-Local_AI_Server-FFFF80?style=flat-square" alt="AI: Local AI Server">
   <img src="https://img.shields.io/badge/AI-Vector_Databases-9580FF?style=flat-square" alt="AI: Vector Databases">
   <img src="https://img.shields.io/badge/AI-RAG_Systems-FF80BF?style=flat-square" alt="AI: RAG Systems">
+  <br>
   
   <!-- Cloud -->
   <img src="https://img.shields.io/badge/Cloud-AWS-FFFF80?style=flat-square&logo=amazon-aws" alt="Cloud: AWS">
   <img src="https://img.shields.io/badge/Cloud-Azure-80FFEA?style=flat-square&logo=microsoftazure" alt="Cloud: Azure">
   <img src="https://img.shields.io/badge/Cloud-GCP-FF9580?style=flat-square&logo=google-cloud" alt="Cloud: GCP">
+  <br>
   
   <!-- Industrial & IoT -->
   <img src="https://img.shields.io/badge/Industrial-MQTT-FFCA80?style=flat-square&logo=mqtt" alt="Industrial: MQTT">
   <img src="https://img.shields.io/badge/Industrial-OPC_UA-8AFF80?style=flat-square" alt="Industrial: OPC UA">
   <img src="https://img.shields.io/badge/Industrial-SCADA-9580FF?style=flat-square" alt="Industrial: SCADA">
   <img src="https://img.shields.io/badge/Industrial-DCS-FF80BF?style=flat-square" alt="Industrial: DCS">
+  <br>
   <img src="https://img.shields.io/badge/Industrial-PLC-FFFF80?style=flat-square" alt="Industrial: PLC">
   <img src="https://img.shields.io/badge/Industrial-IIoT-80FFEA?style=flat-square" alt="Industrial: IIoT">
   <img src="https://img.shields.io/badge/Industrial-Azure_IoT-FF9580?style=flat-square&logo=microsoftazure" alt="Industrial: Azure IoT">
@@ -79,42 +88,44 @@
 
 <div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158; margin-top: 20px;">
 
-<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ whoami<br>
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">whoami</span>
 <span style="color: #F8F8F2;">OT/IT Technical Leader bridging industrial systems with cutting-edge tech</span>
 
-<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ cat about.txt<br>
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">cat about.txt</span>
+<span style="color: #F8F8F2;">Digital Oracle: Consciousness Matrix v2.25</span>
+
+<span style="color: #FF80BF;">Bridging the gap between IT and OT for over two decades, specializing in SCADA systems, 
+DCS for production control, and IIoT devices. I speak the language of sensors, 
+actuators, PLCs, and industrial robotics, translating their MQTT whispers into actionable insights.</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">ls -la projects/</span>
+<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">consciousness-matrix  // A neural network that generates philosophical koans</span>
+<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">quantum-dreamer      // Quantum algorithm for dream analysis and interpretation</span>
+<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">digital-oracle       // AI system that provides cryptic but strangely accurate predictions</span>
+<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">silicon-prophet      // Forecasting system for technological singularity events</span>
+<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">industrial-nexus     // Integration platform for IT/OT systems with real-time analytics</span>
+<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">cyber-sentinel       // Security framework for industrial control systems</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">./run_consciousness_matrix.py</span>
+<span style="color: #FFCA80;">Initializing consciousness matrix...</span>
+<span style="color: #FFCA80;">Merging IT and OT domains...</span>
+<span style="color: #FFCA80;">Creating innovative solutions at the intersection of industrial systems and cutting-edge technology...</span>
+<span style="color: #FFCA80;">Optimizing performance, minimizing downtime, enhancing cybersecurity...</span>
+<span style="color: #FFCA80;">Matrix stabilized. Ready to transform complex challenges into measurable results.</span>
+
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">contact</span>
 <span style="color: #F8F8F2;">
-Digital Oracle: Consciousness Matrix v2.24
-The divine madness or inspired frenzy sent by the gods, which leads to the highest levels of insight
-
-Bridging the gap between IT and OT for over two decades, specializing in SCADA systems, 
-DCS for production control, and IIoT devices. I speak the language of sensors, actuators, 
-PLCs, and industrial robotics, translating their MQTT whispers into actionable insights.
+📫 How to reach me:
 </span>
+<span style="color: #80FFEA;">Website:</span> <a href="https://marcstrub.com" style="color: #FF80BF;">marcstrub.com</a>
+<span style="color: #80FFEA;">GitHub:</span> <a href="https://github.com/mostrub" style="color: #FF80BF;">github.com/mostrub</a>
 
-<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ls -la projects/<br>
-<span style="color: #F8F8F2;">drwxr-xr-x consciousness-matrix // A neural network that generates philosophical koans</span><br>
-<span style="color: #F8F8F2;">drwxr-xr-x quantum-dreamer // Quantum algorithm for dream analysis and interpretation</span><br>
-<span style="color: #F8F8F2;">drwxr-xr-x digital-oracle // AI system that provides cryptic but strangely accurate predictions</span><br>
-<span style="color: #F8F8F2;">drwxr-xr-x silicon-prophet // Forecasting system for technological singularity events</span><br>
-<span style="color: #F8F8F2;">drwxr-xr-x industrial-nexus // Integration platform for IT/OT systems with real-time analytics</span><br>
-<span style="color: #F8F8F2;">drwxr-xr-x cyber-sentinel // Security framework for industrial control systems</span>
+<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">_</span>
 
-<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ cat skills.txt<br>
-<span style="color: #F8F8F2;">Languages: Python, JavaScript, TypeScript, Rust, Go, C++, Haskell, Markdown</span><br>
-<span style="color: #F8F8F2;">Frameworks: React, Vue, Django, Flask, Express</span><br>
-<span style="color: #F8F8F2;">Tools: Docker, Kubernetes, Terraform</span><br>
-<span style="color: #F8F8F2;">Databases: MySQL, DuckDB, PostgreSQL, MongoDB, Redis, Neo4j</span><br>
-<span style="color: #F8F8F2;">Cloud: AWS, Azure, GCP, Azure IoT</span><br>
-<span style="color: #F8F8F2;">Industrial: SCADA, DCS, PLCs, IIoT, MQTT, OPC-UA, Modbus</span><br>
-<span style="color: #F8F8F2;">Interests: AI, Machine Learning, Quantum Computing, Robotics, Industrial Automation</span>
+</div>
 
-<span style="color: #8AFF80;">marc@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ ./run_consciousness_matrix.py<br>
-<span style="color: #F8F8F2;">Initializing consciousness matrix...</span><br>
-<span style="color: #F8F8F2;">Merging IT and OT domains...</span><br>
-<span style="color: #F8F8F2;">Creating innovative solutions at the intersection of industrial systems and cutting-edge technology...</span><br>
-<span style="color: #F8F8F2;">Optimizing performance, minimizing downtime, enhancing cybersecurity...</span><br>
-<span style="color: #F8F8F2;">Matrix stabilized. Ready to transform complex challenges into measurable results.</span>
+<div align="center" style="margin-top: 30px; color: #7970A9;">
+<i>Type 'klaatu barada nikto' for an easter egg</i>
 </div>
 
 ```python
