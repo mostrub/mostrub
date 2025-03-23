@@ -50,31 +50,40 @@
   <img src="https://img.shields.io/badge/AWS-FFFF80?style=flat-square&logo=amazon-aws" alt="AWS">
   <img src="https://img.shields.io/badge/Azure-80FFEA?style=flat-square&logo=microsoftazure" alt="Azure">
   <img src="https://img.shields.io/badge/GCP-FF9580?style=flat-square&logo=google-cloud" alt="GCP">
+  <br>
+  
+  <!-- Data Analytics -->
+  <h3>Data Analytics</h3>
+  <img src="https://img.shields.io/badge/DuckDB-9580FF?style=flat-square&logo=duckdb" alt="DuckDB">
+  <img src="https://img.shields.io/badge/DuckDB_Swarm-FF80BF?style=flat-square&logo=duckdb" alt="DuckDB Swarm">
+  <img src="https://img.shields.io/badge/R-80FFEA?style=flat-square&logo=r" alt="R">
+  <img src="https://img.shields.io/badge/Apache_Spark-FFCA80?style=flat-square&logo=apache-spark" alt="Apache Spark">
+  <img src="https://img.shields.io/badge/Pandas-8AFF80?style=flat-square&logo=pandas" alt="Pandas">
+  <img src="https://img.shields.io/badge/NumPy-FFFF80?style=flat-square&logo=numpy" alt="NumPy">
+  <img src="https://img.shields.io/badge/Jupyter-FF9580?style=flat-square&logo=jupyter" alt="Jupyter">
 </div>
 
 <div style="background-color: #22212C; color: #F8F8F2; font-family: 'Courier New', monospace; padding: 20px; border-radius: 10px; border: 1px solid #454158; margin-top: 20px;">
 
-<span style="color: #8AFF80;">mostrub@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">whoami</span>
-<span style="color: #F8F8F2;">OT/IT Technical Leader with a passion for industrial systems and creative coding</span>
+PROFESSIONAL SUMMARY
+-------------------
+Industrial Systems Engineer with 15+ years of experience in automation and control systems
+Specializing in OT/IT integration, edge computing, and industrial data analytics
 
-<span style="color: #8AFF80;">mostrub@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">ls -la projects/</span>
-<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">industrial-edge-computing</span>
-<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">ai-powered-automation</span>
-<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">digital-twin-systems</span>
-<span style="color: #9580FF;">drwxr-xr-x</span> <span style="color: #F8F8F2;">creative-coding</span>
+TECHNICAL EXPERTISE
+------------------
+LANGUAGES: Python, JavaScript, TypeScript, Rust, Go
+INDUSTRIAL: MQTT, QMQX, OPC UA, SCADA, DCS, PLC, IIoT
+DATA: DuckDB, DuckDB Swarm, R, Apache Spark, Pandas
+CLOUD: AWS, Azure, GCP
+AI: Large Language Models, Vector Databases, RAG Systems, MCP Development
 
-<span style="color: #8AFF80;">mostrub@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">cat .version</span>
-<span style="color: #FFCA80;">Consciousness Matrix v2.25 (Dracula Pro Edition)</span>
-
-<span style="color: #8AFF80;">mostrub@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">./contact.sh</span>
-<span style="color: #FFCA80;">
-📫 Email: marc@digital-oracle.io
-🔗 LinkedIn: linkedin.com/in/mostrub
-💻 GitHub: github.com/mostrub
-</span>
-
-<span style="color: #8AFF80;">mostrub@digital-oracle</span>:<span style="color: #80FFEA;">~</span>$ <span style="color: #FFFF80;">echo $HIDDEN_MESSAGE</span>
-<span style="color: #FF80BF;">The universe is not only stranger than we imagine, it is stranger than we can imagine.</span>
+KEY PROJECTS
+-----------
+- Industrial Edge Computing Solutions
+- Digital Twin Implementation for Manufacturing
+- Data Analytics Pipelines for Process Optimization
+- Automation Frameworks for Industrial Systems
 
 </div>
 
