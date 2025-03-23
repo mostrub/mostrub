@@ -61,7 +61,7 @@ I am passionate about open source and giving back to the community. It's a life 
 
 PROFESSIONAL SUMMARY
 -------------------
-Industrial Systems Engineer with 15+ years of experience in automation and control systems
+Industrial Systems Engineer with 20+ years of experience in automation and control systems
 Specializing in OT/IT integration, edge computing, and industrial data analytics
 
 TECHNICAL EXPERTISE
