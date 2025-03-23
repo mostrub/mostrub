@@ -37,46 +37,42 @@
   <img src="https://img.shields.io/badge/Framework-React-FFFF80?style=flat-square&logo=react" alt="Framework: React">
 
   <!-- Databases -->
-  <img src="https://img.shields.io/badge/DB-DuckDB-8AFF80?style=flat-square&logo=duckdb" alt="DB: DuckDB">
   <img src="https://img.shields.io/badge/DB-PostgreSQL-9580FF?style=flat-square&logo=postgresql" alt="DB: PostgreSQL">
   <img src="https://img.shields.io/badge/DB-MongoDB-FF80BF?style=flat-square&logo=mongodb" alt="DB: MongoDB">
   <img src="https://img.shields.io/badge/DB-Amazon_Redshift-FF9580?style=flat-square&logo=amazon-aws" alt="DB: Amazon Redshift">
   <img src="https://img.shields.io/badge/DB-Apache_Cassandra-80FFEA?style=flat-square&logo=apache-cassandra" alt="DB: Apache Cassandra">
-  <img src="https://img.shields.io/badge/DB-Apache_Derby-FFCA80?style=flat-square&logo=apache" alt="DB: Apache Derby">
-  <img src="https://img.shields.io/badge/DB-Apache_Hive-FFFF80?style=flat-square&logo=apache-hive" alt="DB: Apache Hive">
   <img src="https://img.shields.io/badge/DB-Azure_SQL-80FFEA?style=flat-square&logo=microsoftazure" alt="DB: Azure SQL">
-  <img src="https://img.shields.io/badge/DB-Azure_Synapse-9580FF?style=flat-square&logo=microsoftazure" alt="DB: Azure Synapse">
   <img src="https://img.shields.io/badge/DB-BigQuery-80FFEA?style=flat-square&logo=google-cloud" alt="DB: BigQuery">
   <img src="https://img.shields.io/badge/DB-ClickHouse-FF80BF?style=flat-square&logo=clickhouse" alt="DB: ClickHouse">
   <img src="https://img.shields.io/badge/DB-CockroachDB-8AFF80?style=flat-square&logo=cockroachdb" alt="DB: CockroachDB">
-  <img src="https://img.shields.io/badge/DB-Couchbase-FF9580?style=flat-square&logo=couchbase" alt="DB: Couchbase">
-  <img src="https://img.shields.io/badge/DB-DocumentDB-FFCA80?style=flat-square&logo=amazon-aws" alt="DB: DocumentDB">
   <img src="https://img.shields.io/badge/DB-DynamoDB-FFFF80?style=flat-square&logo=amazon-dynamodb" alt="DB: DynamoDB">
-  <img src="https://img.shields.io/badge/DB-Exasol-80FFEA?style=flat-square" alt="DB: Exasol">
-  <img src="https://img.shields.io/badge/DB-Greenplum-9580FF?style=flat-square" alt="DB: Greenplum">
   <img src="https://img.shields.io/badge/DB-IBM_Db2-FF9580?style=flat-square&logo=ibm" alt="DB: IBM Db2">
   <img src="https://img.shields.io/badge/DB-Microsoft_SQL_Server-FFFF80?style=flat-square&logo=microsoft-sql-server" alt="DB: Microsoft SQL Server">
-    
+  
   <!-- Tools -->
   <img src="https://img.shields.io/badge/Tool-Kubernetes-9580FF?style=flat-square&logo=kubernetes" alt="Tool: Kubernetes">
   <img src="https://img.shields.io/badge/Tool-Terraform-FF80BF?style=flat-square&logo=terraform" alt="Tool: Terraform">
   
   <!-- AI Development -->
+  <img src="https://img.shields.io/badge/AI-Large_Language_Models-FF9580?style=flat-square" alt="AI: Large Language Models">
   <img src="https://img.shields.io/badge/AI-MCP_Development-80FFEA?style=flat-square" alt="AI: MCP Development">
   <img src="https://img.shields.io/badge/AI-Local_AI_Server-FFFF80?style=flat-square" alt="AI: Local AI Server">
-  <img src="https://img.shields.io/badge/AI-LLM_Integration-9580FF?style=flat-square" alt="AI: LLM Integration">
-  <img src="https://img.shields.io/badge/AI-Prompt_Engineering-FF80BF?style=flat-square" alt="AI: Prompt Engineering">
+  <img src="https://img.shields.io/badge/AI-Vector_Databases-9580FF?style=flat-square" alt="AI: Vector Databases">
+  <img src="https://img.shields.io/badge/AI-RAG_Systems-FF80BF?style=flat-square" alt="AI: RAG Systems">
   
   <!-- Cloud -->
   <img src="https://img.shields.io/badge/Cloud-AWS-FFFF80?style=flat-square&logo=amazon-aws" alt="Cloud: AWS">
   <img src="https://img.shields.io/badge/Cloud-Azure-80FFEA?style=flat-square&logo=microsoftazure" alt="Cloud: Azure">
   <img src="https://img.shields.io/badge/Cloud-GCP-FF9580?style=flat-square&logo=google-cloud" alt="Cloud: GCP">
   
-  <!-- Industrial -->
+  <!-- Industrial & IoT -->
   <img src="https://img.shields.io/badge/Industrial-MQTT-FFCA80?style=flat-square&logo=mqtt" alt="Industrial: MQTT">
   <img src="https://img.shields.io/badge/Industrial-OPC_UA-8AFF80?style=flat-square" alt="Industrial: OPC UA">
-  <img src="https://img.shields.io/badge/Industrial-Azure_IoT-9580FF?style=flat-square&logo=microsoftazure" alt="Industrial: Azure IoT">
-  <img src="https://img.shields.io/badge/Industrial-IIoT-FF80BF?style=flat-square" alt="Industrial: IIoT">
+  <img src="https://img.shields.io/badge/Industrial-SCADA-9580FF?style=flat-square" alt="Industrial: SCADA">
+  <img src="https://img.shields.io/badge/Industrial-DCS-FF80BF?style=flat-square" alt="Industrial: DCS">
+  <img src="https://img.shields.io/badge/Industrial-PLC-FFFF80?style=flat-square" alt="Industrial: PLC">
+  <img src="https://img.shields.io/badge/Industrial-IIoT-80FFEA?style=flat-square" alt="Industrial: IIoT">
+  <img src="https://img.shields.io/badge/Industrial-Azure_IoT-FF9580?style=flat-square&logo=microsoftazure" alt="Industrial: Azure IoT">
 </div>
 
 <br>
