@@ -19,15 +19,10 @@
 <div align="center">
   <!-- Operating System -->
   <img src="https://img.shields.io/badge/OS-Linux-9580FF?style=flat-square&logo=linux" alt="OS: Linux">
-  <img src="https://img.shields.io/badge/OS-Ubuntu-9580FF?style=flat-square&logo=ubuntu" alt="OS: Ubuntu">
   
   <!-- Editors -->
   <img src="https://img.shields.io/badge/Editor-VS_Code-FF80BF?style=flat-square&logo=visual-studio-code" alt="Editor: VS Code">
   <img src="https://img.shields.io/badge/Editor-Vim-FF80BF?style=flat-square&logo=vim" alt="Editor: Vim">
-  
-  <!-- Shell -->
-  <img src="https://img.shields.io/badge/Shell-Bash-8AFF80?style=flat-square&logo=gnu-bash" alt="Shell: Bash">
-  <img src="https://img.shields.io/badge/Shell-ZSH-8AFF80?style=flat-square&logo=gnu-bash" alt="Shell: ZSH">
   
   <!-- Languages -->
   <img src="https://img.shields.io/badge/Code-Python-80FFEA?style=flat-square&logo=python" alt="Code: Python">
@@ -40,21 +35,37 @@
   
   <!-- Frameworks -->
   <img src="https://img.shields.io/badge/Framework-React-FFFF80?style=flat-square&logo=react" alt="Framework: React">
-  <img src="https://img.shields.io/badge/Framework-Vue-8AFF80?style=flat-square&logo=vue.js" alt="Framework: Vue">
-  <img src="https://img.shields.io/badge/Framework-Django-9580FF?style=flat-square&logo=django" alt="Framework: Django">
-  <img src="https://img.shields.io/badge/Framework-Flask-FF80BF?style=flat-square&logo=flask" alt="Framework: Flask">
-  <img src="https://img.shields.io/badge/Framework-Express-80FFEA?style=flat-square&logo=express" alt="Framework: Express">
-  
+
   <!-- Databases -->
-  <img src="https://img.shields.io/badge/DB-MySQL-FFFF80?style=flat-square&logo=mysql" alt="DB: MySQL">
   <img src="https://img.shields.io/badge/DB-DuckDB-8AFF80?style=flat-square&logo=duckdb" alt="DB: DuckDB">
   <img src="https://img.shields.io/badge/DB-PostgreSQL-9580FF?style=flat-square&logo=postgresql" alt="DB: PostgreSQL">
   <img src="https://img.shields.io/badge/DB-MongoDB-FF80BF?style=flat-square&logo=mongodb" alt="DB: MongoDB">
-  
+  <img src="https://img.shields.io/badge/DB-Amazon_Redshift-FF9580?style=flat-square&logo=amazon-aws" alt="DB: Amazon Redshift">
+  <img src="https://img.shields.io/badge/DB-Apache_Cassandra-80FFEA?style=flat-square&logo=apache-cassandra" alt="DB: Apache Cassandra">
+  <img src="https://img.shields.io/badge/DB-Apache_Derby-FFCA80?style=flat-square&logo=apache" alt="DB: Apache Derby">
+  <img src="https://img.shields.io/badge/DB-Apache_Hive-FFFF80?style=flat-square&logo=apache-hive" alt="DB: Apache Hive">
+  <img src="https://img.shields.io/badge/DB-Azure_SQL-80FFEA?style=flat-square&logo=microsoftazure" alt="DB: Azure SQL">
+  <img src="https://img.shields.io/badge/DB-Azure_Synapse-9580FF?style=flat-square&logo=microsoftazure" alt="DB: Azure Synapse">
+  <img src="https://img.shields.io/badge/DB-BigQuery-80FFEA?style=flat-square&logo=google-cloud" alt="DB: BigQuery">
+  <img src="https://img.shields.io/badge/DB-ClickHouse-FF80BF?style=flat-square&logo=clickhouse" alt="DB: ClickHouse">
+  <img src="https://img.shields.io/badge/DB-CockroachDB-8AFF80?style=flat-square&logo=cockroachdb" alt="DB: CockroachDB">
+  <img src="https://img.shields.io/badge/DB-Couchbase-FF9580?style=flat-square&logo=couchbase" alt="DB: Couchbase">
+  <img src="https://img.shields.io/badge/DB-DocumentDB-FFCA80?style=flat-square&logo=amazon-aws" alt="DB: DocumentDB">
+  <img src="https://img.shields.io/badge/DB-DynamoDB-FFFF80?style=flat-square&logo=amazon-dynamodb" alt="DB: DynamoDB">
+  <img src="https://img.shields.io/badge/DB-Exasol-80FFEA?style=flat-square" alt="DB: Exasol">
+  <img src="https://img.shields.io/badge/DB-Greenplum-9580FF?style=flat-square" alt="DB: Greenplum">
+  <img src="https://img.shields.io/badge/DB-IBM_Db2-FF9580?style=flat-square&logo=ibm" alt="DB: IBM Db2">
+  <img src="https://img.shields.io/badge/DB-Microsoft_SQL_Server-FFFF80?style=flat-square&logo=microsoft-sql-server" alt="DB: Microsoft SQL Server">
+    
   <!-- Tools -->
-  <img src="https://img.shields.io/badge/Tool-Docker-80FFEA?style=flat-square&logo=docker" alt="Tool: Docker">
   <img src="https://img.shields.io/badge/Tool-Kubernetes-9580FF?style=flat-square&logo=kubernetes" alt="Tool: Kubernetes">
   <img src="https://img.shields.io/badge/Tool-Terraform-FF80BF?style=flat-square&logo=terraform" alt="Tool: Terraform">
+  
+  <!-- AI Development -->
+  <img src="https://img.shields.io/badge/AI-MCP_Development-80FFEA?style=flat-square" alt="AI: MCP Development">
+  <img src="https://img.shields.io/badge/AI-Local_AI_Server-FFFF80?style=flat-square" alt="AI: Local AI Server">
+  <img src="https://img.shields.io/badge/AI-LLM_Integration-9580FF?style=flat-square" alt="AI: LLM Integration">
+  <img src="https://img.shields.io/badge/AI-Prompt_Engineering-FF80BF?style=flat-square" alt="AI: Prompt Engineering">
   
   <!-- Cloud -->
   <img src="https://img.shields.io/badge/Cloud-AWS-FFFF80?style=flat-square&logo=amazon-aws" alt="Cloud: AWS">
