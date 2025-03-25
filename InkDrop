@@ -1,0 +1,61 @@
+{
+  "*": {
+    "core": {
+      "db": {
+        "machineId": "u52LfPt8Sm2JobLXZPjSc"
+      },
+      "devMode": true,
+      "lastNavigationState": {
+        "editingNoteId": "note:c322LPFG",
+        "queryContext": {
+          "mode": "all",
+          "sort": [
+            {
+              "createdAt": "desc"
+            }
+          ]
+        },
+        "sidebar": {
+          "workspace": {
+            "visible": false
+          }
+        }
+      },
+      "mainWindow": {
+        "fullscreen": false,
+        "maximized": false,
+        "noteListBar": {
+          "w": 499
+        },
+        "position": {
+          "x": 1724,
+          "y": 34
+        },
+        "size": {
+          "h": 1338,
+          "w": 1708
+        }
+      },
+      "server": {
+        "auth": {
+          "password": "P6qx9n@#3dXT!QKE",
+          "username": "mostrub@gmail.com"
+        },
+        "bindAddress": "127.0.0.1",
+        "enabled": true,
+        "port": 19840
+      },
+      "themes": [
+        "colorfi-preview",
+        "tokyo-night-dark-ui",
+        "dracula-syntax"
+      ],
+      "toggleDarkThemeAutomatically": false
+    },
+    "editor": {
+      "lineNumbers": true,
+      "styleActiveLine": true,
+      "viewMode": "edit"
+    }
+  }
+}
