@@ -19,7 +19,7 @@
   <!-- Industrial Tech -->
   <h3>Industrial Tech</h3>
   <img src="https://img.shields.io/badge/MQTT-FFCA80?style=flat-square&logo=mqtt" alt="MQTT">
-  <img src="https://img.shields.io/badge/QMQX_MQTT-FF9580?style=flat-square&logo=mqtt" alt="QMQX MQTT">
+  <img src="https://img.shields.io/badge/EMQX_MQTT-FF9580?style=flat-square&logo=mqtt" alt="QMQX MQTT">
   <img src="https://img.shields.io/badge/OPC_UA-8AFF80?style=flat-square" alt="OPC UA">
   <img src="https://img.shields.io/badge/SCADA-9580FF?style=flat-square" alt="SCADA">
   <img src="https://img.shields.io/badge/DCS-FF80BF?style=flat-square" alt="DCS">
