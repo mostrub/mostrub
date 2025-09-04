@@ -16,7 +16,8 @@
 <img src="https://img.shields.io/badge/Rust-CE422B?style=flat-square&logo=rust&logoColor=white" alt="Rust"/>
 <img src="https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go"/>
 <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React"/>
-<br/>
+
+</div>
 
 <!-- Industrial Tech -->
 ### Industrial Tech
@@ -28,7 +29,8 @@
 <img src="https://img.shields.io/badge/PLC-80FFEA?style=flat-square" alt="PLC"/>
 <img src="https://img.shields.io/badge/IIoT-FFFF80?style=flat-square" alt="IIoT"/>
 <img src="https://img.shields.io/badge/Azure_IoT-0078D4?style=flat-square&logo=microsoft-azure" alt="Azure IoT"/>
-<br/>
+
+</div>
 
 <!-- AI & Cloud -->
 ### AI & Cloud
@@ -39,7 +41,8 @@
 <img src="https://img.shields.io/badge/AWS-FF9900?style=flat-square&logo=amazon-aws&logoColor=white" alt="AWS"/>
 <img src="https://img.shields.io/badge/Azure-0078D4?style=flat-square&logo=microsoft-azure&logoColor=white" alt="Azure"/>
 <img src="https://img.shields.io/badge/GCP-4285F4?style=flat-square&logo=google-cloud&logoColor=white" alt="GCP"/>
-<br/>
+
+</div>
 
 <!-- Data Analytics -->
 ### Data Analytics
@@ -50,6 +53,7 @@
 <img src="https://img.shields.io/badge/Pandas-150458?style=flat-square&logo=pandas&logoColor=white" alt="Pandas"/>
 <img src="https://img.shields.io/badge/NumPy-013243?style=flat-square&logo=numpy&logoColor=white" alt="NumPy"/>
 <img src="https://img.shields.io/badge/Jupyter-F37626?style=flat-square&logo=jupyter&logoColor=white" alt="Jupyter"/>
+<img src="https://img.shields.io/badge/marimo-FFCA80?style=flat-square" alt="marimo"/>
 
 </div>
 
@@ -77,10 +81,10 @@ AI: Large Language Models, Vector Databases, RAG Systems, MCP Development
 
 ## KEY PROJECTS
 -----------
-- Industrial Edge Computing Solutions
-- Digital Twin Implementation for Manufacturing
-- Data Analytics Pipelines for Process Optimization
-- Automation Frameworks for Industrial Systems
+• Industrial Edge Computing Solutions
+• Digital Twin Implementation for Manufacturing
+• Data Analytics Pipelines for Process Optimization
+• Automation Frameworks for Industrial Systems
 
 </div>
 
