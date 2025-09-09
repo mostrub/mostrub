@@ -1,0 +1,36 @@
+# Sensitive configuration files
+InkDrop
+*.config
+*.conf
+config.json
+
+# Personal notes and private files
+notes/
+private/
+.personal/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
