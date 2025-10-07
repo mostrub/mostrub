@@ -10,11 +10,11 @@
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 <div align="center">
 
-### 💻 Development
+### Development
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) 
 ![Python](https://img.shields.io/badge/Python-80FF80?style=for-the-badge&logo=python&logoColor=black) 
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black) 
@@ -23,7 +23,7 @@
 ![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white) 
 ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 
-### 🏭 Industrial Tech
+### Industrial Tech
 ![MQTT](https://img.shields.io/badge/MQTT-FFCA80?style=for-the-badge&logo=mqtt) 
 ![EMQX MQTT](https://img.shields.io/badge/EMQX_MQTT-FF9580?style=for-the-badge&logo=mqtt) 
 ![OPC UA](https://img.shields.io/badge/OPC_UA-8AFF80?style=for-the-badge) 
@@ -33,7 +33,7 @@
 ![IIoT](https://img.shields.io/badge/IIoT-FFFF80?style=for-the-badge) 
 ![Azure IoT](https://img.shields.io/badge/Azure_IoT-0078D4?style=for-the-badge&logo=microsoft-azure)
 
-### 🤖 AI & Cloud
+### AI & Cloud
 ![LLMs](https://img.shields.io/badge/LLMs-FF9580?style=for-the-badge) 
 ![Vector DBs](https://img.shields.io/badge/Vector_DBs-9580FF?style=for-the-badge) 
 ![RAG Systems](https://img.shields.io/badge/RAG_Systems-FF80BF?style=for-the-badge) 
@@ -42,7 +42,7 @@
 ![Azure](https://img.shields.io/badge/Azure-0078D4?style=for-the-badge&logo=microsoft-azure&logoColor=white) 
 ![GCP](https://img.shields.io/badge/GCP-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 
-### 📊 Data Analytics
+### Data Analytics
 ![DuckDB](https://img.shields.io/badge/DuckDB-FFFF80?style=for-the-badge) 
 ![DuckDB Swarm](https://img.shields.io/badge/DuckDB_Swarm-FFCA80?style=for-the-badge) 
 ![R](https://img.shields.io/badge/R-276DC3?style=for-the-badge&logo=r&logoColor=white) 
