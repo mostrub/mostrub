@@ -18,21 +18,13 @@
 
 Bridging operational technology (OT) and information technology (IT) through intelligent automation and data-driven solutions. I specialize in designing industrial systems that transform manufacturing operations with edge computing, real-time analytics, and AI-powered insights.
 
-**What I Do:**
-- Design and deploy industrial automation systems across manufacturing and process industries
-- - Develop OT/IT integration architectures using MQTT, OPC UA, and edge computing
-  - - Build AI-powered predictive maintenance and real-time data analytics solutions
-    - - Champion open-source principles and collaborative development
-     
-      - **Key Impact:**
-      - - 50+ industrial automation systems deployed
-        - - 25-40% operational efficiency improvements
-          - - 10M+ sensor readings processed daily
-            - - 30% downtime reduction with AI predictive maintenance
-             
-              - **Core Expertise:** Industrial Protocols (MQTT, OPC UA, Modbus) • Control Systems (SCADA, DCS, PLC) • Cloud Platforms (AWS IoT, Azure IoT) • Data Engineering (DuckDB, Apache Spark, InfluxDB) • Edge Computing (Docker, Kubernetes)
-             
-              - **Current Focus:** LLMs for industrial documentation • Model Context Protocol (MCP) development • Rust for real-time systems • Open-source industrial IoT
+My work focuses on designing and deploying industrial automation systems across manufacturing and process industries, developing OT/IT integration architectures using protocols like MQTT and OPC UA, and building AI-powered predictive maintenance solutions that deliver measurable operational improvements. I'm a strong advocate for open-source principles and collaborative development, believing that shared knowledge accelerates innovation in the industrial IoT space.
+
+Throughout my career, I've deployed over 50 industrial automation systems, achieved 25-40% operational efficiency improvements through digital transformation initiatives, and built real-time data pipelines processing 10M+ sensor readings daily. My predictive maintenance systems have consistently reduced downtime by 30% through advanced anomaly detection and analytics.
+
+My core expertise spans industrial protocols (MQTT, OPC UA, Modbus, DNP3), control systems (SCADA, DCS, PLC from manufacturers like Siemens, Allen-Bradley, and Schneider), cloud platforms (AWS IoT, Azure IoT, Google Cloud IoT), data engineering (DuckDB, Apache Spark, InfluxDB, TimescaleDB), and edge computing technologies (Docker, Kubernetes). I'm currently exploring large language models for industrial documentation, developing with the Model Context Protocol (MCP), advancing my skills in Rust for real-time systems, and contributing to open-source industrial IoT projects.
+
+**I'm open to consulting opportunities, technical collaboration, and mentoring in the industrial IoT space.**- **Current Focus:** LLMs for industrial documentation • Model Context Protocol (MCP) development • Rust for real-time systems • Open-source industrial IoT
              
               - **Open to:** Consulting, technical collaboration, and mentoring in industrial IoT
              
