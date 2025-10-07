@@ -15,6 +15,7 @@
 ---
 
 ### About Me
+
 Bridging operational technology (OT) and information technology (IT) through intelligent automation and data-driven solutions. I specialize in designing industrial systems that transform manufacturing operations with edge computing, real-time analytics, and AI-powered insights.
 
 **What I Do:**
