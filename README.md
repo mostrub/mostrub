@@ -46,28 +46,9 @@
 
 ### About Me
 
-Bridging operational technology (OT) and information technology (IT) through intelligent automation and data-driven solutions.  
-I specialize in designing industrial systems that transform manufacturing and process industries.
-
-**Focus Areas:**
-- Edge-optimized ML models with Python, PyTorch, and scikit-learn
-- Secure IoT systems (TLS, device-edge-cloud architecture)
-- Industrial protocols: MQTT (EMQX), OPC UA, Modbus, DNP3
-- Data analytics pipelines with DuckDB (including WASM for edge/embedded analytics)
-- Responsive and scalable UIs (TypeScript, React Native, TailwindCSS)
-- Cloud and device integration: Azure IoT, AWS IoT
-
-**Practices:**
-- Type hints, documentation, and functional code in Python
-- Strict TypeScript with interfaces, reusable components
-- Responsive Flexbox UI design
-- Scalable analytics pipelines for industrial IoT
-- Industrial systems integration (SCADA, DCS, PLCs from Siemens, Allen-Bradley, Schneider)
-
-**Repo Structure:**
-- `src/{core,utils,config,iot/connectors}` – Core modules and connectors
-- `backend/{engine,api}` – Backend analytics and APIs
-- `frontend/components` – UI components
+◈ Evenhandedness
+◈ Open Source Principles
+◈ Self-determination
 
 ---
 
