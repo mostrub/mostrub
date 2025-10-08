@@ -53,7 +53,3 @@ My work focuses on designing and deploying industrial automation systems across 
 Throughout my career, I've led the deployment of numerous industrial automation systems, driving significant operational efficiency gains through digital transformation initiatives. I've designed edge-to-cloud analytics pipelines, secure IoT device networks, and scalable, resilient data architectures.
 
 My core expertise spans industrial protocols (MQTT, OPC UA, Modbus, DNP3), control systems (SCADA, DCS, PLC from manufacturers like Siemens, Allen-Bradley, and Schneider), cloud platforms (AWS IoT, Azure IoT), and edge computing frameworks.
-
----
-
-Let me know if you’d like to see more details or further customization!
