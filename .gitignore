@@ -34,3 +34,8 @@ logs/
 *.temp
 temp/
 tmp/
+
+# Node / Vite
+node_modules/
+dist/
+.netlify/
