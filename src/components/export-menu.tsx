@@ -14,6 +14,8 @@ import {
   downloadAuditWorkbook,
   downloadBackup,
   downloadCsvPack,
+  downloadPlantRegisterCsv,
+  downloadPlantReportHtml,
   downloadRegisterCsv,
 } from "@/export/download"
 import { parseInventoryJson } from "@/store/storage"
@@ -87,6 +89,26 @@ export function ExportMenu() {
               }}
             >
               CSV-Paket (Zip)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(
+                  () => downloadPlantReportHtml(state),
+                  "HTML-Bericht heruntergeladen",
+                )
+              }}
+            >
+              HTML-Bericht mit Diagrammen (PDF über Drucken)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(
+                  () => downloadPlantRegisterCsv(state),
+                  "Register-CSV heruntergeladen",
+                )
+              }}
+            >
+              Einfaches CSV (ein Blatt)
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />

@@ -3,6 +3,8 @@ import { ORG_NAME } from "@/domain/seed"
 import type { InventoryState } from "@/domain/types"
 import { localDateStamp } from "@/lib/dates"
 import { csvBlob, rowsToCsv } from "./csv"
+import { buildPlantReport } from "./report"
+import { renderPlantReportHtml } from "./report-html"
 import { AUDIT_SHEET_NAMES, buildAuditWorkbookPlan, type WorkbookSheet } from "./workbook"
 
 function planFor(state: InventoryState) {
@@ -63,6 +65,27 @@ export async function downloadCsvPack(state: InventoryState): Promise<void> {
   }
   const blob = await zip.generateAsync({ type: "blob" })
   downloadBlob(`inventory-csv-pack-${localDateStamp()}.zip`, blob)
+}
+
+function reportFor(state: InventoryState) {
+  return buildPlantReport(state, {
+    orgName: ORG_NAME,
+    exportedAt: new Date().toISOString(),
+    today: localDateStamp(),
+  })
+}
+
+export function downloadPlantReportHtml(state: InventoryState): void {
+  const html = renderPlantReportHtml(reportFor(state))
+  downloadBlob(
+    `plant-it-bericht-${localDateStamp()}.html`,
+    new Blob([html], { type: "text/html;charset=utf-8" }),
+  )
+}
+
+export function downloadPlantRegisterCsv(state: InventoryState): void {
+  const csv = rowsToCsv(reportFor(state).registerSheet)
+  downloadBlob(`plant-it-register-${localDateStamp()}.csv`, csvBlob(csv))
 }
 
 export function downloadBackup(state: InventoryState): void {
