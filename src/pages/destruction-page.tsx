@@ -77,7 +77,7 @@ export function DestructionPage() {
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Vernichtung"
-        description="Nachweis für gelöschte, geschredderte, entmagnetisierte oder zurückgegebene Geräte. Existiert das Kennzeichen noch am Laptop oder Drucker, wird der Datensatz als vernichtet markiert."
+        description="Vernichten heißt: das Gerät verlässt das Werk. Sicheres Löschen, Schreddern, Entmagnetisieren oder Rückgabe — mit Zeuge. Das ist nicht Löschen aus dem Register."
         actions={
           <>
             <Button

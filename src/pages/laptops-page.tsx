@@ -197,6 +197,7 @@ export function LaptopsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    title="Gerät entsorgen: sicheres Löschen, Schreddern oder Rückgabe. Nicht dasselbe wie Löschen."
                     render={
                       <Link
                         to={destructionHref({
