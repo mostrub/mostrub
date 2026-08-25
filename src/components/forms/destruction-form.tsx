@@ -1,4 +1,4 @@
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { EnumSelect } from "@/components/enum-select"
@@ -47,14 +47,21 @@ export function DestructionForm({
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
+          <FieldDescription>
+            Muss zum selben Gerät gehören wie das Kennzeichen, sonst wird nicht gespeichert.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="dst-tag">Anlagenkennzeichen</FieldLabel>
           <Input
             id="dst-tag"
+            placeholder="z. B. LT-1001"
             value={value.assetTag}
             onChange={(event) => set("assetTag", event.target.value)}
           />
+          <FieldDescription>
+            Kennzeichen und Inventarnummer müssen dasselbe Gerät treffen.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="dst-serial">Serie</FieldLabel>

@@ -52,10 +52,14 @@ export function ExportMenu() {
             toast.error(parsed.reason)
             return
           }
-          if (!window.confirm("Replace the current inventory with this backup?")) {
+          if (!window.confirm("Aktuelles Inventar durch dieses Backup ersetzen?")) {
             return
           }
-          replaceState(parsed.state)
+          const error = replaceState(parsed.state)
+          if (error) {
+            toast.error(error)
+            return
+          }
           toast.success("Backup übernommen")
         }}
       />
@@ -174,25 +178,33 @@ export function ExportMenu() {
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                if (!window.confirm("Aktuelles Inventar leeren und neu beginnen?")) {
+                if (
+                  !window.confirm(
+                    "Alles im Browser löschen und mit einem leeren Register beginnen?",
+                  )
+                ) {
                   return
                 }
                 resetToEmpty()
                 toast.success("Inventar geleert")
               }}
             >
-              Leer zurücksetzen
+              Inventar leeren (Datenverlust)
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                if (!window.confirm("Aktuelles Inventar durch die Werksdemo ersetzen?")) {
+                if (
+                  !window.confirm(
+                    "Aktuelles Inventar vollständig durch die Werksdemo ersetzen?",
+                  )
+                ) {
                   return
                 }
                 loadDemo()
                 toast.success("Werksdemo geladen")
               }}
             >
-              Werksdemo neu laden
+              Werksdemo laden (überschreibt alles)
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

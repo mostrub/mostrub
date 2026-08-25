@@ -31,9 +31,10 @@ function hardwareFindings(
         severity: "high",
         register,
         recordId: item.id,
+        inventoryNumber: item.inventoryNumber,
         assetTag: item.assetTag,
         department: item.department,
-        summary: `${FINDING_LABELS["missing-serial"]}: ${item.assetTag}`,
+        summary: `${FINDING_LABELS["missing-serial"]}: ${item.inventoryNumber || item.assetTag}`,
       })
     }
 
@@ -47,9 +48,10 @@ function hardwareFindings(
         severity: "medium",
         register,
         recordId: item.id,
+        inventoryNumber: item.inventoryNumber,
         assetTag: item.assetTag,
         department: item.department,
-        summary: `${FINDING_LABELS["unassigned-in-service"]}: ${item.assetTag}`,
+        summary: `${FINDING_LABELS["unassigned-in-service"]}: ${item.inventoryNumber || item.assetTag}`,
       })
     }
 
@@ -61,9 +63,10 @@ function hardwareFindings(
           severity: "medium",
           register,
           recordId: item.id,
+          inventoryNumber: item.inventoryNumber,
           assetTag: item.assetTag,
           department: item.department,
-          summary: `${FINDING_LABELS["expired-warranty"]}: ${item.assetTag} endete ${item.warrantyEnd}`,
+          summary: `${FINDING_LABELS["expired-warranty"]}: ${item.inventoryNumber || item.assetTag} endete ${item.warrantyEnd}`,
         })
       }
     }
@@ -88,9 +91,10 @@ export function collectAuditFindings(
         severity: "high",
         register: "software",
         recordId: license.id,
+        inventoryNumber: license.inventoryNumber,
         assetTag: license.entitlementId || license.name,
         department: license.department,
-        summary: `${license.name}: ${license.seatsAssigned} zugewiesen von ${license.seatsPurchased} gekauft`,
+        summary: `${license.inventoryNumber || license.name}: ${license.seatsAssigned} zugewiesen von ${license.seatsPurchased} gekauft`,
       })
     }
 
@@ -101,9 +105,10 @@ export function collectAuditFindings(
         severity: "high",
         register: "software",
         recordId: license.id,
+        inventoryNumber: license.inventoryNumber,
         assetTag: license.entitlementId || license.name,
         department: license.department,
-        summary: `${license.name} abgelaufen am ${license.renewalDate}`,
+        summary: `${license.inventoryNumber || license.name} abgelaufen am ${license.renewalDate}`,
       })
     } else if (remaining !== null && remaining <= 30) {
       findings.push({
@@ -111,9 +116,10 @@ export function collectAuditFindings(
         severity: "medium",
         register: "software",
         recordId: license.id,
+        inventoryNumber: license.inventoryNumber,
         assetTag: license.entitlementId || license.name,
         department: license.department,
-        summary: `${license.name} verlängert in ${remaining} Tagen (${license.renewalDate})`,
+        summary: `${license.inventoryNumber || license.name} verlängert in ${remaining} Tagen (${license.renewalDate})`,
       })
     }
   }
@@ -125,9 +131,10 @@ export function collectAuditFindings(
         severity: "high",
         register: "destruction",
         recordId: record.id,
+        inventoryNumber: record.inventoryNumber,
         assetTag: record.assetTag,
         department: record.department,
-        summary: `${FINDING_LABELS["destroy-without-witness"]}: ${record.assetTag}`,
+        summary: `${FINDING_LABELS["destroy-without-witness"]}: ${record.inventoryNumber || record.assetTag}`,
       })
     }
   }

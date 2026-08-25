@@ -30,6 +30,7 @@ import {
   type OperatingSystem,
 } from "@/domain/types"
 import { downloadRegisterCsv } from "@/export/download"
+import { destructionHref, historyHref, recordLabel } from "@/lib/hardware-links"
 import { matchesQuery } from "@/lib/search"
 import { useInventory } from "@/store/inventory-context"
 
@@ -172,6 +173,7 @@ export function LaptopsPage() {
         columns={[
           { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber },
           { header: "Kennzeichen", cell: (row) => row.assetTag },
+          { header: "Serie", cell: (row) => row.serialNumber || "—" },
           { header: "Hostname", cell: (row) => row.hostname },
           { header: "Typ", cell: (row) => LAPTOP_TYPE_LABELS[row.laptopType] },
           { header: "OS", cell: (row) => OS_LABELS[row.operatingSystem] },
@@ -186,16 +188,36 @@ export function LaptopsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
+                  render={<Link to={historyHref(row.inventoryNumber)} />}
                   nativeButton={false}
                 >
                   Historie
                 </Button>
+                {row.status === "destroyed" ? null : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    render={
+                      <Link
+                        to={destructionHref({
+                          kind: "laptop",
+                          inventoryNumber: row.inventoryNumber,
+                          assetTag: row.assetTag,
+                          serialNumber: row.serialNumber,
+                          department: row.department,
+                        })}
+                      />
+                    }
+                    nativeButton={false}
+                  >
+                    Vernichten
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
                   Bearbeiten
                 </Button>
                 <ConfirmDelete
-                  label={row.assetTag}
+                  label={recordLabel(row.inventoryNumber, row.assetTag)}
                   onConfirm={() => {
                     const error = deleteLaptop(row.id)
                     if (error) {

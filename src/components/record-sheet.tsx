@@ -42,7 +42,7 @@ export function RecordSheet({
           }}
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{children}</div>
-          <DialogFooter className="rounded-none">
+          <DialogFooter className="mx-0 mb-0 rounded-none">
             <Button type="submit">{submitLabel}</Button>
           </DialogFooter>
         </form>

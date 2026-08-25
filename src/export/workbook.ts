@@ -9,6 +9,7 @@ import {
   PRINTER_TYPE_LABELS,
   STATUS_LABELS,
 } from "@/domain/labels"
+import { historyActionLabel } from "@/domain/history"
 import type { AuditFinding, InventoryState } from "@/domain/types"
 
 export const AUDIT_SHEET_NAMES = [
@@ -283,11 +284,20 @@ export function buildAuditWorkbookPlan(input: {
     },
     {
       name: "Audit findings",
-      headers: ["Schwere", "Befund", "Register", "Gerät / Lizenz", "Abteilung", "Kurztext"],
+      headers: [
+        "Schwere",
+        "Befund",
+        "Register",
+        "Inv.-Nr.",
+        "Gerät / Lizenz",
+        "Abteilung",
+        "Kurztext",
+      ],
       rows: findings.map((item) => [
         item.severity,
         FINDING_LABELS[item.code],
         item.register,
+        item.inventoryNumber,
         item.assetTag,
         item.department ? DEPARTMENT_LABELS[item.department] : "",
         item.summary,
@@ -309,7 +319,7 @@ export function buildAuditWorkbookPlan(input: {
         .sort((left, right) => right.at.localeCompare(left.at))
         .map((item) => [
           item.at,
-          item.action,
+          historyActionLabel(item.action),
           item.inventoryNumber,
           item.assetTag,
           item.serialNumber,

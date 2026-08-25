@@ -22,7 +22,9 @@ export function ConfirmDelete({
 }) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
+      <AlertDialogTrigger
+        render={<Button variant="ghost" size="sm" className="text-muted-foreground" />}
+      >
         Löschen
       </AlertDialogTrigger>
       <AlertDialogContent>

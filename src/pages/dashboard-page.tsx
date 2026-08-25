@@ -73,6 +73,7 @@ export function DashboardPage() {
             <thead className="bg-muted/70 text-left">
               <tr className="border-b">
                 <th className="px-3 py-1.5 font-medium">Befund</th>
+                <th className="px-3 py-1.5 font-medium">Inv.-Nr.</th>
                 <th className="px-3 py-1.5 font-medium">Gerät</th>
                 <th className="px-3 py-1.5 font-medium">Kurztext</th>
               </tr>
@@ -85,13 +86,16 @@ export function DashboardPage() {
                       {FINDING_LABELS[finding.code]}
                     </Badge>
                   </td>
+                  <td className="px-3 py-1.5 whitespace-nowrap">
+                    {finding.inventoryNumber || "—"}
+                  </td>
                   <td className="px-3 py-1.5 whitespace-nowrap">{finding.assetTag}</td>
                   <td className="px-3 py-1.5 text-muted-foreground">{finding.summary}</td>
                 </tr>
               ))}
               {findings.length === 0 ? (
                 <tr>
-                  <td className="px-3 py-3 text-muted-foreground" colSpan={3}>
+                  <td className="px-3 py-3 text-muted-foreground" colSpan={4}>
                     Keine Befunde im aktuellen Register.
                   </td>
                 </tr>

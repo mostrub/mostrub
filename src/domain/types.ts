@@ -39,6 +39,14 @@ export const ASSET_STATUSES = [
   "destroyed",
 ] as const
 
+export const EDITABLE_ASSET_STATUSES = [
+  "in-service",
+  "spare",
+  "repair",
+  "lost",
+  "retired",
+] as const
+
 export const PRINTER_TYPES = [
   "laser",
   "inkjet",
@@ -196,6 +204,7 @@ export type AuditFinding = {
   severity: "high" | "medium"
   register: "laptop" | "printer" | "software" | "destruction"
   recordId: string
+  inventoryNumber: string
   assetTag: string
   department: Department | ""
   summary: string

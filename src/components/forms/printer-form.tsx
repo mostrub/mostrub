@@ -1,19 +1,14 @@
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { EnumSelect } from "@/components/enum-select"
+import { HardwareStatusField } from "@/components/hardware-status-field"
 import {
   DEPARTMENT_LABELS,
   PRINTER_TYPE_LABELS,
-  STATUS_LABELS,
   optionList,
 } from "@/domain/labels"
-import {
-  ASSET_STATUSES,
-  DEPARTMENTS,
-  PRINTER_TYPES,
-  type Printer,
-} from "@/domain/types"
+import { DEPARTMENTS, PRINTER_TYPES, type Printer } from "@/domain/types"
 
 export function PrinterForm({
   value,
@@ -37,19 +32,25 @@ export function PrinterForm({
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
+          <FieldDescription>
+            Werkweit eindeutig. Leer lassen vergibt die nächste INV-Nummer.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="printer-tag">Anlagenkennzeichen</FieldLabel>
           <Input
             id="printer-tag"
+            placeholder="z. B. PR-2001"
             value={value.assetTag}
             onChange={(event) => set("assetTag", event.target.value)}
           />
+          <FieldDescription>Aufkleber am Gerät, nicht die Inventarnummer.</FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="printer-serial">Serie</FieldLabel>
           <Input
             id="printer-serial"
+            placeholder="Hersteller-Seriennummer"
             value={value.serialNumber}
             onChange={(event) => set("serialNumber", event.target.value)}
           />
@@ -84,12 +85,10 @@ export function PrinterForm({
           onChange={(next) => set("department", next)}
           items={optionList(DEPARTMENTS, DEPARTMENT_LABELS)}
         />
-        <EnumSelect
+        <HardwareStatusField
           id="printer-status"
-          label="Status"
           value={value.status}
           onChange={(next) => set("status", next)}
-          items={optionList(ASSET_STATUSES, STATUS_LABELS)}
         />
         <Field>
           <FieldLabel htmlFor="printer-location">Standort</FieldLabel>

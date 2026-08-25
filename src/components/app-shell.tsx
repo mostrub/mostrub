@@ -1,9 +1,12 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom"
+import { useState } from "react"
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { ExportMenu } from "@/components/export-menu"
 import { useTheme } from "@/components/theme-provider"
 import { ORG_NAME } from "@/domain/seed"
+import { historyHref } from "@/lib/hardware-links"
 import { cn } from "@/lib/utils"
 import { MoonIcon, SunIcon } from "lucide-react"
 
@@ -26,6 +29,8 @@ function registerTitle(pathname: string): string {
 
 export function AppShell() {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [lookup, setLookup] = useState("")
   const { theme, setTheme } = useTheme()
   const resolvedDark =
     theme === "dark" ||
@@ -70,7 +75,28 @@ export function AppShell() {
             <span className="px-1.5 text-muted-foreground">/</span>
             <span className="font-medium">{registerTitle(location.pathname)}</span>
           </p>
-          <div className="ml-auto flex items-center gap-1.5">
+          <form
+            className="ml-auto flex items-center gap-1.5"
+            onSubmit={(event) => {
+              event.preventDefault()
+              const needle = lookup.trim()
+              if (needle) {
+                navigate(historyHref(needle))
+              }
+            }}
+          >
+            <Input
+              className="h-8 w-56"
+              placeholder="Inv.-Nr., Kennzeichen, Serie"
+              value={lookup}
+              onChange={(event) => setLookup(event.target.value)}
+              aria-label="Gerät in der Historie suchen"
+            />
+            <Button type="submit" variant="outline" size="sm">
+              Suchen
+            </Button>
+          </form>
+          <div className="flex items-center gap-1.5">
             <ExportMenu />
             <Button
               variant="ghost"

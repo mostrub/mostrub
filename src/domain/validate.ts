@@ -3,11 +3,13 @@ import {
   ASSET_STATUSES,
   DEPARTMENTS,
   DESTRUCTION_METHODS,
+  HISTORY_ACTIONS,
   LAPTOP_TYPES,
   LICENSE_TYPES,
   OPERATING_SYSTEMS,
   PRINTER_TYPES,
   type DestructionRecord,
+  type HistoryEvent,
   type InventoryState,
   type Laptop,
   type Printer,
@@ -134,6 +136,35 @@ export function isDestructionRecord(value: unknown): value is DestructionRecord 
   )
 }
 
+function isHistoryChange(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false
+  }
+  return isString(value.field) && isString(value.from) && isString(value.to)
+}
+
+export function isHistoryEvent(value: unknown): value is HistoryEvent {
+  if (!isRecord(value)) {
+    return false
+  }
+  return (
+    isString(value.id) &&
+    value.id.length > 0 &&
+    hasStrings(value, [
+      "at",
+      "recordId",
+      "inventoryNumber",
+      "assetTag",
+      "serialNumber",
+      "summary",
+    ]) &&
+    isOneOf(value.action, HISTORY_ACTIONS) &&
+    isOneOf(value.register, ["laptop", "printer", "software", "destruction"]) &&
+    Array.isArray(value.changes) &&
+    value.changes.every(isHistoryChange)
+  )
+}
+
 export function isInventoryState(value: unknown): value is InventoryState {
   if (!isRecord(value)) {
     return false
@@ -147,6 +178,7 @@ export function isInventoryState(value: unknown): value is InventoryState {
     value.software.every(isSoftwareLicense) &&
     Array.isArray(value.destructions) &&
     value.destructions.every(isDestructionRecord) &&
-    (value.history === undefined || Array.isArray(value.history))
+    (value.history === undefined ||
+      (Array.isArray(value.history) && value.history.every(isHistoryEvent)))
   )
 }

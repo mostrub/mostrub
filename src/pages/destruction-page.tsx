@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react"
-import { Link } from "react-router-dom"
+import { useEffect, useMemo, useState } from "react"
+import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -16,15 +16,42 @@ import {
   DEPARTMENT_LABELS,
   DESTRUCTION_METHOD_LABELS,
 } from "@/domain/labels"
-import type { DestructionRecord } from "@/domain/types"
+import { DEPARTMENTS, type DestructionRecord } from "@/domain/types"
 import { downloadRegisterCsv } from "@/export/download"
+import { historyHref, recordLabel } from "@/lib/hardware-links"
 import { matchesQuery } from "@/lib/search"
 import { useInventory } from "@/store/inventory-context"
 
 export function DestructionPage() {
   const { state, saveDestruction, deleteDestruction } = useInventory()
+  const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState("")
   const [draft, setDraft] = useState<DestructionRecord | null>(null)
+
+  useEffect(() => {
+    const tag = params.get("tag")
+    const inv = params.get("inv")
+    if (!tag && !inv) {
+      return
+    }
+    const kind = params.get("kind") === "printer" ? "printer" : "laptop"
+    const department = DEPARTMENTS.find((item) => item === params.get("dept")) ?? "it"
+    setDraft({
+      ...blankDestruction(newId()),
+      assetKind: kind,
+      inventoryNumber: inv ?? "",
+      assetTag: tag ?? "",
+      serialNumber: params.get("serial") ?? "",
+      department,
+    })
+    const next = new URLSearchParams(params)
+    next.delete("tag")
+    next.delete("inv")
+    next.delete("kind")
+    next.delete("serial")
+    next.delete("dept")
+    setParams(next, { replace: true })
+  }, [params, setParams])
 
   const rows = useMemo(
     () =>
@@ -101,9 +128,7 @@ export function DestructionPage() {
                   variant="ghost"
                   size="sm"
                   render={
-                    <Link
-                      to={`/history?q=${encodeURIComponent(row.inventoryNumber || row.assetTag)}`}
-                    />
+                    <Link to={historyHref(row.inventoryNumber || row.assetTag)} />
                   }
                   nativeButton={false}
                 >
@@ -113,9 +138,14 @@ export function DestructionPage() {
                   Bearbeiten
                 </Button>
                 <ConfirmDelete
-                  label={row.assetTag}
+                  label={recordLabel(row.inventoryNumber, row.assetTag)}
                   description="Der Vernichtungseintrag wird entfernt. War es der letzte Eintrag zum Gerät, geht der Status zurück auf Im Einsatz."
-                  onConfirm={() => deleteDestruction(row.id)}
+                  onConfirm={() => {
+                    const error = deleteDestruction(row.id)
+                    if (error) {
+                      toast.error(error)
+                    }
+                  }}
                 />
               </div>
             ),

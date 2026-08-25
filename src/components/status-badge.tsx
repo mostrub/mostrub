@@ -5,11 +5,11 @@ import type { AssetStatus } from "@/domain/types"
 function variantFor(status: AssetStatus): "default" | "secondary" | "outline" | "destructive" {
   switch (status) {
     case "in-service":
-      return "default"
+      return "outline"
     case "spare":
       return "secondary"
     case "repair":
-      return "outline"
+      return "default"
     case "lost":
       return "destructive"
     case "retired":
@@ -24,5 +24,18 @@ function variantFor(status: AssetStatus): "default" | "secondary" | "outline" | 
 }
 
 export function StatusBadge({ status }: { status: AssetStatus }) {
-  return <Badge variant={variantFor(status)}>{STATUS_LABELS[status]}</Badge>
+  return (
+    <Badge
+      variant={variantFor(status)}
+      className={
+        status === "repair"
+          ? "bg-amber-100 text-amber-950 dark:bg-amber-900/40 dark:text-amber-100"
+          : status === "in-service"
+            ? "text-muted-foreground"
+            : undefined
+      }
+    >
+      {STATUS_LABELS[status]}
+    </Badge>
+  )
 }

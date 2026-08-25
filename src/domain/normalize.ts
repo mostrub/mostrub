@@ -51,9 +51,19 @@ export function inventoryNumberTaken(
     return false
   }
 
-  const hardware = [...state.laptops, ...state.printers, ...state.software]
-  return hardware.some(
-    (item) => item.id !== exceptId && normalizeKey(item.inventoryNumber) === needle,
+  const live = [...state.laptops, ...state.printers, ...state.software]
+  if (
+    live.some(
+      (item) => item.id !== exceptId && normalizeKey(item.inventoryNumber) === needle,
+    )
+  ) {
+    return true
+  }
+  return state.destructions.some(
+    (item) =>
+      item.id !== exceptId &&
+      item.assetId !== exceptId &&
+      normalizeKey(item.inventoryNumber) === needle,
   )
 }
 

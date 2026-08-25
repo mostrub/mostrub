@@ -232,6 +232,8 @@ describe("catalog", () => {
     const retargeted = recordDestruction(logged.state, {
       ...logged.state.destructions[0]!,
       assetTag: "LT-1002",
+      inventoryNumber: both.state.laptops.find((item) => item.id === "lap-2")!
+        .inventoryNumber,
     })
     expect(retargeted.ok).toBe(true)
     if (retargeted.ok) {
@@ -275,6 +277,14 @@ describe("catalog", () => {
     if (!result.ok) {
       expect(result.error).toMatch(/Seriennummer/i)
     }
+  })
+
+  it("rejects non-finite software seat counts", () => {
+    const result = upsertSoftware(
+      emptyInventory(),
+      software({ seatsAssigned: Number.POSITIVE_INFINITY }),
+    )
+    expect(result.ok).toBe(false)
   })
 
   it("stores printers and software in separate registers", () => {
@@ -357,6 +367,156 @@ describe("catalog", () => {
     if (result.ok) {
       expect(result.state.laptops[0]?.status).toBe("destroyed")
       expect(result.state.destructions[0]?.inventoryNumber).toBe(inventoryNumber)
+    }
+  })
+
+  it("rejects a destruction whose tag and inventory number point at different assets", () => {
+    const first = upsertLaptop(emptyInventory(), laptop())
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+    const second = upsertLaptop(
+      first.state,
+      laptop({
+        id: "lap-2",
+        assetTag: "LT-1002",
+        serialNumber: "SN-BB22",
+        hostname: "eng-ws-04",
+      }),
+    )
+    if (!second.ok) {
+      throw new Error(second.error)
+    }
+    const inv2 = second.state.laptops.find((item) => item.id === "lap-2")!.inventoryNumber
+
+    const result = recordDestruction(
+      second.state,
+      destruction({
+        assetId: "",
+        assetTag: "LT-1001",
+        inventoryNumber: inv2,
+      }),
+    )
+    expect(result.ok).toBe(false)
+  })
+
+  it("blocks delete while a destruction log still points at the laptop", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const withLog = recordDestruction(withLaptop.state, destruction({ assetId: "" }))
+    if (!withLog.ok) {
+      throw new Error(withLog.error)
+    }
+    const restored = upsertLaptop(withLog.state, {
+      ...withLog.state.laptops[0]!,
+      status: "in-service",
+    })
+    expect(restored.ok).toBe(false)
+    if (!restored.ok) {
+      expect(restored.error).toMatch(/Vernichtung/i)
+    }
+
+    const deleted = removeLaptop(withLog.state, "lap-1")
+    expect(deleted.ok).toBe(false)
+  })
+
+  it("rejects reusing a destruction inventory number on a new laptop", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const withLog = recordDestruction(
+      withLaptop.state,
+      destruction({
+        id: "dst-orphan",
+        assetId: "",
+        assetKind: "other",
+        assetTag: "LT-GONE",
+        inventoryNumber: "INV-0090",
+        serialNumber: "GONE",
+      }),
+    )
+    if (!withLog.ok) {
+      throw new Error(withLog.error)
+    }
+
+    const result = upsertLaptop(
+      withLog.state,
+      laptop({
+        id: "lap-new",
+        assetTag: "LT-2001",
+        serialNumber: "SN-NEW",
+        inventoryNumber: "INV-0090",
+      }),
+    )
+    expect(result.ok).toBe(false)
+  })
+
+  it("records destruction-removed when a log is retargeted", () => {
+    const first = upsertLaptop(emptyInventory(), laptop())
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+    const second = upsertLaptop(
+      first.state,
+      laptop({
+        id: "lap-2",
+        assetTag: "LT-1002",
+        serialNumber: "SN-BB22",
+      }),
+    )
+    if (!second.ok) {
+      throw new Error(second.error)
+    }
+    const logged = recordDestruction(
+      second.state,
+      destruction({ assetId: "", assetTag: "LT-1001", inventoryNumber: "" }),
+    )
+    if (!logged.ok) {
+      throw new Error(logged.error)
+    }
+    const retargeted = recordDestruction(logged.state, {
+      ...logged.state.destructions[0]!,
+      assetTag: "LT-1002",
+      inventoryNumber: "",
+    })
+    expect(retargeted.ok).toBe(true)
+    if (retargeted.ok) {
+      expect(
+        retargeted.state.history.some(
+          (event) =>
+            event.action === "destruction-removed" && event.assetTag === "LT-1001",
+        ),
+      ).toBe(true)
+      expect(retargeted.state.laptops.find((item) => item.id === "lap-1")?.status).not.toBe(
+        "destroyed",
+      )
+      expect(retargeted.state.laptops.find((item) => item.id === "lap-2")?.status).toBe(
+        "destroyed",
+      )
+    }
+  })
+
+  it("updates a linked destruction inventory number when the laptop is renumbered", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const withLog = recordDestruction(withLaptop.state, destruction({ assetId: "" }))
+    if (!withLog.ok) {
+      throw new Error(withLog.error)
+    }
+
+    const result = upsertLaptop(withLog.state, {
+      ...withLog.state.laptops[0]!,
+      inventoryNumber: "INV-7777",
+    })
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.destructions[0]?.inventoryNumber).toBe("INV-7777")
+      expect(result.state.destructions[0]?.assetTag).toBe("LT-1001")
     }
   })
 })

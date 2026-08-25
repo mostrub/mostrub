@@ -1,4 +1,4 @@
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { EnumSelect } from "@/components/enum-select"
@@ -16,6 +16,15 @@ export function SoftwareForm({
     onChange({ ...value, [key]: next })
   }
 
+  function setCount(key: "seatsPurchased" | "seatsAssigned" | "annualCost", raw: string) {
+    if (raw.trim() === "") {
+      set(key, 0)
+      return
+    }
+    const next = Number(raw)
+    set(key, Number.isFinite(next) ? next : value[key])
+  }
+
   return (
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -27,6 +36,9 @@ export function SoftwareForm({
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
+          <FieldDescription>
+            Werkweit eindeutig. Leer lassen vergibt die nächste INV-Nummer.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="sw-name">Name</FieldLabel>
@@ -66,7 +78,7 @@ export function SoftwareForm({
             type="number"
             min={0}
             value={value.seatsPurchased}
-            onChange={(event) => set("seatsPurchased", Number(event.target.value))}
+            onChange={(event) => setCount("seatsPurchased", event.target.value)}
           />
         </Field>
         <Field>
@@ -76,7 +88,7 @@ export function SoftwareForm({
             type="number"
             min={0}
             value={value.seatsAssigned}
-            onChange={(event) => set("seatsAssigned", Number(event.target.value))}
+            onChange={(event) => setCount("seatsAssigned", event.target.value)}
           />
           {value.seatsAssigned > value.seatsPurchased ? (
             <p className="text-sm text-destructive">
@@ -107,7 +119,7 @@ export function SoftwareForm({
             type="number"
             min={0}
             value={value.annualCost}
-            onChange={(event) => set("annualCost", Number(event.target.value))}
+            onChange={(event) => setCount("annualCost", event.target.value)}
           />
         </Field>
       </div>

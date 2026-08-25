@@ -72,12 +72,8 @@ export function queryDeviceHistory(
     return rows
   }
   return rows.filter((event) =>
-    [
-      event.inventoryNumber,
-      event.assetTag,
-      event.serialNumber,
-      event.summary,
-      event.recordId,
-    ].some((value) => value.toLowerCase().includes(needle)),
+    [event.inventoryNumber, event.assetTag, event.serialNumber].some(
+      (value) => value.trim().toLowerCase() === needle,
+    ),
   )
 }

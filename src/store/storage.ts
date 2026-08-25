@@ -111,7 +111,11 @@ export function loadInventory(): InventoryLoad {
 
 export function saveInventory(state: InventoryState): void {
   const payload: StoredPayload = { version: 1, state }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+  } catch {
+    throw new Error("Inventar konnte nicht gespeichert werden")
+  }
 }
 
 export function resetInventory(): InventoryState {

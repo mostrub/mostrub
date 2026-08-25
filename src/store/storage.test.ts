@@ -94,6 +94,17 @@ describe("parseInventoryJson", () => {
     }
   })
 
+  it("rejects a backup whose history rows are empty objects", () => {
+    const raw = JSON.stringify({
+      laptops: [],
+      printers: [],
+      software: [],
+      destructions: [],
+      history: [{}],
+    })
+    expect(parseInventoryJson(raw).ok).toBe(false)
+  })
+
   it("rejects unknown laptop status values", () => {
     const raw = JSON.stringify({
       laptops: [

@@ -65,6 +65,7 @@ export function AuditPage() {
           },
           { header: "Befund", cell: (row) => FINDING_LABELS[row.code] },
           { header: "Register", cell: (row) => row.register },
+          { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber || "—" },
           { header: "Gerät", cell: (row) => row.assetTag },
           {
             header: "Abteilung",

@@ -48,6 +48,18 @@ describe("queryDeviceHistory", () => {
     )
   })
 
+  it("does not treat INV-0001 as a match for INV-00010", () => {
+    const created = upsertLaptop(
+      emptyInventory(),
+      laptop({ inventoryNumber: "INV-00010", assetTag: "LT-1010", serialNumber: "SN-XX" }),
+    )
+    if (!created.ok) {
+      throw new Error(created.error)
+    }
+    expect(queryDeviceHistory(created.state, "INV-0001")).toHaveLength(0)
+    expect(queryDeviceHistory(created.state, "INV-00010")).toHaveLength(1)
+  })
+
   it("finds history by serial number", () => {
     const created = upsertLaptop(emptyInventory(), laptop())
     if (!created.ok) {

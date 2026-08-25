@@ -12,21 +12,31 @@ import { PageHeader } from "@/components/page-header"
 import { RecordSheet } from "@/components/record-sheet"
 import { StatusBadge } from "@/components/status-badge"
 import { newId } from "@/domain/catalog"
-import { DEPARTMENT_LABELS, PRINTER_TYPE_LABELS } from "@/domain/labels"
-import type { Printer } from "@/domain/types"
+import { DEPARTMENT_LABELS, PRINTER_TYPE_LABELS, STATUS_LABELS } from "@/domain/labels"
+import { ASSET_STATUSES, type AssetStatus, type Printer } from "@/domain/types"
 import { downloadRegisterCsv } from "@/export/download"
+import { destructionHref, historyHref, recordLabel } from "@/lib/hardware-links"
 import { matchesQuery } from "@/lib/search"
 import { useInventory } from "@/store/inventory-context"
+
+type StatusFilter = AssetStatus | "all" | "active"
 
 export function PrintersPage() {
   const { state, savePrinter, deletePrinter } = useInventory()
   const [query, setQuery] = useState("")
+  const [status, setStatus] = useState<StatusFilter>("active")
   const [draft, setDraft] = useState<Printer | null>(null)
 
   const rows = useMemo(
     () =>
-      state.printers.filter((item) =>
-        matchesQuery(
+      state.printers.filter((item) => {
+        if (status === "active" && item.status === "destroyed") {
+          return false
+        }
+        if (status !== "all" && status !== "active" && item.status !== status) {
+          return false
+        }
+        return matchesQuery(
           [
             item.inventoryNumber,
             item.assetTag,
@@ -39,9 +49,9 @@ export function PrintersPage() {
             PRINTER_TYPE_LABELS[item.printerType],
           ],
           query,
-        ),
-      ),
-    [query, state.printers],
+        )
+      }),
+    [query, state.printers, status],
   )
 
   return (
@@ -67,13 +77,29 @@ export function PrintersPage() {
           </>
         }
       />
-      <div className="border bg-muted/30 px-2 py-2">
+      <div className="flex flex-wrap items-center gap-2 border bg-muted/30 px-2 py-2">
         <Input
           className="w-72"
           placeholder="Kennzeichen, IP, Standort, Typ..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
+        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          Status
+          <select
+            className="h-8 rounded-sm border border-input bg-background px-2 text-sm text-foreground"
+            value={status}
+            onChange={(event) => setStatus(event.target.value as StatusFilter)}
+          >
+            <option value="active">Vernichtete ausblenden</option>
+            <option value="all">Alle Status</option>
+            {ASSET_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {STATUS_LABELS[value]}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <DataTable
         rows={rows}
@@ -82,6 +108,7 @@ export function PrintersPage() {
         columns={[
           { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber },
           { header: "Kennzeichen", cell: (row) => row.assetTag },
+          { header: "Serie", cell: (row) => row.serialNumber || "—" },
           { header: "Gerät", cell: (row) => `${row.make} ${row.model}` },
           { header: "Typ", cell: (row) => PRINTER_TYPE_LABELS[row.printerType] },
           { header: "Abteilung", cell: (row) => DEPARTMENT_LABELS[row.department] },
@@ -96,16 +123,36 @@ export function PrintersPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
+                  render={<Link to={historyHref(row.inventoryNumber)} />}
                   nativeButton={false}
                 >
                   Historie
                 </Button>
+                {row.status === "destroyed" ? null : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    render={
+                      <Link
+                        to={destructionHref({
+                          kind: "printer",
+                          inventoryNumber: row.inventoryNumber,
+                          assetTag: row.assetTag,
+                          serialNumber: row.serialNumber,
+                          department: row.department,
+                        })}
+                      />
+                    }
+                    nativeButton={false}
+                  >
+                    Vernichten
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
                   Bearbeiten
                 </Button>
                 <ConfirmDelete
-                  label={row.assetTag}
+                  label={recordLabel(row.inventoryNumber, row.assetTag)}
                   onConfirm={() => {
                     const error = deletePrinter(row.id)
                     if (error) {

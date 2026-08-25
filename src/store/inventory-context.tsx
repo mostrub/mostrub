@@ -31,9 +31,9 @@ type InventoryContextValue = {
   saveDestruction: (record: DestructionRecord) => string | null
   deleteLaptop: (id: string) => string | null
   deletePrinter: (id: string) => string | null
-  deleteSoftware: (id: string) => void
-  deleteDestruction: (id: string) => void
-  replaceState: (next: InventoryState) => void
+  deleteSoftware: (id: string) => string | null
+  deleteDestruction: (id: string) => string | null
+  replaceState: (next: InventoryState) => string | null
   resetToEmpty: () => void
   loadDemo: () => void
 }
@@ -43,6 +43,10 @@ const InventoryContext = createContext<InventoryContextValue | undefined>(undefi
 function persist(next: InventoryState): InventoryState {
   saveInventory(next)
   return next
+}
+
+function storageFailure(caught: unknown): string {
+  return caught instanceof Error ? caught.message : "Inventar konnte nicht gespeichert werden"
 }
 
 function applyResult(
@@ -56,7 +60,28 @@ function applyResult(
       error = result.error
       return current
     }
-    return persist(result.state)
+    try {
+      return persist(result.state)
+    } catch (caught) {
+      error = storageFailure(caught)
+      return current
+    }
+  })
+  return error
+}
+
+function applyState(
+  setState: (updater: (current: InventoryState) => InventoryState) => void,
+  mutator: (current: InventoryState) => InventoryState,
+): string | null {
+  let error: string | null = null
+  setState((current) => {
+    try {
+      return persist(mutator(current))
+    } catch (caught) {
+      error = storageFailure(caught)
+      return current
+    }
   })
   return error
 }
@@ -83,15 +108,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         applyResult(setState, (current) => recordDestruction(current, record)),
       deleteLaptop: (id) => applyResult(setState, (current) => removeLaptop(current, id)),
       deletePrinter: (id) => applyResult(setState, (current) => removePrinter(current, id)),
-      deleteSoftware: (id) => {
-        setState((current) => persist(removeSoftware(current, id)))
-      },
-      deleteDestruction: (id) => {
-        setState((current) => persist(removeDestruction(current, id)))
-      },
+      deleteSoftware: (id) => applyState(setState, (current) => removeSoftware(current, id)),
+      deleteDestruction: (id) =>
+        applyState(setState, (current) => removeDestruction(current, id)),
       replaceState: (next) => {
         setStorageError(null)
-        setState(persist(next))
+        return applyState(setState, () => next)
       },
       resetToEmpty: () => {
         setStorageError(null)

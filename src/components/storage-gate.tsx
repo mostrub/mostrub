@@ -48,7 +48,11 @@ export function StorageGate({ children }: { children: React.ReactNode }) {
                 toast.error(parsed.reason)
                 return
               }
-              replaceState(parsed.state)
+              const error = replaceState(parsed.state)
+              if (error) {
+                toast.error(error)
+                return
+              }
               toast.success("Backup übernommen")
             }}
           />

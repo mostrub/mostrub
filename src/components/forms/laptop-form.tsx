@@ -1,16 +1,15 @@
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { EnumSelect } from "@/components/enum-select"
+import { HardwareStatusField } from "@/components/hardware-status-field"
 import {
   DEPARTMENT_LABELS,
   LAPTOP_TYPE_LABELS,
   OS_LABELS,
-  STATUS_LABELS,
   optionList,
 } from "@/domain/labels"
 import {
-  ASSET_STATUSES,
   DEPARTMENTS,
   LAPTOP_TYPES,
   OPERATING_SYSTEMS,
@@ -39,19 +38,25 @@ export function LaptopForm({
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
+          <FieldDescription>
+            Werkweit eindeutig. Leer lassen vergibt die nächste INV-Nummer.
+          </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="laptop-tag">Anlagenkennzeichen</FieldLabel>
           <Input
             id="laptop-tag"
+            placeholder="z. B. LT-1001"
             value={value.assetTag}
             onChange={(event) => set("assetTag", event.target.value)}
           />
+          <FieldDescription>Aufkleber am Gerät, nicht die Inventarnummer.</FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="laptop-serial">Serie</FieldLabel>
           <Input
             id="laptop-serial"
+            placeholder="Hersteller-Seriennummer"
             value={value.serialNumber}
             onChange={(event) => set("serialNumber", event.target.value)}
           />
@@ -109,12 +114,10 @@ export function LaptopForm({
           onChange={(next) => set("department", next)}
           items={optionList(DEPARTMENTS, DEPARTMENT_LABELS)}
         />
-        <EnumSelect
+        <HardwareStatusField
           id="laptop-status"
-          label="Status"
           value={value.status}
           onChange={(next) => set("status", next)}
-          items={optionList(ASSET_STATUSES, STATUS_LABELS)}
         />
         <Field>
           <FieldLabel htmlFor="laptop-location">Standort</FieldLabel>

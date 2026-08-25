@@ -14,6 +14,7 @@ import { newId } from "@/domain/catalog"
 import { DEPARTMENT_LABELS, LICENSE_TYPE_LABELS } from "@/domain/labels"
 import type { SoftwareLicense } from "@/domain/types"
 import { downloadRegisterCsv } from "@/export/download"
+import { historyHref, recordLabel } from "@/lib/hardware-links"
 import { matchesQuery } from "@/lib/search"
 import { useInventory } from "@/store/inventory-context"
 
@@ -103,7 +104,7 @@ export function SoftwarePage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
+                  render={<Link to={historyHref(row.inventoryNumber)} />}
                   nativeButton={false}
                 >
                   Historie
@@ -112,8 +113,13 @@ export function SoftwarePage() {
                   Bearbeiten
                 </Button>
                 <ConfirmDelete
-                  label={row.name}
-                  onConfirm={() => deleteSoftware(row.id)}
+                  label={recordLabel(row.inventoryNumber, row.name)}
+                  onConfirm={() => {
+                    const error = deleteSoftware(row.id)
+                    if (error) {
+                      toast.error(error)
+                    }
+                  }}
                 />
               </div>
             ),
