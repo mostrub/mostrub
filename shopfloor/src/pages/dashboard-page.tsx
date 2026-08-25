@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, type KeyboardEvent } from "react"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
 import type { QueryRow } from "@/lib/duckdb/engine"
@@ -16,7 +16,6 @@ import {
   shiftCompareSql,
 } from "@/lib/queries"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
 import {
   Card,
   CardContent,
@@ -25,7 +24,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty"
+import { EmptyProduction } from "@/components/empty-production"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DataTable } from "@/components/data-table"
 import { useFloorline } from "@/state/floorline-store"
@@ -48,7 +47,7 @@ const histConfig = {
 } satisfies ChartConfig
 
 export function DashboardPage() {
-  const { filters, rowCounts, ready } = useFloorline()
+  const { filters, rowCounts, ready, patchFilters, setView } = useFloorline()
   const [kpis, setKpis] = useState<QueryRow | null>(null)
   const [hourly, setHourly] = useState<QueryRow[]>([])
   const [lines, setLines] = useState<QueryRow[]>([])
@@ -123,14 +122,10 @@ export function DashboardPage() {
 
   if (rowCounts.cycles === 0) {
     return (
-      <Empty className="border">
-        <EmptyHeader>
-          <EmptyTitle>No production data yet</EmptyTitle>
-          <EmptyDescription>
-            Ingest XML from a share, or load the demo production pack.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <EmptyProduction
+        title="No production data yet"
+        description="Load the demo pack or drop XML from the share."
+      />
     )
   }
 
@@ -155,26 +150,45 @@ export function DashboardPage() {
           <AlertTitle>Could not load the dashboard</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
-      ) : null}
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
+      ) : (
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Units" value={formatNumber(units)} busy={busy} />
-        <Kpi label="OEE" value={formatPct(oee.oee)} busy={busy} tone={oee.oee < 65 ? "bad" : "ok"} />
-        <Kpi label="Availability" value={formatPct(oee.availability)} busy={busy} />
-        <Kpi label="Performance" value={formatPct(oee.performance)} busy={busy} />
-        <Kpi label="Quality" value={formatPct(oee.quality)} busy={busy} tone={fpy < 95 ? "bad" : "ok"} />
-        <Kpi label="Pace vs target" value={formatPct(pace)} busy={busy} />
+        <Kpi
+          label="OEE"
+          value={formatPct(oee.oee)}
+          busy={busy}
+          tone={oee.oee < 65 ? "bad" : "ok"}
+          onClick={() => setView("triage")}
+        />
         <Kpi
           label="Downtime"
           value={formatMinutes(Number(kpis?.downtime_ms ?? 0))}
           busy={busy}
+          onClick={() => setView("triage")}
         />
         <Kpi
-          label="Critical / open"
-          value={`${formatNumber(Number(kpis?.critical_alarms ?? 0))} / ${formatNumber(Number(kpis?.open_alarms ?? 0))}`}
+          label="Open alarms"
+          value={formatNumber(Number(kpis?.open_alarms ?? 0))}
           busy={busy}
           tone={Number(kpis?.open_alarms ?? 0) > 0 ? "bad" : "ok"}
+          onClick={() => setView("triage")}
+        />
+        <Kpi label="Availability" value={formatPct(oee.availability)} busy={busy} />
+        <Kpi label="Performance" value={formatPct(oee.performance)} busy={busy} />
+        <Kpi
+          label="Quality"
+          value={formatPct(oee.quality)}
+          busy={busy}
+          tone={fpy < 95 ? "bad" : "ok"}
+          onClick={() => setView("triage")}
+        />
+        <Kpi
+          label="Cycle vs target"
+          value={formatPct(pace)}
+          busy={busy}
         />
       </div>
+      )}
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
@@ -204,7 +218,7 @@ export function DashboardPage() {
               <LineChart data={lines}>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="line" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} domain={[80, 100]} />
+                <YAxis tickLine={false} axisLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line dataKey="fpy_pct" stroke="var(--color-fpy_pct)" dot />
               </LineChart>
@@ -231,10 +245,20 @@ export function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Fail codes</CardTitle>
-            <CardDescription>Click a row in triage to drill</CardDescription>
+            <CardDescription>Click a fail code to open Drill</CardDescription>
           </CardHeader>
           <CardContent>
-            <DataTable rows={fails} />
+            <DataTable
+              rows={fails}
+              emptyLabel="No fail codes in this filter."
+              onRowClick={(row) => {
+                patchFilters({
+                  search: String(row.fail_code ?? ""),
+                  results: ["FAIL"],
+                })
+                setView("triage")
+              }}
+            />
           </CardContent>
         </Card>
         <Card>
@@ -273,20 +297,37 @@ function Kpi(args: {
   value: string
   busy: boolean
   tone?: "ok" | "bad"
+  onClick?: () => void
 }) {
   return (
-    <Card size="sm">
+    <Card
+      size="sm"
+      className={args.onClick ? "cursor-pointer" : undefined}
+      tabIndex={args.onClick ? 0 : undefined}
+      role={args.onClick ? "button" : undefined}
+      onClick={args.onClick}
+      onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
+        if (!args.onClick) {
+          return
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          args.onClick()
+        }
+      }}
+    >
       <CardHeader>
         <CardDescription>{args.label}</CardDescription>
-        <CardTitle className="font-mono text-xl">
+        <CardTitle
+          className={
+            args.tone === "bad"
+              ? "font-mono text-xl text-destructive"
+              : "font-mono text-xl"
+          }
+        >
           {args.busy ? <Skeleton className="h-7 w-20" /> : args.value}
         </CardTitle>
       </CardHeader>
-      {args.tone === "bad" ? (
-        <CardContent>
-          <Badge variant="destructive">needs triage</Badge>
-        </CardContent>
-      ) : null}
     </Card>
   )
 }

@@ -55,6 +55,8 @@ type FloorlineState = {
   ready: boolean
   loading: boolean
   error: string | null
+  restoreFailed: TableName[]
+  dismissRestoreFailed: () => void
   view: AppView
   filters: ProductionFilters
   facets: FilterFacet
@@ -111,11 +113,23 @@ function parseHash(): { view: AppView; filters: ProductionFilters } {
   return { view, filters: filters ?? EMPTY_FILTERS }
 }
 
+let applyingHash = false
+
 function writeHash(view: AppView, filters: ProductionFilters): void {
   const next = viewHash(view, filters)
-  if (window.location.hash !== next) {
+  if (window.location.hash === next || applyingHash) {
+    return
+  }
+  const current = parseHash()
+  applyingHash = true
+  if (current.view !== view) {
+    window.history.pushState(null, "", next)
+  } else {
     window.history.replaceState(null, "", next)
   }
+  queueMicrotask(() => {
+    applyingHash = false
+  })
 }
 
 export function FloorlineProvider({ children }: { children: ReactNode }) {
@@ -134,6 +148,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
   const [presets, setPresets] = useState<FilterPreset[]>(() =>
     typeof window === "undefined" ? [] : loadPresets()
   )
+  const [restoreFailed, setRestoreFailed] = useState<TableName[]>([])
 
   const refreshMeta = useCallback(async () => {
     const fileRows = await queryRows(
@@ -200,11 +215,19 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         }
         setReady(true)
         if (result.restoreFailed.length > 0) {
-          toast.warning(
-            `Could not restore ${result.restoreFailed.join(", ")} from local cache. Re-ingest those tables.`
-          )
+          setRestoreFailed(result.restoreFailed)
         }
         await refreshMeta()
+        const cycles = await tableCount("cycles")
+        const raw = window.location.hash.replace(/^#/, "")
+        const [path, query = ""] = raw.split("?")
+        if (
+          cycles > 0 &&
+          (path === "" || path === "ingest") &&
+          !query.includes("f=")
+        ) {
+          setViewState("dashboard")
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -221,6 +244,27 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
   }, [view, filters])
 
   useEffect(() => {
+    const apply = () => {
+      if (applyingHash) {
+        return
+      }
+      applyingHash = true
+      const parsed = parseHash()
+      setViewState(parsed.view)
+      setFiltersState(parsed.filters)
+      queueMicrotask(() => {
+        applyingHash = false
+      })
+    }
+    window.addEventListener("hashchange", apply)
+    window.addEventListener("popstate", apply)
+    return () => {
+      window.removeEventListener("hashchange", apply)
+      window.removeEventListener("popstate", apply)
+    }
+  }, [])
+
+  useEffect(() => {
     if (!ready || files.length === 0) {
       return
     }
@@ -231,9 +275,12 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
           setReports(next)
         }
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (!cancelled) {
           setReports([])
+          toast.error(
+            err instanceof Error ? err.message : "Could not build reports"
+          )
         }
       })
     return () => {
@@ -258,6 +305,10 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
 
   const clearFilters = useCallback(() => {
     setFiltersState(EMPTY_FILTERS)
+  }, [])
+
+  const dismissRestoreFailed = useCallback(() => {
+    setRestoreFailed([])
   }, [])
 
   const ingestFiles = useCallback(
@@ -302,7 +353,8 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
             ? `${tables.length} ${tables.join(", ")}`
             : null,
         ].filter((part) => part !== null)
-        toast.success(`Ingested ${parts.join(" + ")} into DuckDB`)
+        setRestoreFailed([])
+        toast.success(`Loaded ${parts.join(" + ")}`)
         setViewState("dashboard")
       } catch (err) {
         const message = err instanceof Error ? err.message : "Ingest failed"
@@ -322,6 +374,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       await resetEngine()
       await ingestBatches(parseShareSamples())
       await refreshMeta()
+      setRestoreFailed([])
       toast.success("Loaded demo production share (3 XML files)")
       setViewState("dashboard")
     } catch (err) {
@@ -341,7 +394,8 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       setFacets(EMPTY_FACETS)
       setReports([])
       setRowCounts(EMPTY_COUNTS)
-      toast.success("Cleared DuckDB tables")
+      setRestoreFailed([])
+      toast.success("Cleared loaded data")
     } finally {
       setLoading(false)
     }
@@ -409,6 +463,8 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       ready,
       loading,
       error,
+      restoreFailed,
+      dismissRestoreFailed,
       view,
       filters,
       facets,
@@ -435,6 +491,8 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       ready,
       loading,
       error,
+      restoreFailed,
+      dismissRestoreFailed,
       view,
       filters,
       facets,

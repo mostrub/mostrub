@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest"
 
-import { buildJoinMessage, type LanShareInfo } from "./lan"
+import { attachShareHash, buildJoinMessage, type LanShareInfo } from "./lan"
+
+describe("attachShareHash", () => {
+  it("appends the current view hash to a LAN origin", () => {
+    expect(
+      attachShareHash("http://192.168.1.20:5173/", "http://host/#triage?f=abc")
+    ).toBe("http://192.168.1.20:5173/#triage?f=abc")
+  })
+})
 
 describe("buildJoinMessage", () => {
   it("names the host OS and the systems already on the instance", () => {

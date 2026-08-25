@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { DataTable } from "@/components/data-table"
+import { EmptyProduction } from "@/components/empty-production"
 import { useFloorline } from "@/state/floorline-store"
 
 const PAGE_SIZE = 50
@@ -104,13 +105,23 @@ export function ExplorerPage() {
   const columns = rows[0] ? Object.keys(rows[0]) : []
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE))
 
+  const hasData = Object.values(rowCounts).some((count) => count > 0)
+  if (ready && !hasData) {
+    return (
+      <EmptyProduction
+        title="No tables loaded"
+        description="Load production files to browse cycles, downtime, alarms, and servers."
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">DuckDB explorer</h2>
+        <h2 className="font-heading text-lg font-medium">Tables</h2>
         <p className="text-sm text-muted-foreground">
-          Filtered table scan with sort and paging. Search in the rail hits
-          text columns via ILIKE.
+          Filtered table scan with sort and paging. Search hits text columns
+          via ILIKE.
         </p>
       </div>
       <Card>
@@ -198,6 +209,7 @@ export function ExplorerPage() {
           ) : null}
           <DataTable
             rows={rows}
+            emptyLabel="No rows in this table for the current filter."
             maxHeight="32rem"
             onRowClick={(row) => {
               const serial = row.serial

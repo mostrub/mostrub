@@ -21,6 +21,19 @@ import {
   parseRootAttributes,
 } from "@/lib/xml/attrs"
 
+export function productionFileId(args: {
+  fileName: string
+  plant?: string
+  shift?: string
+  shiftDate?: string
+}): string {
+  const base = args.fileName.split(/[/\\]/).pop() ?? args.fileName
+  const key = [args.plant ?? "", args.shiftDate ?? "", args.shift ?? "", base]
+    .map((part) => part.trim().toLowerCase())
+    .join("|")
+  return `file-${fnv1a(key)}`
+}
+
 type ParseArgs = {
   fileName: string
   xml: string
@@ -104,12 +117,11 @@ function normalizeMode(value: string): ControllerRow["run_mode"] {
 
 export function parseProductionXml(args: ParseArgs): ProductionBatch {
   const ingestedAt = args.ingestedAt ?? nowIso()
-  const fileId = `file-${fnv1a(`${args.fileName}:${args.byteSize}:${args.xml.slice(0, 120)}`)}`
 
   if (args.xml.trim() === "") {
     return {
       file: emptyFile({
-        fileId,
+        fileId: productionFileId({ fileName: args.fileName }),
         fileName: args.fileName,
         byteSize: args.byteSize,
         ingestedAt,
@@ -127,6 +139,12 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
   const plant = attr(root, "plant", "Plant", "site")
   const shift = attr(root, "shift", "Shift")
   const shiftDate = attr(root, "shiftDate", "shift_date", "date")
+  const fileId = productionFileId({
+    fileName: args.fileName,
+    plant,
+    shift,
+    shiftDate,
+  })
   const sourceShare = attr(
     root,
     "sourceShare",

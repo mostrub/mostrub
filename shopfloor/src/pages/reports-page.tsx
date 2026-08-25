@@ -1,3 +1,4 @@
+import { EmptyProduction } from "@/components/empty-production"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -46,9 +47,10 @@ export function ReportsPage() {
         </div>
       </div>
       {files.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          Ingest production XML to generate shift, triage, and server reports.
-        </p>
+        <EmptyProduction
+          title="No reports yet"
+          description="Load production files to build shift, triage, and server reports."
+        />
       ) : null}
       <div className="grid gap-4 xl:grid-cols-3 print:grid-cols-1">
         {reports.map((report) => (

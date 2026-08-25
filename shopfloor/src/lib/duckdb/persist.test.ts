@@ -7,5 +7,7 @@ describe("persist schema version", () => {
     expect(persistSchemaStale(undefined)).toBe(true)
     expect(persistSchemaStale(1)).toBe(true)
     expect(persistSchemaStale(PERSIST_SCHEMA_VERSION)).toBe(false)
+    expect(persistSchemaStale(2)).toBe(true)
+    expect(PERSIST_SCHEMA_VERSION).toBeGreaterThanOrEqual(3)
   })
 })

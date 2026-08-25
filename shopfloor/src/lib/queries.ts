@@ -1,4 +1,4 @@
-import { sqlFrom } from "@/lib/filters"
+import { drillGroupColumns, sqlFrom } from "@/lib/filters"
 import type { ProductionFilters } from "@/lib/types"
 
 export function kpiSql(filters: ProductionFilters): string {
@@ -72,13 +72,16 @@ export function failCodesSql(filters: ProductionFilters): string {
 }
 
 export function triageTreeSql(filters: ProductionFilters): string {
+  const dims = drillGroupColumns(filters)
+  const selectDims = dims.join(", ")
+  const groupBy = dims.map((_, index) => index + 1).join(", ")
   return `
-    SELECT plant, line, station, machine, controller_id,
+    SELECT ${selectDims},
            COUNT(*) AS cycles,
            SUM(CASE WHEN result <> 'PASS' THEN 1 ELSE 0 END) AS defects,
            AVG(cycle_ms) AS avg_cycle_ms
     FROM ${sqlFrom("cycles", filters)}
-    GROUP BY 1,2,3,4,5
+    GROUP BY ${groupBy}
     ORDER BY defects DESC, cycles DESC
   `
 }
@@ -173,6 +176,8 @@ export function oeeSql(filters: ProductionFilters): string {
   return `
     WITH span AS (
       SELECT
+        CAST(MIN(started_at) AS TIMESTAMP) AS start_ts,
+        CAST(MAX(ended_at) AS TIMESTAMP) AS end_ts,
         COALESCE(date_diff('millisecond',
           CAST(MIN(started_at) AS TIMESTAMP),
           CAST(MAX(ended_at) AS TIMESTAMP)), 0) AS window_ms,
@@ -183,9 +188,14 @@ export function oeeSql(filters: ProductionFilters): string {
       FROM ${sqlFrom("cycles", filters)}
     ),
     losses AS (
-      SELECT COALESCE(SUM(duration_ms), 0) AS unplanned_ms
-      FROM ${sqlFrom("downtime", filters)}
-      WHERE category = 'UNPLANNED'
+      SELECT COALESCE(SUM(
+        GREATEST(0, date_diff('millisecond',
+          GREATEST(CAST(d.started_at AS TIMESTAMP), span.start_ts),
+          LEAST(CAST(d.ended_at AS TIMESTAMP), span.end_ts)
+        ))
+      ), 0) AS unplanned_ms
+      FROM ${sqlFrom("downtime", filters)} d, span
+      WHERE d.category = 'UNPLANNED'
     )
     SELECT
       span.window_ms,

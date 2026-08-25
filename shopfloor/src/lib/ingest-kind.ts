@@ -3,7 +3,7 @@ import { TABLE_NAMES, type TableName } from "@/lib/types"
 export const INGEST_KINDS = ["xml", "csv", "parquet"] as const
 export type IngestKind = (typeof INGEST_KINDS)[number]
 
-const TABLE_PRIMARY_KEY: Record<TableName, string> = {
+export const TABLE_PRIMARY_KEY: Record<TableName, string> = {
   ingest_files: "file_id",
   cycles: "cycle_id",
   downtime: "event_id",

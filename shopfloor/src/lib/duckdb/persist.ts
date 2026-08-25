@@ -4,9 +4,9 @@ import { TABLE_NAMES } from "@/lib/types"
 const DB_NAME = "floorline"
 const STORE = "parquet"
 const VERSION_KEY = "__schema_version"
-const IDB_VERSION = 2
+const IDB_VERSION = 3
 
-export const PERSIST_SCHEMA_VERSION = 2
+export const PERSIST_SCHEMA_VERSION = 3
 
 export function persistSchemaStale(storedVersion: unknown): boolean {
   return storedVersion !== PERSIST_SCHEMA_VERSION

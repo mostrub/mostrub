@@ -25,6 +25,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart"
 import { DataTable } from "@/components/data-table"
+import { EmptyProduction } from "@/components/empty-production"
 import { useFloorline } from "@/state/floorline-store"
 
 const seriesConfig = {
@@ -41,8 +42,11 @@ export function ServersPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const selected = filters.servers[0] ?? ""
 
+  const hasServerData =
+    rowCounts.server_samples > 0 || rowCounts.controllers > 0
+
   useEffect(() => {
-    if (!ready || rowCounts.server_samples === 0) {
+    if (!ready || !hasServerData) {
       return
     }
     let cancelled = false
@@ -66,7 +70,7 @@ export function ServersPage() {
     return () => {
       cancelled = true
     }
-  }, [filters, ready, rowCounts.server_samples])
+  }, [filters, hasServerData, ready])
 
   useEffect(() => {
     if (!ready || selected === "") {
@@ -89,6 +93,15 @@ export function ServersPage() {
       cancelled = true
     }
   }, [filters, ready, selected])
+
+  if (ready && !hasServerData) {
+    return (
+      <EmptyProduction
+        title="No servers or controllers yet"
+        description="Load production XML that includes ServerSample or Controller rows."
+      />
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -121,6 +134,9 @@ export function ServersPage() {
         <CardContent>
           <DataTable
             rows={latest}
+            emptyLabel="No server samples in this filter."
+            selectedKey={selected || undefined}
+            rowKey={(row) => String(row.server_id ?? "")}
             onRowClick={(row) =>
               patchFilters({
                 servers: toggleValue([], String(row.server_id ?? "")),
@@ -176,6 +192,9 @@ export function ServersPage() {
         <CardContent>
           <DataTable
             rows={controllers}
+            emptyLabel="No controllers in this filter."
+            selectedKey={filters.controllers[0] || undefined}
+            rowKey={(row) => String(row.controller_id ?? "")}
             onRowClick={(row) =>
               patchFilters({
                 controllers: toggleValue([], String(row.controller_id ?? "")),

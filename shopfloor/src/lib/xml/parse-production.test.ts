@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { parseProductionXml } from "./parse-production"
+import { parseProductionXml, productionFileId } from "./parse-production"
 
 const SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
 <ShopfloorExport plant="AUSTIN" generatedAt="2026-08-25T06:00:00Z"
@@ -68,6 +68,28 @@ describe("parseProductionXml", () => {
     expect(batch.cycles[0]?.cycle_id).toBe("C2")
     expect(batch.cycles[0]?.cycle_ms).toBe(8000)
     expect(batch.cycles[0]?.plant).toBe("DALLAS")
+  })
+
+  it("keeps the same file_id when the share file grows", () => {
+    const first = parseProductionXml({
+      fileName: "austin-shift-a.xml",
+      xml: SAMPLE,
+      byteSize: SAMPLE.length,
+    })
+    const grown = parseProductionXml({
+      fileName: "austin-shift-a.xml",
+      xml: `${SAMPLE}\n`,
+      byteSize: SAMPLE.length + 20_000,
+    })
+    expect(first.file.file_id).toBe(grown.file.file_id)
+    expect(first.file.file_id).toBe(
+      productionFileId({
+        fileName: "austin-shift-a.xml",
+        plant: "AUSTIN",
+        shift: "A",
+        shiftDate: "2026-08-25",
+      })
+    )
   })
 
   it("marks empty xml as an error file with no rows", () => {

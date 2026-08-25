@@ -269,7 +269,7 @@ function stringOrNull(value: unknown): string | null {
   return typeof value === "string" && value !== "" ? value : null
 }
 
-function finiteOrNull(value: unknown): number | null {
+export function finiteOrNull(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null
 }
 
@@ -336,4 +336,75 @@ export function toggleValue<T extends string>(
     return values.filter((value) => value !== next)
   }
   return [...values, next]
+}
+
+export type DrillLevel =
+  | "all"
+  | "plant"
+  | "line"
+  | "station"
+  | "machine"
+  | "controller"
+
+export function drillGroupColumns(filters: ProductionFilters): string[] {
+  if (filters.plants.length === 0) {
+    return ["plant"]
+  }
+  if (filters.lines.length === 0) {
+    return ["plant", "line"]
+  }
+  if (filters.stations.length === 0) {
+    return ["plant", "line", "station"]
+  }
+  if (filters.machines.length === 0) {
+    return ["plant", "line", "station", "machine"]
+  }
+  return ["plant", "line", "station", "machine", "controller_id"]
+}
+
+export function nextDrillPatch(
+  filters: ProductionFilters,
+  row: Record<string, unknown>
+): Partial<ProductionFilters> {
+  if (filters.plants.length === 0) {
+    return { plants: [String(row.plant ?? "")] }
+  }
+  if (filters.lines.length === 0) {
+    return { lines: [String(row.line ?? "")] }
+  }
+  if (filters.stations.length === 0) {
+    return { stations: [String(row.station ?? "")] }
+  }
+  if (filters.machines.length === 0) {
+    return { machines: [String(row.machine ?? "")] }
+  }
+  return { controllers: [String(row.controller_id ?? "")] }
+}
+
+export function clearDrillFrom(
+  level: DrillLevel
+): Partial<ProductionFilters> {
+  switch (level) {
+    case "all":
+    case "plant":
+      return {
+        plants: [],
+        lines: [],
+        stations: [],
+        machines: [],
+        controllers: [],
+      }
+    case "line":
+      return { lines: [], stations: [], machines: [], controllers: [] }
+    case "station":
+      return { stations: [], machines: [], controllers: [] }
+    case "machine":
+      return { machines: [], controllers: [] }
+    case "controller":
+      return { controllers: [] }
+    default: {
+      const _exhaustive: never = level
+      return _exhaustive
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { toast } from "sonner"
 
 import { copyToClipboard } from "@/lib/download"
 import {
+  attachShareHash,
   buildJoinMessage,
   fetchLanShare,
   formatPeerLabel,
@@ -11,6 +12,7 @@ import {
   uniqueOperatingSystems,
   type LanShareInfo,
 } from "@/lib/lan"
+import { useFloorline } from "@/state/floorline-store"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -22,6 +24,7 @@ import {
 } from "@/components/ui/popover"
 
 export function LanShare() {
+  const { shareUrl } = useFloorline()
   const [info, setInfo] = useState<LanShareInfo | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -59,9 +62,8 @@ export function LanShare() {
         <PopoverHeader>
           <PopoverTitle>Share this instance</PopoverTitle>
           <PopoverDescription>
-            Other Windows, macOS, and Linux machines on the same shopfloor LAN
-            can open Floorline in their browser. Their operating system shows
-            up here. Data stays on this host.
+            Opens the same page and filters on this LAN. Data still stays on
+            this PC.
           </PopoverDescription>
         </PopoverHeader>
         {loading && !info ? (
@@ -87,12 +89,12 @@ export function LanShare() {
                     variant="secondary"
                     className="h-auto w-full justify-start whitespace-normal px-2 py-1 text-left text-xs"
                     onClick={() => {
-                      void copyToClipboard(url).then(() =>
-                        toast.success("LAN URL copied")
+                      void copyToClipboard(attachShareHash(url, shareUrl())).then(
+                        () => toast.success("LAN URL copied")
                       )
                     }}
                   >
-                    {url}
+                    {attachShareHash(url, shareUrl())}
                   </Button>
                 </li>
               ))}
@@ -110,7 +112,14 @@ export function LanShare() {
               size="sm"
               variant="outline"
               onClick={() => {
-                void copyToClipboard(buildJoinMessage(info)).then(() =>
+                void copyToClipboard(
+                  buildJoinMessage({
+                    ...info,
+                    urls: info.urls.map((url) =>
+                      attachShareHash(url, shareUrl())
+                    ),
+                  })
+                ).then(() =>
                   toast.success("Join message copied")
                 )
               }}

@@ -4,7 +4,7 @@ import {
   DOWNTIME_CATEGORIES,
 } from "@/lib/types"
 import { useState } from "react"
-import { toggleValue } from "@/lib/filters"
+import { finiteOrNull, toggleValue } from "@/lib/filters"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldGroup, FieldLabel, FieldSet, FieldLegend } from "@/components/ui/field"
@@ -173,7 +173,9 @@ export function FilterRail() {
               onChange={(event) =>
                 patchFilters({
                   minCycleMs:
-                    event.target.value === "" ? null : Number(event.target.value),
+                    event.target.value === ""
+                      ? null
+                      : finiteOrNull(Number(event.target.value)),
                 })
               }
             />
@@ -187,7 +189,9 @@ export function FilterRail() {
               onChange={(event) =>
                 patchFilters({
                   maxCycleMs:
-                    event.target.value === "" ? null : Number(event.target.value),
+                    event.target.value === ""
+                      ? null
+                      : finiteOrNull(Number(event.target.value)),
                 })
               }
             />

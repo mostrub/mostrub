@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest"
 
 import {
   EMPTY_FILTERS,
+  clearDrillFrom,
   decodeFilters,
+  drillGroupColumns,
   encodeFilters,
   escapeSqlLiteral,
+  finiteOrNull,
+  nextDrillPatch,
   sanitizeFilters,
   sqlFrom,
   sqlWhere,
@@ -118,6 +122,54 @@ describe("decodeFilters", () => {
     parsed.plants = "AUSTIN"
     const raw = btoa(unescape(encodeURIComponent(JSON.stringify(parsed))))
     expect(decodeFilters(raw)?.plants).toEqual([])
+  })
+})
+
+describe("finiteOrNull", () => {
+  it("rejects values that would interpolate as NaN in SQL", () => {
+    expect(finiteOrNull(Number("-"))).toBeNull()
+    expect(finiteOrNull(Number("."))).toBeNull()
+    expect(finiteOrNull(4000)).toBe(4000)
+  })
+})
+
+describe("one-level drill", () => {
+  it("groups the next unset hierarchy column", () => {
+    expect(drillGroupColumns(EMPTY_FILTERS)).toEqual(["plant"])
+    expect(
+      drillGroupColumns({ ...EMPTY_FILTERS, plants: ["AUSTIN"] })
+    ).toEqual(["plant", "line"])
+    expect(
+      drillGroupColumns({
+        ...EMPTY_FILTERS,
+        plants: ["AUSTIN"],
+        lines: ["ASM-1"],
+        stations: ["ST-04"],
+        machines: ["WELD-04"],
+      })
+    ).toEqual(["plant", "line", "station", "machine", "controller_id"])
+  })
+
+  it("pins only the next level from a hierarchy row", () => {
+    expect(nextDrillPatch(EMPTY_FILTERS, { plant: "AUSTIN", line: "ASM-1" })).toEqual({
+      plants: ["AUSTIN"],
+    })
+    expect(
+      nextDrillPatch(
+        { ...EMPTY_FILTERS, plants: ["AUSTIN"] },
+        { plant: "AUSTIN", line: "ASM-1" }
+      )
+    ).toEqual({ lines: ["ASM-1"] })
+  })
+
+  it("clears a breadcrumb level and everything below it", () => {
+    expect(clearDrillFrom("line")).toEqual({
+      lines: [],
+      stations: [],
+      machines: [],
+      controllers: [],
+    })
+    expect(clearDrillFrom("all").plants).toEqual([])
   })
 })
 

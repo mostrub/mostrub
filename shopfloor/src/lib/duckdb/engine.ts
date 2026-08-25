@@ -17,7 +17,7 @@ import {
   loadAllParquet,
   persistParquet,
 } from "@/lib/duckdb/persist"
-import { guessTable } from "@/lib/ingest-kind"
+import { TABLE_PRIMARY_KEY, guessTable } from "@/lib/ingest-kind"
 import { TABLE_NAMES, type ProductionBatch, type TableName } from "@/lib/types"
 
 export type EngineInitResult = {
@@ -137,12 +137,17 @@ async function registerJson(
 
 export async function ingestBatches(batches: ProductionBatch[]): Promise<void> {
   const { conn: connection } = requireConn()
-  const files = batches.map((batch) => batch.file)
-  const cycles = batches.flatMap((batch) => batch.cycles)
-  const downtime = batches.flatMap((batch) => batch.downtime)
-  const alarms = batches.flatMap((batch) => batch.alarms)
-  const serverSamples = batches.flatMap((batch) => batch.server_samples)
-  const controllers = batches.flatMap((batch) => batch.controllers)
+  const unique = new Map<string, ProductionBatch>()
+  for (const batch of batches) {
+    unique.set(batch.file.file_id, batch)
+  }
+  const deduped = [...unique.values()]
+  const files = deduped.map((batch) => batch.file)
+  const cycles = deduped.flatMap((batch) => batch.cycles)
+  const downtime = deduped.flatMap((batch) => batch.downtime)
+  const alarms = deduped.flatMap((batch) => batch.alarms)
+  const serverSamples = deduped.flatMap((batch) => batch.server_samples)
+  const controllers = deduped.flatMap((batch) => batch.controllers)
 
   await registerJson("ingest_files", files)
   await registerJson("cycles", cycles)
@@ -191,7 +196,26 @@ export async function ingestTabularFile(file: File): Promise<TableName> {
       `${file.name} does not match a Floorline table. Export CSV/Parquet from this app, or use ShopfloorExport XML.`
     )
   }
-  await connection.query(`INSERT INTO ${table} BY NAME SELECT * FROM ${reader}`)
+  const pk = TABLE_PRIMARY_KEY[table]
+  const hasFileId = columns.includes("file_id")
+  const hasPk = columns.includes(pk)
+  await connection.query("BEGIN TRANSACTION")
+  try {
+    if (hasFileId) {
+      await connection.query(
+        `DELETE FROM ${table} WHERE file_id IN (SELECT DISTINCT file_id FROM ${reader})`
+      )
+    } else if (hasPk) {
+      await connection.query(
+        `DELETE FROM ${table} WHERE ${pk} IN (SELECT DISTINCT ${pk} FROM ${reader})`
+      )
+    }
+    await connection.query(`INSERT INTO ${table} BY NAME SELECT * FROM ${reader}`)
+    await connection.query("COMMIT")
+  } catch (err) {
+    await connection.query("ROLLBACK")
+    throw err
+  }
   await persistAllTables()
   return table
 }
@@ -221,6 +245,23 @@ async function restorePersisted(): Promise<TableName[]> {
       } catch {
         // Cache cleanup must not take down a fresh session.
       }
+    }
+    try {
+      await instance.dropFile(path)
+    } catch {
+      // Restore files are ephemeral.
+    }
+  }
+  const factFailed = failed.some((table) => table !== "ingest_files")
+  if (factFailed) {
+    await connection.query("DELETE FROM ingest_files")
+    try {
+      await deleteParquet("ingest_files")
+    } catch {
+      // Ignore cache cleanup.
+    }
+    if (!failed.includes("ingest_files")) {
+      failed.push("ingest_files")
     }
   }
   return failed

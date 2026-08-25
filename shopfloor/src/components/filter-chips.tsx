@@ -36,6 +36,48 @@ export function FilterChips() {
       {chip("SKU", filters.skus, () => patchFilters({ skus: [] }))}
       {chip("WO", filters.workOrders, () => patchFilters({ workOrders: [] }))}
       {chip("Result", filters.results, () => patchFilters({ results: [] }))}
+      {chip("Severity", filters.severities, () =>
+        patchFilters({ severities: [] })
+      )}
+      {chip("Downtime", filters.downtimeCategories, () =>
+        patchFilters({ downtimeCategories: [] })
+      )}
+      {filters.from ? (
+        <Button
+          size="xs"
+          variant="secondary"
+          onClick={() => patchFilters({ from: null })}
+        >
+          From {filters.from.slice(0, 16).replace("T", " ")}
+        </Button>
+      ) : null}
+      {filters.to ? (
+        <Button
+          size="xs"
+          variant="secondary"
+          onClick={() => patchFilters({ to: null })}
+        >
+          To {filters.to.slice(0, 16).replace("T", " ")}
+        </Button>
+      ) : null}
+      {filters.minCycleMs !== null ? (
+        <Button
+          size="xs"
+          variant="secondary"
+          onClick={() => patchFilters({ minCycleMs: null })}
+        >
+          Min cycle {filters.minCycleMs} ms
+        </Button>
+      ) : null}
+      {filters.maxCycleMs !== null ? (
+        <Button
+          size="xs"
+          variant="secondary"
+          onClick={() => patchFilters({ maxCycleMs: null })}
+        >
+          Max cycle {filters.maxCycleMs} ms
+        </Button>
+      ) : null}
       {filters.search ? (
         <Button
           size="xs"

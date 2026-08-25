@@ -119,6 +119,12 @@ export async function reportPresence(): Promise<void> {
   }
 }
 
+export function attachShareHash(lanUrl: string, shareUrl: string): string {
+  const hashIndex = shareUrl.indexOf("#")
+  const hash = hashIndex >= 0 ? shareUrl.slice(hashIndex) : ""
+  return `${lanUrl.replace(/\/?#.*$/, "").replace(/\/$/, "")}/${hash}`
+}
+
 export function buildJoinMessage(info: LanShareInfo): string {
   const hostOs = hostOperatingSystemLabel(info.platform, info.os)
   const systems = uniqueOperatingSystems(info.peers)
