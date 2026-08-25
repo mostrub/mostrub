@@ -296,7 +296,7 @@ export function DashboardPage() {
                   stackId="mix"
                   stroke="var(--color-good_units)"
                   fill="var(--color-good_units)"
-                  fillOpacity={0.85}
+                  fillOpacity={1}
                 />
                 <Area
                   type="monotone"
@@ -304,7 +304,7 @@ export function DashboardPage() {
                   stackId="mix"
                   stroke="var(--color-rework_units)"
                   fill="var(--color-rework_units)"
-                  fillOpacity={0.85}
+                  fillOpacity={1}
                 />
                 <Area
                   type="monotone"
@@ -312,7 +312,7 @@ export function DashboardPage() {
                   stackId="mix"
                   stroke="var(--color-scrap_units)"
                   fill="var(--color-scrap_units)"
-                  fillOpacity={0.85}
+                  fillOpacity={1}
                 />
               </AreaChart>
             </ChartContainer>

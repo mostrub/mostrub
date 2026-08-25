@@ -48,7 +48,11 @@ export function OeeRings(args: { oee: OeeParts }) {
         >
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
           <ChartTooltip content={<ChartTooltipContent />} />
-          <RadialBar dataKey="value" background cornerRadius={4} />
+          <RadialBar
+            dataKey="value"
+            background={{ fill: "var(--muted)" }}
+            cornerRadius={4}
+          />
         </RadialBarChart>
       </ChartContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
