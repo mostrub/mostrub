@@ -37,6 +37,7 @@ export const APP_VIEWS = [
   "ingest",
   "dashboard",
   "triage",
+  "olap",
   "servers",
   "explorer",
   "reports",

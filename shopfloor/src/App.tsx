@@ -4,6 +4,7 @@ import { DashboardPage } from "@/pages/dashboard-page"
 import { ExplorerPage } from "@/pages/explorer-page"
 import { ExportPage } from "@/pages/export-page"
 import { IngestPage } from "@/pages/ingest-page"
+import { OlapPage } from "@/pages/olap-page"
 import { ReportsPage } from "@/pages/reports-page"
 import { ServersPage } from "@/pages/servers-page"
 import { TriagePage } from "@/pages/triage-page"
@@ -28,6 +29,8 @@ function renderView(view: AppView) {
       return <DashboardPage />
     case "triage":
       return <TriagePage />
+    case "olap":
+      return <OlapPage />
     case "servers":
       return <ServersPage />
     case "explorer":
