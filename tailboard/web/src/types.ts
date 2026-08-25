@@ -116,6 +116,7 @@ export type Board = {
   memos: Memo[];
   briefing?: Briefing | null;
   events: Event[];
+  sparklines?: Record<string, Sample[]>;
 };
 
 export type Sample = {

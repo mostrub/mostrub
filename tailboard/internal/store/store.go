@@ -136,7 +136,7 @@ func (s *Store) RecordSnapshot(snap model.Snapshot) error {
 	if _, err := tx.Exec(`DELETE FROM samples WHERE ts < ?`, cutoff); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`DELETE FROM snapshots WHERE ts < ?`, cutoff); err != nil {
+	if _, err := tx.Exec(`DELETE FROM snapshots WHERE ts < ?`, ts); err != nil {
 		return err
 	}
 	if _, err := tx.Exec(`DELETE FROM events WHERE ts < ?`, cutoff); err != nil {
@@ -167,6 +167,26 @@ func (s *Store) IsKnown(nodeID string) (bool, error) {
 	return n > 0, err
 }
 
+func (s *Store) RecentSamples(since time.Time) (map[string][]model.Sample, error) {
+	rows, err := s.db.Query(
+		`SELECT ts, node_id, online, latency_ms, rx_bytes, tx_bytes, relay, state FROM samples WHERE ts >= ? ORDER BY node_id, ts ASC`,
+		since.UnixMilli(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := map[string][]model.Sample{}
+	for rows.Next() {
+		sample, err := scanSample(rows)
+		if err != nil {
+			return nil, err
+		}
+		out[sample.NodeID] = append(out[sample.NodeID], sample)
+	}
+	return out, rows.Err()
+}
+
 func (s *Store) History(nodeID string, since time.Time) ([]model.Sample, error) {
 	rows, err := s.db.Query(
 		`SELECT ts, node_id, online, latency_ms, rx_bytes, tx_bytes, relay, state FROM samples WHERE node_id = ? AND ts >= ? ORDER BY ts ASC`,
@@ -178,26 +198,38 @@ func (s *Store) History(nodeID string, since time.Time) ([]model.Sample, error) 
 	defer rows.Close()
 	var out []model.Sample
 	for rows.Next() {
-		var (
-			ts     int64
-			online int
-			lat    sql.NullFloat64
-			srow   model.Sample
-			state  string
-		)
-		if err := rows.Scan(&ts, &srow.NodeID, &online, &lat, &srow.RxBytes, &srow.TxBytes, &srow.Relay, &state); err != nil {
+		sample, err := scanSample(rows)
+		if err != nil {
 			return nil, err
 		}
-		srow.TS = time.UnixMilli(ts).UTC()
-		srow.Online = online == 1
-		srow.State = model.NodeState(state)
-		if lat.Valid {
-			v := lat.Float64
-			srow.LatencyMS = &v
-		}
-		out = append(out, srow)
+		out = append(out, sample)
 	}
 	return out, rows.Err()
+}
+
+type rowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanSample(row rowScanner) (model.Sample, error) {
+	var (
+		ts     int64
+		online int
+		lat    sql.NullFloat64
+		srow   model.Sample
+		state  string
+	)
+	if err := row.Scan(&ts, &srow.NodeID, &online, &lat, &srow.RxBytes, &srow.TxBytes, &srow.Relay, &state); err != nil {
+		return model.Sample{}, err
+	}
+	srow.TS = time.UnixMilli(ts).UTC()
+	srow.Online = online == 1
+	srow.State = model.NodeState(state)
+	if lat.Valid {
+		v := lat.Float64
+		srow.LatencyMS = &v
+	}
+	return srow, nil
 }
 
 func (s *Store) FlapCount(nodeID string, since time.Time) (int, error) {

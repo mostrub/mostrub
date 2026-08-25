@@ -64,10 +64,31 @@ func (c *Collector) Collect(ctx context.Context) (model.Snapshot, error) {
 		if adminErr == nil {
 			return adminSnap, nil
 		}
-		snap := c.Fixture.Collect(time.Now().UTC())
-		snap.ReaderError = "live readers unavailable; fixture signal on. local: " + localErr.Error() + "; admin: " + adminErr.Error()
-		return snap, nil
+		return model.Snapshot{}, errReader("live readers unavailable; local: " + localErr.Error() + "; admin: " + adminErr.Error())
 	}
+}
+
+// RecoverLiveOrFixture keeps a live last-good snapshot when readers fail.
+// The fixture is only used when no live inventory has ever been stored.
+func RecoverLiveOrFixture(err error, last *model.Snapshot, now time.Time, fixture *Fixture) model.Snapshot {
+	msg := "live readers unavailable"
+	if err != nil {
+		msg = err.Error()
+	}
+	if last != nil && last.Source != model.SourceFixture {
+		keep := *last
+		keep.CollectedAt = now
+		keep.ReaderError = msg
+		return keep
+	}
+	var snap model.Snapshot
+	if fixture != nil {
+		snap = fixture.Collect(now)
+	} else {
+		snap = model.Snapshot{CollectedAt: now, Source: model.SourceFixture, BackendState: "Unknown"}
+	}
+	snap.ReaderError = msg
+	return snap
 }
 
 type readerError string

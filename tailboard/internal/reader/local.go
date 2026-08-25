@@ -30,7 +30,9 @@ func (l *Local) Collect(ctx context.Context) (model.Snapshot, error) {
 		CollectedAt: time.Now().UTC(),
 		Source:      model.SourceLocal,
 	}
-	out, err := l.run(ctx, "status", "--json")
+	sctx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	defer cancel()
+	out, err := l.run(sctx, "status", "--json")
 	if err != nil {
 		return snap, err
 	}
@@ -214,5 +216,5 @@ func isSingleTailscaleIP(route string, addrs []string) bool {
 			return true
 		}
 	}
-	return strings.HasSuffix(route, "/32") || strings.HasSuffix(route, "/128")
+	return false
 }

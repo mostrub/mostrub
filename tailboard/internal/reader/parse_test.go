@@ -109,6 +109,50 @@ func TestFixtureJails(t *testing.T) {
 	}
 }
 
+func TestAdminDefaultRouteIsExit(t *testing.T) {
+	raw := []byte(`{
+	  "devices": [{
+	    "id": "9",
+	    "nodeId": "n-exit",
+	    "hostname": "exit-nyc",
+	    "name": "exit-nyc.plant.ts.net",
+	    "os": "linux",
+	    "authorized": true,
+	    "connectedToControl": true,
+	    "advertisedRoutes": ["0.0.0.0/0", "::/0"],
+	    "enabledRoutes": ["0.0.0.0/0"]
+	  }]
+	}`)
+	var payload adminDevices
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		t.Fatal(err)
+	}
+	n := adminDeviceToNode(payload.Devices[0])
+	if !n.Exit || n.Role != "exit" {
+		t.Fatalf("admin exit=%+v", n)
+	}
+	if n.Subnet {
+		t.Fatalf("default-only exit should not be a subnet router")
+	}
+}
+
+func TestLocalHostRouteIsSubnet(t *testing.T) {
+	peer := localPeer{
+		ID: "n-ot", HostName: "plc-gw", OS: "linux",
+		TailscaleIPs: []string{"100.64.1.40"},
+		Online:       true,
+		Active:       true,
+		AllowedIPs:   []string{"100.64.1.40/32", "192.168.1.50/32"},
+	}
+	n := localPeerToNode(peer, false)
+	if !n.Subnet {
+		t.Fatalf("192.168.1.50/32 should stay as an enabled route, got %+v", n)
+	}
+	if len(n.EnabledRoutes) != 1 || n.EnabledRoutes[0] != "192.168.1.50/32" {
+		t.Fatalf("routes=%v", n.EnabledRoutes)
+	}
+}
+
 func TestParsePingMS(t *testing.T) {
 	ms := parsePingMS("pong from exit-nyc (100.64.1.30) via DERP(nyc) in 32.1ms\n")
 	if ms == nil || *ms < 32 || *ms > 33 {

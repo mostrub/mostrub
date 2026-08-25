@@ -81,3 +81,35 @@ func TestResolveWhenNodeReturns(t *testing.T) {
 		t.Fatalf("expected resolve, opened=%v", res.Opened)
 	}
 }
+
+func TestLiveReaderErrorIsCritical(t *testing.T) {
+	st, err := store.Open(filepath.Join(t.TempDir(), "t.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = st.Close() })
+	eng := &Engine{Store: st}
+	snap := model.Snapshot{
+		CollectedAt: time.Date(2026, 8, 25, 14, 0, 0, 0, time.UTC),
+		Source:      model.SourceAdmin,
+		Tailnet:     "plant.tailnet",
+		ReaderError: "admin 401",
+		Nodes:       []model.Node{{ID: "n-real", Hostname: "nas-core", Authorized: true, Online: true}},
+	}
+	if _, err := eng.Evaluate(snap); err != nil {
+		t.Fatal(err)
+	}
+	open, err := st.OpenAlerts()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found bool
+	for _, a := range open {
+		if a.Kind == model.KindReaderError && a.Severity == model.SeverityCritical {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected critical reader_error, got %#v", open)
+	}
+}

@@ -14,14 +14,18 @@ import (
 )
 
 type Admin struct {
-	BaseURL    string
-	APIKey     string
-	ClientID   string
-	ClientSec  string
-	Tailnet    string
-	HTTP       *http.Client
-	token      string
-	tokenExp   time.Time
+	BaseURL     string
+	APIKey      string
+	ClientID    string
+	ClientSec   string
+	Tailnet     string
+	HTTP        *http.Client
+	MinInterval time.Duration
+	token       string
+	tokenExp    time.Time
+	lastAt      time.Time
+	lastSnap    model.Snapshot
+	lastErr     error
 }
 
 func (a *Admin) Enabled() bool {
@@ -29,6 +33,23 @@ func (a *Admin) Enabled() bool {
 }
 
 func (a *Admin) Collect(ctx context.Context) (model.Snapshot, error) {
+	interval := a.MinInterval
+	if interval <= 0 {
+		interval = 60 * time.Second
+	}
+	if !a.lastAt.IsZero() && time.Since(a.lastAt) < interval && a.lastErr == nil {
+		cached := a.lastSnap
+		cached.CollectedAt = time.Now().UTC()
+		return cached, nil
+	}
+	snap, err := a.collectNow(ctx)
+	a.lastAt = time.Now().UTC()
+	a.lastSnap = snap
+	a.lastErr = err
+	return snap, err
+}
+
+func (a *Admin) collectNow(ctx context.Context) (model.Snapshot, error) {
 	snap := model.Snapshot{
 		CollectedAt: time.Now().UTC(),
 		Source:      model.SourceAdmin,

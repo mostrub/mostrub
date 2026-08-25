@@ -40,6 +40,52 @@ func TestRecordAndHistory(t *testing.T) {
 	}
 }
 
+func TestRecordSnapshotKeepsOnlyLatestInventory(t *testing.T) {
+	st := openTest(t)
+	now := time.Date(2026, 8, 25, 13, 0, 0, 0, time.UTC)
+	first := model.Snapshot{CollectedAt: now, Source: model.SourceAdmin, Tailnet: "old"}
+	second := model.Snapshot{CollectedAt: now.Add(time.Minute), Source: model.SourceAdmin, Tailnet: "new"}
+	if err := st.RecordSnapshot(first); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.RecordSnapshot(second); err != nil {
+		t.Fatal(err)
+	}
+	n, err := st.snapshotCount()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != 1 {
+		t.Fatalf("kept %d snapshots, want 1", n)
+	}
+	got, err := st.LatestSnapshot()
+	if err != nil || got == nil || got.Tailnet != "new" {
+		t.Fatalf("latest=%+v err=%v", got, err)
+	}
+}
+
+func TestRecentSamplesByNode(t *testing.T) {
+	st := openTest(t)
+	now := time.Date(2026, 8, 25, 13, 20, 0, 0, time.UTC)
+	for i := 0; i < 3; i++ {
+		snap := model.Snapshot{
+			CollectedAt: now.Add(time.Duration(i) * time.Minute),
+			Source:      model.SourceLocal,
+			Nodes:       []model.Node{{ID: "n-a", Online: i%2 == 0}, {ID: "n-b", Online: true}},
+		}
+		if err := st.RecordSnapshot(snap); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := st.RecentSamples(now.Add(-20 * time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got["n-a"]) != 3 || len(got["n-b"]) != 3 {
+		t.Fatalf("sparklines=%v", got)
+	}
+}
+
 func TestAlertLifecycle(t *testing.T) {
 	st := openTest(t)
 	now := time.Now().UTC()
@@ -65,6 +111,12 @@ func TestAlertLifecycle(t *testing.T) {
 	if err != nil || len(open) != 0 {
 		t.Fatalf("expected resolved, got %v", open)
 	}
+}
+
+func (s *Store) snapshotCount() (int, error) {
+	var n int
+	err := s.db.QueryRow(`SELECT COUNT(1) FROM snapshots`).Scan(&n)
+	return n, err
 }
 
 func openTest(t *testing.T) *Store {

@@ -100,7 +100,11 @@ func run(args []string) error {
 		defer cancel()
 		_ = httpSrv.Shutdown(c)
 	}()
-	log.Printf("board on http://127.0.0.1%s  mode=%s  data=%s", *listen, *mode, *data)
+	shown := *listen
+	if strings.HasPrefix(shown, ":") {
+		shown = "127.0.0.1" + shown
+	}
+	log.Printf("board on http://%s  bind=%s  mode=%s  data=%s  (no auth; trusted LAN)", shown, *listen, *mode, *data)
 	if err := httpSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
 	}

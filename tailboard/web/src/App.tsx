@@ -91,6 +91,9 @@ export function App() {
         setLocked((v) => !v);
       } else if (ev.key === "k") {
         setKiosk((v) => !v);
+      } else if (ev.key === "Enter") {
+        ev.preventDefault();
+        document.getElementById("node-grid")?.focus();
       } else if (ev.key === "a") {
         const first = board?.alerts.find((x) => !x.ackedAt);
         if (first) {
@@ -118,11 +121,16 @@ export function App() {
 
   const historyByNode = useMemo(() => {
     const m = new Map<string, Sample[]>();
+    if (board?.sparklines) {
+      for (const [id, samples] of Object.entries(board.sparklines)) {
+        m.set(id, samples);
+      }
+    }
     if (detail) {
       m.set(detail.node.id, detail.history ?? []);
     }
     return m;
-  }, [detail]);
+  }, [board?.sparklines, detail]);
 
   if (!board) {
     return <div className="board loading">acquiring signal…</div>;
@@ -216,7 +224,7 @@ export function App() {
               kiosk
             </button>
           </div>
-          <div className="grid">
+          <div className="grid" id="node-grid">
             {visible.map((n) => (
               <button
                 key={n.id}
@@ -236,7 +244,7 @@ export function App() {
                   <span>{n.relay || "—"}</span>
                   <span>{n.latencyMs == null ? "—" : `${Math.round(n.latencyMs)} ms`}</span>
                 </div>
-                <Sparkline samples={n.id === detail?.node.id ? historyByNode.get(n.id) ?? samplesFromNode(n) : samplesFromNode(n)} />
+                    <Sparkline samples={historyByNode.get(n.id) ?? samplesFromNode(n)} />
                 <div className="cell-bot">
                   <span>{(n.addresses ?? [])[0] ?? "no ip"}</span>
                   <span>{n.jail ? "JAIL" : n.tags?.[0] ?? n.user}</span>

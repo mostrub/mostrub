@@ -110,13 +110,8 @@ func (s *Server) Run(ctx context.Context) error {
 func (s *Server) poll(ctx context.Context) {
 	snap, err := s.collect.Collect(ctx)
 	if err != nil {
-		snap = model.Snapshot{CollectedAt: s.cfg.Now(), Source: model.SourceFixture, ReaderError: err.Error(), BackendState: "Unknown"}
-		if last, lerr := s.store.LatestSnapshot(); lerr == nil && last != nil {
-			keep := *last
-			keep.CollectedAt = s.cfg.Now()
-			keep.ReaderError = err.Error()
-			snap = keep
-		}
+		last, _ := s.store.LatestSnapshot()
+		snap = reader.RecoverLiveOrFixture(err, last, s.cfg.Now(), s.collect.Fixture)
 	}
 	res, err := s.engine.Evaluate(snap)
 	if err != nil {
@@ -170,14 +165,19 @@ func (s *Server) board() (model.Board, error) {
 	if err != nil {
 		return model.Board{}, err
 	}
+	sparks, err := s.store.RecentSamples(s.cfg.Now().Add(-20 * time.Minute))
+	if err != nil {
+		return model.Board{}, err
+	}
 	return model.Board{
-		Signal:   model.SignalFrom(alerts),
-		Snapshot: *snap,
-		KPI:      model.ComputeKPI(snap.Nodes, len(snap.Health)),
-		Alerts:   alerts,
-		Memos:    memos,
-		Briefing: br,
-		Events:   events,
+		Signal:     model.SignalFrom(alerts),
+		Snapshot:   *snap,
+		KPI:        model.ComputeKPI(snap.Nodes, len(snap.Health)),
+		Alerts:     alerts,
+		Memos:      memos,
+		Briefing:   br,
+		Events:     events,
+		Sparklines: sparks,
 	}, nil
 }
 
@@ -304,7 +304,10 @@ func (s *Server) handleMemoPin(w http.ResponseWriter, r *http.Request) {
 	var in struct {
 		Pinned bool `json:"pinned"`
 	}
-	_ = json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&in)
+	if err := json.NewDecoder(io.LimitReader(r.Body, 4096)).Decode(&in); err != nil {
+		http.Error(w, "bad json", 400)
+		return
+	}
 	if err := s.store.SetMemoPin(id, in.Pinned); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -398,9 +401,18 @@ func (s *Server) postWebhook(a model.Alert, snap model.Snapshot) {
 	if s.cfg.Webhook == "" {
 		return
 	}
+	var node *model.Node
+	for i := range snap.Nodes {
+		if snap.Nodes[i].ID == a.NodeID {
+			n := snap.Nodes[i]
+			node = &n
+			break
+		}
+	}
 	body, err := json.Marshal(map[string]any{
-		"alert":  a,
-		"signal": model.SignalFrom([]model.Alert{a}),
+		"alert":   a,
+		"node":    node,
+		"signal":  model.SignalFrom([]model.Alert{a}),
 		"tailnet": snap.Tailnet,
 	})
 	if err != nil {

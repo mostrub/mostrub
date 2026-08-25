@@ -21,7 +21,7 @@ Tailboard does not scrape the admin website. It uses the published Tailscale rea
 
 When both are present they merge. Local wins for live path. Admin wins for authorization, routes, and key policy.
 
-If neither is available the board still runs a full industrial fixture tailnet so the TV is never blank. A yellow banner says it is a demo signal.
+If neither live reader is available and no live inventory has been stored yet, the board runs a full industrial fixture tailnet so the TV is never blank. A yellow banner says it is a demo signal. After a live snapshot has been seen, a reader failure keeps that last-good inventory on the glass and trips a critical `reader_error`.
 
 ## Run
 
@@ -34,6 +34,8 @@ make build
 
 Open `http://127.0.0.1:4747`. Full-screen that URL on the TV.
 
+The listener has no login. Default bind is `:4747` on every interface. Treat it as a trusted-LAN kiosk: put the host on Tailscale or bind `127.0.0.1:4747` and reverse-proxy. ACK, memo, and briefing refresh are writable from anyone who can reach the port.
+
 | Variable | Purpose |
 | --- | --- |
 | `TAILSCALE_API_KEY` | Admin API key |
@@ -43,7 +45,7 @@ Open `http://127.0.0.1:4747`. Full-screen that URL on the TV.
 | `TAILBOARD_LISTEN` | default `:4747` |
 | `TAILBOARD_DATA` | SQLite file, default `tailboard.db` |
 | `TAILBOARD_POLL` | default `15s` |
-| `TAILBOARD_WEBHOOK` | POST JSON on each new alert |
+| `TAILBOARD_WEBHOOK` | POST JSON `{alert, node, signal, tailnet}` on each new alert |
 | `TAILBOARD_AI_URL` / `TAILBOARD_AI_KEY` / `TAILBOARD_AI_MODEL` | optional AI desk |
 | `TAILBOARD_PING=1` | sample live RTT via `tailscale ping` |
 
@@ -89,7 +91,7 @@ Kiosk mode walks the selected node every 20 seconds. Press L to lock. Click once
 
 Offline jail, exit, or subnet router. Unauthorized device. tailscaled not Running. Health strings. High DERP / ping RTT. Key expiry inside 7 days. Flapping. First-seen node. Reader failure.
 
-Acknowledging holds the lamp. It does not delete history and it does not stop the next trip.
+Acknowledging silences the masthead lamp. The row stays on the rail as HELD. It does not delete history and it does not stop the next trip.
 
 ## Small hardware
 

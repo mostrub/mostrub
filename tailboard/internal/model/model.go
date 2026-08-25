@@ -190,13 +190,14 @@ type KPI struct {
 }
 
 type Board struct {
-	Signal   Signal    `json:"signal"`
-	Snapshot Snapshot  `json:"snapshot"`
-	KPI      KPI       `json:"kpi"`
-	Alerts   []Alert   `json:"alerts"`
-	Memos    []Memo    `json:"memos"`
-	Briefing *Briefing `json:"briefing,omitempty"`
-	Events   []Event   `json:"events"`
+	Signal     Signal              `json:"signal"`
+	Snapshot   Snapshot            `json:"snapshot"`
+	KPI        KPI                 `json:"kpi"`
+	Alerts     []Alert             `json:"alerts"`
+	Memos      []Memo              `json:"memos"`
+	Briefing   *Briefing           `json:"briefing,omitempty"`
+	Events     []Event             `json:"events"`
+	Sparklines map[string][]Sample `json:"sparklines,omitempty"`
 }
 
 func IsJail(hostname, name, os string, tags []string) bool {
@@ -216,9 +217,35 @@ func IsJail(hostname, name, os string, tags []string) bool {
 	return false
 }
 
+func IsDefaultRoute(route string) bool {
+	return route == "0.0.0.0/0" || route == "::/0"
+}
+
+func hasDefaultRoute(routes []string) bool {
+	for _, r := range routes {
+		if IsDefaultRoute(r) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasNonDefaultRoute(routes []string) bool {
+	for _, r := range routes {
+		if r != "" && !IsDefaultRoute(r) {
+			return true
+		}
+	}
+	return false
+}
+
 func Classify(n *Node) {
 	n.Jail = IsJail(n.Hostname, n.Name, n.OS, n.Tags)
-	n.Subnet = len(n.EnabledRoutes) > 0 || len(n.AdvertisedRoutes) > 0
+	if hasDefaultRoute(n.EnabledRoutes) || hasDefaultRoute(n.AdvertisedRoutes) {
+		n.Exit = true
+		n.ExitOption = true
+	}
+	n.Subnet = hasNonDefaultRoute(n.EnabledRoutes) || hasNonDefaultRoute(n.AdvertisedRoutes)
 	switch {
 	case !n.Authorized:
 		n.State = NodeUnauthorized
@@ -252,7 +279,7 @@ func Classify(n *Node) {
 func SignalFrom(alerts []Alert) Signal {
 	worst := SignalClear
 	for _, a := range alerts {
-		if a.ResolvedAt != nil {
+		if a.ResolvedAt != nil || a.AckedAt != nil {
 			continue
 		}
 		switch a.Severity {
