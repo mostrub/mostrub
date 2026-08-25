@@ -87,7 +87,7 @@ export function FilterRail() {
                 <Input
                   id="preset-name"
                   value={presetName}
-                  placeholder="ASM-2 night"
+                  placeholder="CELL-1 night"
                   onChange={(event) => setPresetName(event.target.value)}
                 />
               </Field>
