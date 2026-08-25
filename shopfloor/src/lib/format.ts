@@ -13,6 +13,10 @@ export function formatPct(value: number): string {
   return `${formatNumber(value, 1)}%`
 }
 
+export function formatMoney(value: number): string {
+  return `$${formatNumber(value, 2)}`
+}
+
 export function cellText(value: string | number | boolean | null): string {
   if (value === null) {
     return ""

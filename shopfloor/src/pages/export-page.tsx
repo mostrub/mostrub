@@ -87,13 +87,13 @@ export function ExportPage() {
         <CardContent className="flex flex-col gap-3">
           <pre className="overflow-auto rounded-lg bg-muted p-3 text-xs">
 {`<ShopfloorExport plant="AUSTIN" sourceShare="\\\\mes-aus-01\\production\\xml" shift="A">
-  <Cycle id="..." line="ASM-1" station="ST-04" machine="WELD-04"
-         controller="PLC-WELD-04" workOrder="WO-1" sku="BRK-440"
+  <Cycle id="..." line="CELL-1" station="ST-04" machine="CELL-1-ST-04"
+         controller="PLC-CELL-1-ST-04" workOrder="WO-1" sku="CELL-2170"
          result="PASS" cycleMs="11000" targetCycleMs="11000" ... />
-  <Downtime ... category="UNPLANNED" />
+  <Downtime ... category="UNPLANNED" reasonCode="STARVE" />
   <Alarm ... severity="CRITICAL" />
-  <ServerSample serverId="SRV-AUS-ASM-1-MES" role="MES" cpuPct="42" ... />
-  <Controller id="PLC-WELD-04" vendor="Siemens" scanMsP95="14.1" runMode="RUN" />
+  <ServerSample serverId="SRV-AUS-CELL-1-MES" role="MES" cpuPct="42" ... />
+  <Controller id="PLC-CELL-1-ST-04" vendor="Siemens" scanMsP95="14.1" runMode="RUN" />
 </ShopfloorExport>`}
           </pre>
           <Button

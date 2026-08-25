@@ -50,16 +50,16 @@ const PLANTS = {
     share: "\\\\mes-aus-01\\production\\xml\\2026-08-25",
     lines: [
       {
-        line: "ASM-1",
+        line: "CELL-1",
         stations: ["ST-01", "ST-02", "ST-04"],
-        skus: ["BRK-440", "BRK-441"],
+        skus: ["CELL-2170", "CELL-4680"],
         target: 11000,
         failRate: 0.04,
       },
       {
-        line: "ASM-2",
+        line: "MOD-1",
         stations: ["ST-10", "ST-11"],
-        skus: ["HSG-220"],
+        skus: ["MOD-12S"],
         target: 9000,
         failRate: 0.11,
       },
@@ -72,7 +72,7 @@ const PLANTS = {
       {
         line: "PACK-1",
         stations: ["PK-01", "PK-02"],
-        skus: ["KIT-90"],
+        skus: ["PACK-400V"],
         target: 6500,
         failRate: 0.03,
       },
@@ -81,10 +81,10 @@ const PLANTS = {
 } as const
 
 const FAIL_CODES = [
-  { code: "E12", reason: "weld porosity" },
-  { code: "E18", reason: "torque below min" },
-  { code: "E22", reason: "vision mismatch" },
-  { code: "E31", reason: "press force high" },
+  { code: "E12", reason: "tab weld porosity" },
+  { code: "E18", reason: "formation voltage low" },
+  { code: "E22", reason: "electrolyte leak" },
+  { code: "E31", reason: "stack force high" },
 ] as const
 
 const DT_REASONS = [
@@ -92,7 +92,7 @@ const DT_REASONS = [
   { code: "JAM", text: "conveyor jam", category: "UNPLANNED" },
   { code: "TOOL", text: "tool change", category: "PLANNED" },
   { code: "CO", text: "sku changeover", category: "CHANGEOVER" },
-  { code: "STARVE", text: "upstream starve", category: "UNPLANNED" },
+  { code: "STARVE", text: "upstream line starved this station", category: "UNPLANNED" },
 ] as const
 
 const ALARM_BANK = [
@@ -113,7 +113,7 @@ export function buildShareSampleFiles(): ShareFile[] {
   const start = Date.parse("2026-08-24T22:00:00Z")
   return [
     buildPlantFile({
-      fileName: "austin-asm-shift-a.xml",
+      fileName: "austin-cell-mod-shift-a.xml",
       plantKey: "austin",
       shift: "A",
       seed: 4401,
@@ -122,7 +122,7 @@ export function buildShareSampleFiles(): ShareFile[] {
       includeServers: true,
     }),
     buildPlantFile({
-      fileName: "austin-asm-shift-b.xml",
+      fileName: "austin-cell-mod-shift-b.xml",
       plantKey: "austin",
       shift: "B",
       seed: 4402,
@@ -176,18 +176,18 @@ function buildPlantFile(args: {
           rack: 0,
           slot: 1,
           scanMsAvg: between(rng, 6, 14).toFixed(1),
-          scanMsP95: between(rng, 12, line.line === "ASM-2" ? 28 : 18).toFixed(1),
-          ioFaults: line.line === "ASM-2" ? Math.floor(between(rng, 1, 6)) : 0,
-          lastFaultCode: line.line === "ASM-2" ? "E401" : "",
+          scanMsP95: between(rng, 12, line.line === "MOD-1" ? 28 : 18).toFixed(1),
+          ioFaults: line.line === "MOD-1" ? Math.floor(between(rng, 1, 6)) : 0,
+          lastFaultCode: line.line === "MOD-1" ? "E401" : "",
           lastSeen: iso(args.start + args.hours * 3600_000),
-          runMode: line.line === "ASM-2" && rng() < 0.15 ? "FAULT" : "RUN",
+          runMode: line.line === "MOD-1" && rng() < 0.15 ? "FAULT" : "RUN",
         })}/>`
       )
 
       const cycleCount = 80 + Math.floor(rng() * 40)
       for (let i = 0; i < cycleCount; i += 1) {
         const started = args.start + Math.floor(rng() * args.hours * 3600_000)
-        const over = rng() < (line.line === "ASM-2" ? 0.22 : 0.08)
+          const over = rng() < (line.line === "MOD-1" ? 0.22 : 0.08)
         const cycleMs = Math.round(
           line.target * (over ? between(rng, 1.25, 1.7) : between(rng, 0.88, 1.08))
         )
@@ -268,7 +268,7 @@ function buildPlantFile(args: {
       const roles = ["MES", "HMI", "PLC-GATEWAY", "HISTORIAN"] as const
       for (const role of roles) {
         const serverId = `SRV-${plant.plant.slice(0, 3)}-${line.line}-${role}`
-        const hot = role === "PLC-GATEWAY" && line.line === "ASM-2"
+        const hot = role === "PLC-GATEWAY" && line.line === "MOD-1"
         const samples = 36
         for (let i = 0; i < samples; i += 1) {
           const sampled = args.start + Math.floor((i / samples) * args.hours * 3600_000)

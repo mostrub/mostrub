@@ -5,6 +5,7 @@ import { ExplorerPage } from "@/pages/explorer-page"
 import { ExportPage } from "@/pages/export-page"
 import { IngestPage } from "@/pages/ingest-page"
 import { OlapPage } from "@/pages/olap-page"
+import { PricingPage } from "@/pages/pricing-page"
 import { ReportsPage } from "@/pages/reports-page"
 import { ServersPage } from "@/pages/servers-page"
 import { TriagePage } from "@/pages/triage-page"
@@ -31,6 +32,8 @@ function renderView(view: AppView) {
       return <TriagePage />
     case "olap":
       return <OlapPage />
+    case "pricing":
+      return <PricingPage />
     case "servers":
       return <ServersPage />
     case "explorer":

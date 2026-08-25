@@ -38,6 +38,7 @@ export const APP_VIEWS = [
   "dashboard",
   "triage",
   "olap",
+  "pricing",
   "servers",
   "explorer",
   "reports",

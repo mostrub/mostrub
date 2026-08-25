@@ -1,6 +1,12 @@
 import { useEffect, useState, type KeyboardEvent } from "react"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
+import {
+  dependentLineDicePatch,
+  dependentLineSql,
+  pricingSql,
+  weightedMarginPct,
+} from "@/lib/battery"
 import type { QueryRow } from "@/lib/duckdb/engine"
 import { queryRows } from "@/lib/duckdb/engine"
 import { formatMinutes, formatNumber, formatPct } from "@/lib/format"
@@ -55,6 +61,8 @@ export function DashboardPage() {
   const [fails, setFails] = useState<QueryRow[]>([])
   const [hist, setHist] = useState<QueryRow[]>([])
   const [compare, setCompare] = useState<QueryRow[]>([])
+  const [priced, setPriced] = useState<QueryRow[]>([])
+  const [deps, setDeps] = useState<QueryRow[]>([])
   const [oee, setOee] = useState(computeOee({
     windowMs: 0,
     unplannedDowntimeMs: 0,
@@ -81,8 +89,21 @@ export function DashboardPage() {
       queryRows(oeeSql(filters)),
       queryRows(cycleHistogramSql(filters)),
       queryRows(shiftCompareSql(filters)),
+      queryRows(pricingSql(filters)),
+      queryRows(dependentLineSql(filters)),
     ])
-      .then(([kpiRows, hourRows, lineRows, dtRows, failRows, oeeRows, histRows, compareRows]) => {
+      .then(([
+        kpiRows,
+        hourRows,
+        lineRows,
+        dtRows,
+        failRows,
+        oeeRows,
+        histRows,
+        compareRows,
+        priceRows,
+        depRows,
+      ]) => {
         if (cancelled) {
           return
         }
@@ -93,6 +114,8 @@ export function DashboardPage() {
         setFails(failRows)
         setHist(histRows)
         setCompare(compareRows)
+        setPriced(priceRows)
+        setDeps(depRows)
         const oeeRow = oeeRows[0]
         setOee(
           computeOee({
@@ -132,10 +155,7 @@ export function DashboardPage() {
   const units = Number(kpis?.units ?? 0)
   const good = Number(kpis?.good_units ?? 0)
   const fpy = units === 0 ? 0 : (100 * good) / units
-  const pace =
-    Number(kpis?.avg_target_ms ?? 0) === 0
-      ? 0
-      : (100 * Number(kpis?.avg_target_ms ?? 0)) / Number(kpis?.avg_cycle_ms ?? 1)
+  const marginPct = weightedMarginPct(priced)
 
   return (
     <div className="flex flex-col gap-4">
@@ -183,9 +203,11 @@ export function DashboardPage() {
           onClick={() => setView("triage")}
         />
         <Kpi
-          label="Cycle vs target"
-          value={formatPct(pace)}
+          label="Margin %"
+          value={formatPct(marginPct)}
           busy={busy}
+          tone={marginPct < 35 ? "bad" : "ok"}
+          onClick={() => setView("pricing")}
         />
       </div>
       )}
@@ -285,6 +307,28 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <DataTable rows={compare} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Dependent lines</CardTitle>
+            <CardDescription>
+              Upstream unplanned downtime and STARVE minutes on the next line.
+              Click a row to open Pricing.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTable
+              rows={deps}
+              emptyLabel="No feeder edges in this filter."
+              onRowClick={(row) => {
+                const patch = dependentLineDicePatch(row)
+                if (Object.keys(patch).length > 0) {
+                  patchFilters(patch)
+                }
+                setView("pricing")
+              }}
+            />
           </CardContent>
         </Card>
       </div>
