@@ -53,7 +53,7 @@ describe("shift analytics and seed", () => {
     expect(line.inspected).toBe(72);
     expect(line._provenance.query).toBe("line_board");
     expect(line.stations.some((station) => station.last.length > 0)).toBe(true);
-    expect(line.hours.length).toBeGreaterThan(0);
+    expect(line.hours.map((row) => row.hour).sort((a, b) => a - b)).toEqual([6, 14, 22]);
     expect(line.defects.length).toBe(11);
     expect(line.stations.every((station) => station.inspected > 0)).toBe(true);
     const window = await ledger.latestShiftWindow();

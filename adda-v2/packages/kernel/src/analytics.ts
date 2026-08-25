@@ -193,7 +193,7 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
      GROUP BY station`,
   );
   const hours = await lake.query<{ hour: number; inspected: number; nio: number }>(
-    `SELECT CAST(date_part('hour', captured_at) AS INTEGER) AS hour,
+    `SELECT CAST(date_part('hour', timezone('Europe/Zurich', captured_at)) AS INTEGER) AS hour,
             COUNT(*)::INTEGER AS inspected,
             COUNT(*) FILTER (WHERE NOT part_ok)::INTEGER AS nio
      FROM lake.inspections
