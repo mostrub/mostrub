@@ -13,7 +13,7 @@ import {
   pinCaseSchema,
 } from "@ledger/types";
 import type { Ledger } from "@ledger/kernel";
-import { apiConfigFromEnv, bearerToken, isLoopback, type ApiConfig } from "./config.ts";
+import { apiConfigFromEnv, bearerToken, type ApiConfig } from "./config.ts";
 
 export type AppEnv = {
   Variables: {
@@ -34,7 +34,7 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
   app.use(
     "*",
     cors({
-      origin: (origin) => origin || "*",
+      origin: allowOrigin,
       allowMethods: ["GET", "POST", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
     }),
@@ -190,20 +190,30 @@ function denyIfIngestBlocked(c: { req: { header: (n: string) => string | undefin
   }
 }
 
+function allowOrigin(origin: string): string {
+  if (!origin) return origin;
+  try {
+    const host = new URL(origin).hostname;
+    if (host === "localhost" || host === "127.0.0.1" || host === "::1") return origin;
+    if (/^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return origin;
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 function denyIfMutationBlocked(c: {
   req: { header: (n: string) => string | undefined };
   get: (k: "api") => ApiConfig;
 }): void {
   const api = c.get("api");
+  if (!api.operatorToken) {
+    throw new LedgerError("INGEST_FORBIDDEN", "Operator-Token fehlt, Schreibzugriff gesperrt", 401);
+  }
   const token = bearerToken(c.req.header("authorization"));
-  const loopback = isLoopback(c.req.header("x-forwarded-for") ? undefined : "127.0.0.1");
-  if (token && api.operatorToken && token === api.operatorToken) {
-    return;
+  if (token !== api.operatorToken) {
+    throw new LedgerError("INGEST_FORBIDDEN", "Mutation nicht autorisiert", 401);
   }
-  if (loopback && !c.req.header("x-forwarded-for")) {
-    return;
-  }
-  throw new LedgerError("INGEST_FORBIDDEN", "Mutation nicht autorisiert", 401);
 }
 
 async function readJson(c: { req: { raw: Request } }): Promise<unknown> {

@@ -86,6 +86,32 @@ describe("ledger api", () => {
       }),
     });
     expect(opened.status).toBe(201);
+
+    const denied = await app.request("/api/cases", {
+      method: "POST",
+      headers: { "x-forwarded-for": "192.168.10.44" },
+      body: JSON.stringify({
+        dmc: "HLL2-API-0001",
+        title: "LAN ohne Token",
+        openedBy: "halle",
+      }),
+    });
+    expect(denied.status).toBe(401);
+  });
+
+  it("rejects ingest when the ingest token is empty", async () => {
+    if (!ledger) throw new Error("missing ledger");
+    const app = createApp(ledger, {
+      host: "0.0.0.0",
+      port: 5757,
+      ingestToken: "",
+      operatorToken: "",
+    });
+    const denied = await app.request("/_internal/ingest/inspections", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    expect(denied.status).toBe(401);
   });
 
   it("serves the line board after seed", async () => {

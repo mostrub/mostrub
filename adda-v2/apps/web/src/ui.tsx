@@ -10,7 +10,7 @@ export function Lcd({
   warn?: boolean;
 }) {
   return (
-    <div className={`lcd min-w-24 px-2.5 py-1.5 ${warn ? "lcd-warn" : ""}`}>
+    <div className={`lcd min-w-24 px-2.5 py-1.5 ${warn ? "lcd-warn" : ""}`} aria-live={warn ? "polite" : undefined}>
       <p className="text-[9px] uppercase tracking-[0.2em] opacity-70">{label}</p>
       <p className="font-mono text-2xl leading-none">{value}</p>
     </div>

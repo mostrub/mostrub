@@ -4,6 +4,7 @@ import { de, type Lens } from "../i18n/de.ts";
 import {
   api,
   ApiError,
+  type CaseRecord,
   type Chronik,
   type Dossier,
   type LakeStatus,
@@ -11,29 +12,69 @@ import {
   type LineCell,
   type ShiftReport,
 } from "../lib/api.ts";
-import { formatCount, formatPercent, formatWhen, verdictLabel } from "../lib/format.ts";
+import { formatCount, formatPercent, formatRate, formatWhen, verdictLabel } from "../lib/format.ts";
 import { Lcd, Note } from "../ui.tsx";
 
 const LENSES = ["maschine", "tablett", "fenster", "klasse", "see"] as const satisfies readonly Lens[];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const SPAN_LIMIT = 0.12;
 const BIN_W = 0.02;
+const DEFECT_CLASSES = [
+  "Span",
+  "Zink",
+  "Kratzer",
+  "Dichtungsbraue",
+  "Abgeschabte_Dichtung",
+  "Ausgezogene_Dichtung",
+  "Elektrolyt_Flecken",
+  "Nicht_geschlossen",
+  "Paste",
+  "Separator",
+  "Verletzung_Becherrand",
+] as const;
 
-function fmtMm(value: number | null): string {
-  return value === null ? "—" : `${value.toFixed(3)} mm`;
+function fmtMm(value: number | null | undefined): string {
+  return value == null ? "—" : `${value.toFixed(3)} mm`;
 }
 
 function zurichHour(iso: string): number {
-  const hour = new Intl.DateTimeFormat("en-GB", {
+  return Number(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/Zurich",
+      hour: "2-digit",
+      hourCycle: "h23",
+    }).format(new Date(iso)),
+  );
+}
+
+function zurichClock(value: Date = new Date()): string {
+  return new Intl.DateTimeFormat("de-CH", {
     timeZone: "Europe/Zurich",
     hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
     hourCycle: "h23",
-  }).format(new Date(iso));
-  return Number(hour);
+  }).format(value);
 }
 
 function defectLabel(value: string): string {
   return value.replaceAll("_", " ");
+}
+
+function latestInspection(dossier: Dossier | null) {
+  const rows = dossier?.inspections ?? [];
+  return rows.reduce<(typeof rows)[number] | null>((best, row) => {
+    if (!best) return row;
+    return +new Date(row.capturedAt) >= +new Date(best.capturedAt) ? row : best;
+  }, null);
+}
+
+function latestCell(cells: LineCell[], dmc: string): LineCell | null {
+  return cells.reduce<LineCell | null>((best, cell) => {
+    if (cell.dmc !== dmc) return best;
+    if (!best) return cell;
+    return +new Date(cell.capturedAt) >= +new Date(best.capturedAt) ? cell : best;
+  }, null);
 }
 
 export function Floor() {
@@ -49,23 +90,37 @@ export function Floor() {
   const [selected, setSelected] = useState(routeDmc ?? "");
   const [travelId, setTravelId] = useState("");
   const [travel, setTravel] = useState<Dossier | null>(null);
+  const [travelMissing, setTravelMissing] = useState(false);
+  const [akte, setAkte] = useState<CaseRecord | null>(null);
+  const [akteBusy, setAkteBusy] = useState(false);
+  const [akteError, setAkteError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     const load = () => {
-      Promise.all([api.linie(), api.chronik(), api.schicht(), api.lake()])
-        .then(([nextBoard, nextTape, nextShift, nextLake]) => {
+      void Promise.allSettled([api.linie(), api.chronik(), api.schicht(), api.lake()]).then(
+        (results) => {
           if (cancelled) return;
-          setBoard(nextBoard);
-          setTape(nextTape);
-          setShift(nextShift);
-          setLake(nextLake);
-          setError(null);
-        })
-        .catch((err: unknown) => {
-          if (cancelled) return;
-          setError(err instanceof ApiError ? err.message : de.lakeDown);
-        });
+          const [linie, chronik, schicht, lakeStatus] = results;
+          if (linie.status === "fulfilled") setBoard(linie.value);
+          if (chronik.status === "fulfilled") setTape(chronik.value);
+          if (schicht.status === "fulfilled") setShift(schicht.value);
+          if (lakeStatus.status === "fulfilled") setLake(lakeStatus.value);
+          const fail = results.find((item) => item.status === "rejected");
+          if (fail && fail.status === "rejected") {
+            const err = fail.reason;
+            setError(err instanceof ApiError ? err.message : de.lakeDown);
+          } else {
+            setError(null);
+          }
+        },
+      );
     };
     load();
     const timer = window.setInterval(load, 8000);
@@ -86,19 +141,37 @@ export function Floor() {
     }
     api
       .cell(selected)
-      .then(setDossier)
-      .catch(() => setDossier(null));
+      .then((next) => {
+        setDossier(next);
+        setAkte(next.openCases?.[0] ?? null);
+      })
+      .catch((err: unknown) => {
+        setDossier(null);
+        if (err instanceof ApiError && err.status === 503) setError(err.message);
+      });
   }, [selected]);
 
   useEffect(() => {
     if (!selected || !travelId) {
       setTravel(null);
+      setTravelMissing(false);
       return;
     }
     api
       .cellAt(Number(travelId), selected)
-      .then(setTravel)
-      .catch(() => setTravel(null));
+      .then((next) => {
+        setTravel(next);
+        setTravelMissing(false);
+      })
+      .catch((err: unknown) => {
+        setTravel(null);
+        if (err instanceof ApiError && err.status === 404) {
+          setTravelMissing(true);
+          return;
+        }
+        setTravelMissing(false);
+        if (err instanceof ApiError && err.status === 503) setError(err.message);
+      });
   }, [selected, travelId]);
 
   useEffect(() => {
@@ -107,17 +180,21 @@ export function Floor() {
       .case(caseId)
       .then((record) => {
         setSelected(record.dmc);
-        navigate(`/zelle/${record.dmc}`, { replace: true });
+        setAkte(record);
       })
       .catch(() => undefined);
-  }, [caseId, navigate]);
+  }, [caseId]);
 
   const peakHour = board?.hours.reduce((max, row) => Math.max(max, row.inspected), 0) ?? 0;
-  const selectedCell = board?.cells.find((cell) => cell.dmc === selected) ?? null;
+  const selectedCell = board ? latestCell(board.cells, selected) : null;
+  const seeded = Boolean(board?.cells.length && board.cells.every((cell) => cell.source === "seed"));
 
   function pick(dmc: string) {
     setSelected(dmc);
     setTravelId("");
+    setTravel(null);
+    setTravelMissing(false);
+    setAkteError(null);
     navigate(`/zelle/${dmc}`);
   }
 
@@ -127,7 +204,7 @@ export function Floor() {
         <div>
           <span className="brand-mark">{de.instrument}</span>
           <span className="brand-sub">
-            {de.line} · {de.product}
+            {de.line} · {de.site}
           </span>
         </div>
         <nav className="lenses" aria-label={de.lensesTitle}>
@@ -135,6 +212,7 @@ export function Floor() {
             <button
               key={id}
               type="button"
+              aria-pressed={id === lens}
               className={id === lens ? "is-on" : undefined}
               onClick={() => setLens(id)}
             >
@@ -147,21 +225,22 @@ export function Floor() {
             <Lcd label={de.kpis.cells} value={formatCount(board.inspected)} />
             <Lcd label={de.kpis.nio} value={formatCount(board.nio)} warn={board.nio > 0} />
             <Lcd label={de.kpis.yield} value={formatPercent(board.yield)} warn={(board.yield ?? 1) < 0.8} />
-            <Lcd
-              label={de.kpis.takt}
-              value={board.taktPerHour === null ? "—" : formatCount(Math.round(board.taktPerHour))}
-            />
+            <Lcd label={de.kpis.takt} value={formatRate(board.taktPerHour)} />
             <Lcd label={de.kpis.snap} value={String(board.snapshotId)} />
+            <Lcd label={de.kpis.clock} value={zurichClock(now)} />
           </div>
         ) : null}
       </header>
+
+      {error ? <div className="bezel-alert">{error}</div> : null}
+      {seeded ? <div className="bezel-alert is-seed">{de.seed}</div> : null}
 
       <section className="takt-strip" aria-label={de.takt}>
         <div className="mb-1 flex justify-between text-[11px] uppercase tracking-[0.2em] text-mute">
           <span>{de.takt}</span>
           <span>{de.taktHint}</span>
         </div>
-        <div className="grid h-10 grid-cols-[repeat(24,minmax(0,1fr))] border border-bezel bg-well">
+        <div className="takt-grid">
           {HOURS.map((hour) => {
             const row = board?.hours.find((item) => item.hour === hour);
             const inspected = row?.inspected ?? 0;
@@ -171,15 +250,16 @@ export function Floor() {
               <div
                 key={hour}
                 title={`${String(hour).padStart(2, "0")} · ${inspected} · ${nio} NIO`}
-                className="relative border-l border-steel/30 first:border-l-0"
+                className="takt-col"
               >
-                <div
-                  className={`absolute inset-x-0 bottom-0 ${nio > 0 ? "bg-nio" : "bg-ice"}`}
-                  style={{ height: `${Math.round(fill * 100)}%`, opacity: nio > 0 ? 0.9 : 0.45 }}
-                />
-                <span className="absolute bottom-0 left-0.5 text-[9px] text-ice/70">
-                  {String(hour).padStart(2, "0")}
-                </span>
+                <div className="takt-well">
+                  <div
+                    className={`takt-fill ${nio > 0 ? "is-nio" : "is-io"}`}
+                    style={{ height: `${Math.round(fill * 100)}%` }}
+                  />
+                  {nio > 0 ? <span className="takt-tick" /> : null}
+                </div>
+                <span className="takt-label">{String(hour).padStart(2, "0")}</span>
               </div>
             );
           })}
@@ -187,7 +267,6 @@ export function Floor() {
       </section>
 
       <div className="well">
-        {error ? <Note>{error}</Note> : null}
         {board && board.inspected === 0 ? <Note>{de.empty}</Note> : null}
         <LensWell
           lens={lens}
@@ -207,7 +286,27 @@ export function Floor() {
           dossier={dossier}
           travel={travel}
           travelId={travelId}
-          onOpened={(id) => navigate(`/akte/${id}`)}
+          travelMissing={travelMissing}
+          akte={akte}
+          akteBusy={akteBusy}
+          akteError={akteError}
+          onOpen={async () => {
+            if (!selected) return;
+            setAkteBusy(true);
+            setAkteError(null);
+            try {
+              const opened = await api.openCase({
+                dmc: selected,
+                title: `${selectedCell && !selectedCell.partOk ? de.io.nio : de.io.io} ${selected}`,
+                openedBy: "kaliber",
+              });
+              setAkte(opened);
+            } catch (err: unknown) {
+              setAkteError(err instanceof ApiError ? err.message : de.lakeDown);
+            } finally {
+              setAkteBusy(false);
+            }
+          }}
         />
         {shift ? (
           <article>
@@ -216,31 +315,18 @@ export function Floor() {
               {formatCount(shift.io)} {de.io.io} / {formatCount(shift.nio)} {de.io.nio} ·{" "}
               {formatPercent(shift.yield)}
             </p>
+            <ol className="schicht-mix">
+              {shift.defects.slice(0, 5).map((item) => (
+                <li key={item.defectClass}>
+                  {defectLabel(item.defectClass)} {formatCount(item.count)}
+                </li>
+              ))}
+            </ol>
           </article>
         ) : null}
       </aside>
 
-      {tape ? (
-        <section className="tape" aria-label={de.band}>
-          <div className="mb-1 text-[11px] uppercase tracking-[0.2em] text-mute">{de.band}</div>
-          <div className="tape-row">
-            {tape.events.map((event, index) => {
-              const nio = verdictLabel(event.summary) === "NIO";
-              return (
-                <button
-                  key={`${event.dmc}-${event.at}-${index}`}
-                  type="button"
-                  title={`${event.dmc} ${event.summary}`}
-                  className={[nio ? "is-nio" : "", event.dmc === selected ? "is-picked" : ""]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => pick(event.dmc)}
-                />
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+      {tape ? <Band events={tape.events} selected={selected} onPick={pick} /> : null}
     </div>
   );
 }
@@ -268,18 +354,11 @@ function LensWell({
     case "tablett":
       return <Tablett board={board} selected={selected} onPick={onPick} />;
     case "fenster":
-      return <Fenster board={board} selected={selected} />;
+      return <Fenster board={board} selected={selected} onPick={onPick} />;
     case "klasse":
-      return <Klasse board={board} />;
+      return <Klasse board={board} onPick={onPick} />;
     case "see":
-      return (
-        <See
-          lake={lake}
-          selected={selected}
-          travelId={travelId}
-          onTravelId={onTravelId}
-        />
-      );
+      return <See lake={lake} selected={selected} travelId={travelId} onTravelId={onTravelId} />;
     default: {
       const _never: never = lens;
       return _never;
@@ -299,7 +378,7 @@ function Maschine({
   return (
     <section>
       <h2>{de.lenses.maschine}</h2>
-      <p className="lede">Anode → Kathode → OQC. Letzte Zellen je Station.</p>
+      <p className="lede">{de.maschineLede}</p>
       <ol className="stations">
         {(board?.stations ?? []).map((st) => (
           <li key={st.station}>
@@ -313,7 +392,7 @@ function Maschine({
             </div>
             <ol className="last-cells">
               {st.last.map((cell) => (
-                <li key={cell.dmc}>
+                <li key={`${cell.dmc}-${cell.capturedAt}`}>
                   <CellRow cell={cell} selected={selected} onPick={onPick} />
                 </li>
               ))}
@@ -334,12 +413,13 @@ function Tablett({
   selected: string;
   onPick: (dmc: string) => void;
 }) {
+  const trays = board?.trays ?? [];
   return (
     <section>
       <h2>{de.lenses.tablett}</h2>
-      <p className="lede">12 Fächer je Magazin. Antippen öffnet den Kupon.</p>
+      <p className="lede">{de.tablettLede}</p>
       <div className="magazine">
-        {(board?.trays ?? []).map((tray) => {
+        {(trays.length ? trays : []).map((tray) => {
           const nio = tray.slots.reduce(
             (sum, slot) => sum + slot.cells.filter((cell) => !cell.partOk).length,
             0,
@@ -382,6 +462,19 @@ function Tablett({
             </article>
           );
         })}
+        {!trays.length ? (
+          <article>
+            <ol className="pockets">
+              {Array.from({ length: 12 }, (_, i) => (
+                <li key={i}>
+                  <span className="pocket-empty">
+                    <span className="mono">{String(i + 1).padStart(2, "0")}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </article>
+        ) : null}
       </div>
     </section>
   );
@@ -390,9 +483,11 @@ function Tablett({
 function Fenster({
   board,
   selected,
+  onPick,
 }: {
   board: LineBoard | null;
   selected: string;
+  onPick: (dmc: string) => void;
 }) {
   const hist = useMemo(() => {
     const values = (board?.cells ?? [])
@@ -409,20 +504,20 @@ function Fenster({
   }, [board]);
   const max = Math.max(1, ...hist.bins.map((bin) => bin.n));
   const span = board?.spanWindow;
-  const mark = board?.cells.find((cell) => cell.dmc === selected)?.spanMm ?? null;
+  const mark = board ? latestCell(board.cells, selected)?.spanMm ?? null : null;
+  const offenders = (board?.cells ?? [])
+    .filter((cell) => cell.spanMm !== null && cell.spanMm > SPAN_LIMIT)
+    .slice()
+    .sort((a, b) => (b.spanMm ?? 0) - (a.spanMm ?? 0));
   return (
     <section>
       <h2>{de.lenses.fenster}</h2>
-      <p className="lede">{de.span.limit}. p50/p95 aus dem aktuellen Snap.</p>
+      <p className="lede">{de.fensterLede}</p>
       <div className="span-readouts">
         <Lcd label={de.span.min} value={fmtMm(span?.min ?? null)} />
         <Lcd label={de.span.p50} value={fmtMm(span?.p50 ?? null)} />
-        <Lcd label={de.span.p95} value={fmtMm(span?.p95 ?? null)} />
-        <Lcd
-          label={de.span.max}
-          value={fmtMm(span?.max ?? null)}
-          warn={(span?.max ?? 0) > SPAN_LIMIT}
-        />
+        <Lcd label={de.span.p95} value={fmtMm(span?.p95 ?? null)} warn={(span?.p95 ?? 0) > SPAN_LIMIT} />
+        <Lcd label={de.span.max} value={fmtMm(span?.max ?? null)} warn={(span?.max ?? 0) > SPAN_LIMIT} />
       </div>
       <svg className="hist" viewBox="0 0 480 160" role="img" aria-label={de.span.title}>
         {hist.bins.map((bin, i) => {
@@ -440,7 +535,7 @@ function Fenster({
                 opacity={0.85}
               />
               <text x={x + 14} y={154} textAnchor="middle" fill="currentColor" fontSize="8">
-                {bin.lo.toFixed(2)}
+                {bin.lo >= 0.22 ? "≥0,22" : bin.lo.toFixed(2)}
               </text>
             </g>
           );
@@ -454,69 +549,86 @@ function Fenster({
           strokeDasharray="3 3"
         />
         {mark !== null ? (
-          <circle
-            cx={20 + (mark / BIN_W) * 36}
-            cy={18}
-            r={4}
-            fill="var(--color-pick)"
-          />
+          <circle cx={20 + Math.min(mark, 0.23) / BIN_W * 36} cy={22} r={5} fill="var(--color-pick)" />
         ) : null}
       </svg>
       <p className="hint">
         {de.span.limit} · n={formatCount(hist.values.length)}
-        {mark !== null ? ` · mark ${fmtMm(mark)}` : ""}
       </p>
+      <h3 className="subhead">{de.span.offenders}</h3>
+      <ol className="last-cells">
+        {offenders.slice(0, 12).map((cell) => (
+          <li key={`${cell.dmc}-${cell.capturedAt}`}>
+            <CellRow cell={cell} selected={selected} onPick={onPick} extra={fmtMm(cell.spanMm)} />
+          </li>
+        ))}
+      </ol>
     </section>
   );
 }
 
-function Klasse({ board }: { board: LineBoard | null }) {
+function Klasse({
+  board,
+  onPick,
+}: {
+  board: LineBoard | null;
+  onPick: (dmc: string) => void;
+}) {
   const grid = useMemo(() => {
-    const hours = [6, 14, 22];
-    const classes = [...new Set((board?.cells ?? []).map((cell) => cell.defectClass).filter(Boolean))] as string[];
-    const known = board?.defects.map((item) => item.defectClass) ?? [];
-    const rows = [...new Set([...known, ...classes])].map((cls) => {
-      const cells = hours.map(
-        (hour) =>
-          (board?.cells ?? []).filter(
-            (cell) => cell.defectClass === cls && zurichHour(cell.capturedAt) === hour,
-          ).length,
+    const cells = board?.cells ?? [];
+    return DEFECT_CLASSES.map((cls) => {
+      const counts = HOURS.map(
+        (hour) => cells.filter((cell) => cell.defectClass === cls && zurichHour(cell.capturedAt) === hour).length,
       );
-      return { cls, cells, total: cells.reduce((a, b) => a + b, 0) };
+      return { cls, counts, total: counts.reduce((a, b) => a + b, 0) };
     });
-    return { hours, rows };
   }, [board]);
-  const max = Math.max(1, ...grid.rows.flatMap((row) => row.cells));
+  const max = Math.max(1, ...grid.flatMap((row) => row.counts));
   return (
     <section>
       <h2>{de.lenses.klasse}</h2>
-      <p className="lede">{de.klasse.title}. Seed-Schichten 06 / 14 / 22.</p>
-      <table className="matrix">
-        <thead>
-          <tr>
-            <th>{de.klasse.cls}</th>
-            {grid.hours.map((hour) => (
-              <th key={hour}>{String(hour).padStart(2, "0")}:00</th>
-            ))}
-            <th>Σ</th>
-          </tr>
-        </thead>
-        <tbody>
-          {grid.rows.map((row) => (
-            <tr key={row.cls}>
-              <th>{defectLabel(row.cls)}</th>
-              {row.cells.map((n, i) => (
-                <td key={grid.hours[i]}>
-                  <span className="heat" style={{ opacity: 0.12 + (n / max) * 0.88 }}>
-                    {n || "·"}
-                  </span>
-                </td>
+      <p className="lede">{de.klasseLede}</p>
+      <div className="matrix-wrap">
+        <table className="matrix">
+          <thead>
+            <tr>
+              <th>{de.klasse.cls}</th>
+              {HOURS.map((hour) => (
+                <th key={hour}>{String(hour).padStart(2, "0")}</th>
               ))}
-              <td className="mono">{row.total}</td>
+              <th>Σ</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {grid.map((row) => (
+              <tr key={row.cls}>
+                <th>{defectLabel(row.cls)}</th>
+                {row.counts.map((n, i) => {
+                  const hour = HOURS[i] ?? 0;
+                  return (
+                    <td key={hour}>
+                      <button
+                        type="button"
+                        className="heat"
+                        style={{ width: `${Math.max(18, (n / max) * 36)}px` }}
+                        onClick={() => {
+                          const hit = board?.cells.find(
+                            (cell) => cell.defectClass === row.cls && zurichHour(cell.capturedAt) === hour,
+                          );
+                          if (hit) onPick(hit.dmc);
+                        }}
+                      >
+                        {n}
+                      </button>
+                    </td>
+                  );
+                })}
+                <td className="mono">{row.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
@@ -532,12 +644,14 @@ function See({
   travelId: string;
   onTravelId: (id: string) => void;
 }) {
-  const snaps = [...(lake?.snapshots ?? [])].reverse();
+  const snaps = [...(lake?.snapshots ?? [])]
+    .reverse()
+    .filter((snap) => snap.commitMessage || snap.author);
   return (
     <section>
       <h2>{de.lenses.see}</h2>
       <p className="lede">
-        Snap #{lake?.currentSnapshotId ?? "—"} · {de.see.travel} lädt den Kupon auf den gewählten Stand.
+        {de.seeLede} Snap #{lake?.currentSnapshotId ?? "—"} {de.see.current}.
       </p>
       {!selected ? <p className="hint">{de.see.needCell}</p> : null}
       <ol className="film">
@@ -545,7 +659,12 @@ function See({
           <li key={snap.snapshotId}>
             <button
               type="button"
-              className={String(snap.snapshotId) === travelId ? "is-on" : undefined}
+              className={[
+                String(snap.snapshotId) === travelId ? "is-on" : "",
+                selected ? "" : "is-dim",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               disabled={!selected}
               onClick={() =>
                 onTravelId(String(snap.snapshotId) === travelId ? "" : String(snap.snapshotId))
@@ -553,7 +672,7 @@ function See({
             >
               <span className="mono">#{snap.snapshotId}</span>
               <span>{formatWhen(snap.snapshotTime)}</span>
-              <span>{snap.commitMessage ?? snap.author ?? "—"}</span>
+              <span>{snap.snapshotId === lake?.currentSnapshotId ? de.see.current : de.see.travel}</span>
             </button>
           </li>
         ))}
@@ -566,10 +685,12 @@ function CellRow({
   cell,
   selected,
   onPick,
+  extra,
 }: {
   cell: LineCell;
   selected: string;
   onPick: (dmc: string) => void;
+  extra?: string;
 }) {
   return (
     <button
@@ -581,8 +702,47 @@ function CellRow({
     >
       <span className="mono">{cell.dmc}</span>
       <span>{cell.partOk ? de.io.io : de.io.nio}</span>
-      <span>{formatWhen(cell.capturedAt)}</span>
+      <span>{extra ?? formatWhen(cell.capturedAt)}</span>
     </button>
+  );
+}
+
+function Band({
+  events,
+  selected,
+  onPick,
+}: {
+  events: Chronik["events"];
+  selected: string;
+  onPick: (dmc: string) => void;
+}) {
+  const ticks = events.filter((event, index, all) => {
+    const stamp = event.at.slice(0, 19);
+    return all.findIndex((item) => item.dmc === event.dmc && item.at.slice(0, 19) === stamp) === index;
+  });
+  return (
+    <section className="tape" aria-label={de.band}>
+      <div className="mb-1 text-[11px] uppercase tracking-[0.2em] text-mute">{de.band}</div>
+      <div className="tape-row">
+        {ticks.map((event, index) => {
+          const nio = verdictLabel(event.summary) === "NIO";
+          return (
+            <button
+              key={`${event.dmc}-${event.at}-${index}`}
+              type="button"
+              aria-label={`${event.dmc} ${event.summary}`}
+              title={`${event.dmc} ${event.summary}`}
+              className={[nio ? "is-nio" : "", event.dmc === selected ? "is-picked" : ""]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => onPick(event.dmc)}
+            >
+              {event.dmc.slice(-4)}
+            </button>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
@@ -592,60 +752,73 @@ function Coupon({
   dossier,
   travel,
   travelId,
-  onOpened,
+  travelMissing,
+  akte,
+  akteBusy,
+  akteError,
+  onOpen,
 }: {
   selected: string;
   selectedCell: LineCell | null;
   dossier: Dossier | null;
   travel: Dossier | null;
   travelId: string;
-  onOpened: (id: string) => void;
+  travelMissing: boolean;
+  akte: CaseRecord | null;
+  akteBusy: boolean;
+  akteError: string | null;
+  onOpen: () => Promise<void>;
 }) {
   if (!selected) return <p className="hint">{de.pick}</p>;
-  const latest = dossier?.inspections[0];
-  const shown = travel?.inspections[0] ?? latest;
+  const live = latestInspection(dossier);
+  const shown = travelId ? (travelMissing ? null : latestInspection(travel)) : live;
+  const spanMm = travel
+    ? (shown?.measurements?.spanMm ?? null)
+    : (selectedCell?.spanMm ?? shown?.measurements?.spanMm ?? null);
+  const nio = shown ? !shown.partOk : Boolean(selectedCell && !selectedCell.partOk);
+  const source = shown?.source ?? selectedCell?.source;
   return (
     <article>
       <h3>{de.coupon}</h3>
       {travelId ? (
         <p className="hint">
           {de.see.travel} #{travelId}
+          {travelMissing ? ` · ${de.see.missing}` : ""}
         </p>
       ) : null}
+      <p className={`dmc-ticket ${nio ? "is-nio" : ""}`}>{selected}</p>
       <div className="mb-2 flex flex-col gap-1">
-        <Lcd label={de.zelle} value={selected} warn={shown ? !shown.partOk : selectedCell ? !selectedCell.partOk : false} />
         <Lcd
-          label="Fach"
+          label={de.fach}
           value={`${selectedCell?.tray ?? shown?.tray ?? "—"} / ${selectedCell?.slot ?? shown?.slot ?? "—"}`}
         />
-        <Lcd
-          label={de.span.title}
-          value={fmtMm(selectedCell?.spanMm ?? null)}
-          warn={(selectedCell?.spanMm ?? 0) > SPAN_LIMIT}
-        />
+        <Lcd label={de.span.title} value={travelMissing ? de.see.missing : fmtMm(spanMm)} warn={(spanMm ?? 0) > SPAN_LIMIT} />
       </div>
       <ul className="defects text-sm">
-        {shown?.findings.length ? (
+        {travelMissing ? (
+          <li>{de.see.missing}</li>
+        ) : shown?.findings.length ? (
           shown.findings.map((item) => <li key={item.defectClass}>{defectLabel(item.defectClass)}</li>)
-        ) : selectedCell?.defectClass ? (
+        ) : selectedCell?.defectClass && !travelId ? (
           <li>{defectLabel(selectedCell.defectClass)}</li>
         ) : (
           <li>{de.io.io}</li>
         )}
       </ul>
+      {source === "seed" ? <p className="hint">{de.seed}</p> : null}
+      {akte ? (
+        <p className="hint">
+          {de.akteNr} {akte.id} · {akte.status}
+        </p>
+      ) : null}
+      {akteError ? <Note>{akteError}</Note> : null}
       <button
         type="button"
-        className="mt-3 w-full border border-ink bg-ink px-2 py-1.5 text-xs uppercase tracking-[0.16em] text-face"
-        onClick={async () => {
-          const opened = await api.openCase({
-            dmc: selected,
-            title: `NIO ${selected}`,
-            openedBy: "kaliber",
-          });
-          onOpened(opened.id);
-        }}
+        className="mt-3 w-full border border-ice bg-well px-2 py-1.5 text-xs uppercase tracking-[0.16em] text-ice"
+        disabled={akteBusy}
+        onClick={() => void onOpen()}
       >
-        {de.openCase}
+        {akteBusy ? de.openingCase : de.openCase}
       </button>
     </article>
   );

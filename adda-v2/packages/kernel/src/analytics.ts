@@ -78,7 +78,11 @@ export async function loadChronik(
   filter: { dmc?: string; from?: string; to?: string; limit?: number },
 ): Promise<{ events: ChronikEvent[]; snapshotId: SnapshotId }> {
   const snapshotId = await lake.currentSnapshot();
-  const limit = filter.limit ?? 200;
+  const rawLimit = filter.limit ?? 200;
+  const limit =
+    typeof rawLimit === "number" && Number.isFinite(rawLimit)
+      ? Math.min(500, Math.max(1, Math.trunc(rawLimit)))
+      : 200;
   const dmcClause = filter.dmc ? `AND dmc = '${sqlLiteral(filter.dmc)}'` : "";
   const fromClause = filter.from
     ? `AND occurred_at >= TIMESTAMPTZ '${sqlLiteral(filter.from)}'`
@@ -128,6 +132,7 @@ export type LineCell = {
   partOk: boolean;
   spanMm: number | null;
   defectClass: string | null;
+  source: string;
 };
 
 export type SpanWindow = {
@@ -179,13 +184,19 @@ const STATIONS = ["anode", "cathode", "oqc"] as const;
 
 export async function latestShiftWindow(lake: Lake): Promise<{ from: string; to: string }> {
   const rows = await lake.query<{ day: string | null }>(
-    `SELECT strftime(MAX(captured_at), '%Y-%m-%d') AS day FROM lake.inspections`,
+    `SELECT strftime(timezone('Europe/Zurich', MAX(captured_at)), '%Y-%m-%d') AS day
+     FROM lake.inspections`,
   );
   return zurichCivilDay(rows[0]?.day ?? zurichToday());
 }
 
 export async function lineBoard(lake: Lake): Promise<LineBoard> {
   const snapshotId = await lake.currentSnapshot();
+  const window = await latestShiftWindow(lake);
+  const from = sqlLiteral(window.from);
+  const to = sqlLiteral(window.to);
+  const inShift = (alias: string) =>
+    `${alias}.captured_at >= TIMESTAMPTZ '${from}' AND ${alias}.captured_at < TIMESTAMPTZ '${to}'`;
   const totals = await lake.query<{
     inspected: number;
     nio: number;
@@ -195,7 +206,8 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
        COUNT(*)::INTEGER AS inspected,
        COUNT(*) FILTER (WHERE NOT part_ok)::INTEGER AS nio,
        GREATEST(1, date_diff('hour', MIN(captured_at), MAX(captured_at)))::DOUBLE AS hours
-     FROM lake.inspections`,
+     FROM lake.inspections i
+     WHERE ${inShift("i")}`,
   );
   const span = await lake.query<{
     span_min: number | null;
@@ -204,12 +216,14 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
     span_max: number | null;
     span_mean: number | null;
   }>(
-    `SELECT MIN(span_mm) AS span_min,
-            quantile_cont(span_mm, 0.5) AS span_p50,
-            quantile_cont(span_mm, 0.95) AS span_p95,
-            MAX(span_mm) AS span_max,
-            AVG(span_mm) AS span_mean
-     FROM lake.measurements`,
+    `SELECT MIN(m.span_mm) AS span_min,
+            quantile_cont(m.span_mm, 0.5) AS span_p50,
+            quantile_cont(m.span_mm, 0.95) AS span_p95,
+            MAX(m.span_mm) AS span_max,
+            AVG(m.span_mm) AS span_mean
+     FROM lake.measurements m
+     JOIN lake.inspections i ON i.inspection_id = m.inspection_id
+     WHERE ${inShift("i")}`
   );
   const stationRates = await lake.query<{
     station: string;
@@ -218,22 +232,26 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
   }>(
     `SELECT station, COUNT(*)::INTEGER AS inspected,
             COUNT(*) FILTER (WHERE NOT part_ok)::INTEGER AS nio
-     FROM lake.inspections
+     FROM lake.inspections i
+     WHERE ${inShift("i")}
      GROUP BY station`,
   );
   const hours = await lake.query<{ hour: number; inspected: number; nio: number }>(
     `SELECT CAST(date_part('hour', timezone('Europe/Zurich', captured_at)) AS INTEGER) AS hour,
             COUNT(*)::INTEGER AS inspected,
             COUNT(*) FILTER (WHERE NOT part_ok)::INTEGER AS nio
-     FROM lake.inspections
+     FROM lake.inspections i
+     WHERE ${inShift("i")}
      GROUP BY 1
      ORDER BY 1`,
   );
   const defects = await lake.query<{ defect_class: string; count: number }>(
-    `SELECT defect_class, COUNT(*)::INTEGER AS count
-     FROM lake.findings
-     GROUP BY defect_class
-     ORDER BY count DESC, defect_class`,
+    `SELECT f.defect_class, COUNT(*)::INTEGER AS count
+     FROM lake.findings f
+     JOIN lake.inspections i ON i.inspection_id = f.inspection_id
+     WHERE ${inShift("i")}
+     GROUP BY f.defect_class
+     ORDER BY count DESC, f.defect_class`,
   );
   const rawCells = await lake.query<{
     dmc: string;
@@ -244,13 +262,15 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
     part_ok: boolean;
     span_mm: number | null;
     defect_class: string | null;
+    source: string;
   }>(
-    `SELECT i.dmc, i.captured_at, i.station, i.tray, i.slot, i.part_ok, m.span_mm,
+    `SELECT i.dmc, i.captured_at, i.station, i.tray, i.slot, i.part_ok, i.source, m.span_mm,
             (SELECT f.defect_class FROM lake.findings f
              WHERE f.inspection_id = i.inspection_id
              ORDER BY f.score DESC LIMIT 1) AS defect_class
      FROM lake.inspections i
      LEFT JOIN lake.measurements m ON m.inspection_id = i.inspection_id
+     WHERE ${inShift("i")}
      ORDER BY i.tray, i.slot, i.captured_at`,
   );
   const total = totals[0] ?? { inspected: 0, nio: 0, hours: 1 };
@@ -271,6 +291,7 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
         partOk: row.part_ok,
         spanMm: row.span_mm === null ? null : Number(row.span_mm),
         defectClass: row.defect_class,
+        source: row.source,
       } satisfies LineCell,
     ];
   });
@@ -321,7 +342,10 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
         last: cells
           .filter((cell) => cell.station === station)
           .slice()
-          .sort((a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt))
+          .sort((a, b) => {
+            if (a.partOk !== b.partOk) return a.partOk ? 1 : -1;
+            return +new Date(b.capturedAt) - +new Date(a.capturedAt);
+          })
           .slice(0, 8),
       };
     }),

@@ -32,6 +32,13 @@ export function formatDay(value: string | Date): string {
   }).format(new Date(value));
 }
 
+export function formatRate(value: number | null): string {
+  if (value === null) return "—";
+  const tenths = Math.round(value * 10) / 10;
+  const [whole, frac = "0"] = tenths.toFixed(1).split(".");
+  return `${formatCount(Number(whole))},${frac}`;
+}
+
 export function verdictLabel(value: string): "IO" | "NIO" | "OFFEN" {
   if (value === "io" || value === "IO") return "IO";
   if (value === "nio" || value === "NIO") return "NIO";

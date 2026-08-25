@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { inspectionIngestSchema } from "../../packages/types/src/index.ts";
 import { configFromEnv } from "../../packages/kernel/src/config.ts";
 import { Ledger } from "../../packages/kernel/src/ledger.ts";
 import { createPool, resetControlForTests } from "../../packages/kernel/src/postgres.ts";
@@ -60,6 +61,26 @@ describe("shift analytics and seed", () => {
     expect(line.cells).toHaveLength(72);
     expect(line.spanWindow.p95).not.toBeNull();
     expect((line.spanWindow.p95 ?? 0) >= (line.spanWindow.p50 ?? 0)).toBe(true);
+    const window = await ledger.latestShiftWindow();
+    expect(window.from.startsWith("2026-08-24")).toBe(true);
+    expect(line.cells.every((cell) => cell.source === "seed")).toBe(true);
+  });
+
+  it("uses the Zurich civil day, not UTC, for the latest shift", async () => {
+    if (!ledger) throw new Error("ledger missing");
+    await ledger.ingestInspections([
+      inspectionIngestSchema.parse({
+        dmc: "HLL2-TZ-0001",
+        capturedAt: "2026-08-24T01:30:00+02:00",
+        station: "oqc",
+        tray: "T-1",
+        slot: 1,
+        partOk: true,
+        source: "seed",
+        measurements: { phiDeg: 0.1, widthMm: 11.5, heightMm: 5.4, spanMm: 0.04 },
+        findings: [],
+      }),
+    ]);
     const window = await ledger.latestShiftWindow();
     expect(window.from.startsWith("2026-08-24")).toBe(true);
   });

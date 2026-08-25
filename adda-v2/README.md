@@ -52,9 +52,11 @@ bin/dev.sh --seed 2026-08-24
 Open `http://127.0.0.1:5759` on the box, or `http://<box-ip>:5759` from the hall.
 `bin/dev.sh` prints LAN addresses.
 
-Writes from another machine need `Authorization: Bearer $LEDGER_OPERATOR_TOKEN`.
-Ingest is fail-closed without `LEDGER_INGEST_TOKEN`. Lakehouse read failures
-return `LAKEHOUSE_READ_UNAVAILABLE` and HTTP 503.
+Case writes need `Authorization: Bearer $LEDGER_OPERATOR_TOKEN`. The Vite
+dev server injects that token from the env. Ingest is fail-closed without
+`LEDGER_INGEST_TOKEN`. Lakehouse read failures return
+`LAKEHOUSE_READ_UNAVAILABLE` and HTTP 503. The line board is the latest
+Zurich civil day, not the whole lake.
 
 ```bash
 cp .env.example .env

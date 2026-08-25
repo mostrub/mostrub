@@ -9,11 +9,17 @@ export class ApiError extends Error {
   }
 }
 
+function operatorAuth(): Record<string, string> {
+  const token = import.meta.env.VITE_LEDGER_OPERATOR_TOKEN;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...operatorAuth(),
       ...(init?.headers ?? {}),
     },
   });
@@ -67,6 +73,7 @@ export type Dossier = {
     slot: number;
     partOk: boolean;
     source: string;
+    measurements: { spanMm: number } | null;
     findings: { defectClass: string; score: number }[];
   }[];
   lineEvents: {
@@ -121,6 +128,7 @@ export type LineCell = {
   partOk: boolean;
   spanMm: number | null;
   defectClass: string | null;
+  source: string;
 };
 
 export type LineBoard = {
