@@ -1,6 +1,6 @@
 import { queryRows } from "@/lib/duckdb/engine"
 import { sqlFrom } from "@/lib/filters"
-import { formatMinutes, formatPct } from "@/lib/format"
+import { formatMinutes, formatNumber, formatPct } from "@/lib/format"
 import { valueLabel } from "@/lib/labels"
 import { computeOee } from "@/lib/oee"
 import { oeeSql } from "@/lib/queries"
@@ -100,12 +100,12 @@ async function buildShiftReport(
     id: "shift-production",
     title: "Schichtproduktion",
     generatedAt,
-    summary: `${units.toFixed(0)} Stück im aktuellen Filter, ${scrap.toFixed(0)} Ausschuss.`,
+    summary: `${formatNumber(units)} Stück im aktuellen Filter, ${formatNumber(scrap)} Ausschuss.`,
     kpis: [
-      { label: "Stück", value: units.toFixed(0), tone: "ok" },
+      { label: "Stück", value: formatNumber(units), tone: "ok" },
       { label: "Erstausbeute", value: pct(fpy), tone: fpy < 95 ? "bad" : fpy < 98 ? "warn" : "ok" },
       { label: "Tempo vs Ziel", value: pct(pace), tone: pace < 90 ? "warn" : "ok" },
-      { label: "Ausschuss", value: scrap.toFixed(0), tone: scrap > 0 ? "warn" : "ok" },
+      { label: "Ausschuss", value: formatNumber(scrap), tone: scrap > 0 ? "warn" : "ok" },
       {
         label: "OEE",
         value: pct(oee.oee),
@@ -120,7 +120,7 @@ async function buildShiftReport(
         rows: lines.map((row) => [
           str(row.plant),
           str(row.line),
-          str(row.good_units),
+          formatNumber(num(row.good_units)),
           pct(num(row.fpy_pct)),
         ]),
       },
@@ -193,7 +193,7 @@ async function buildTriageReport(
           valueLabel(str(row.reason_code)),
           valueLabel(str(row.category)),
           str(row.events),
-          (num(row.duration_ms) / 60000).toFixed(1),
+          formatNumber(num(row.duration_ms) / 60000, 1),
         ]),
       },
     ],
@@ -225,7 +225,7 @@ async function buildServerReport(
   const worst = hot[0]
   if (worst) {
     findings.push(
-      `${str(worst.server_id)} liegt im Schnitt bei ${num(worst.cpu_pct).toFixed(1)} % CPU mit ${str(worst.missed)} verpassten Impulsen.`
+      `${str(worst.server_id)} liegt im Schnitt bei ${formatNumber(num(worst.cpu_pct), 1)} % CPU mit ${str(worst.missed)} verpassten Impulsen.`
     )
   }
   if (faulted.length > 0) {
@@ -244,7 +244,7 @@ async function buildServerReport(
     kpis: [
       {
         label: "Heißeste Server-CPU",
-        value: worst ? `${num(worst.cpu_pct).toFixed(1)} %` : "k. A.",
+        value: worst ? `${formatNumber(num(worst.cpu_pct), 1)} %` : "k. A.",
         tone: num(worst?.cpu_pct ?? 0) >= 85 ? "bad" : "ok",
       },
       {
@@ -267,8 +267,8 @@ async function buildServerReport(
           str(row.server_id),
           str(row.server_role),
           str(row.line),
-          num(row.cpu_pct).toFixed(1),
-          num(row.plc_scan_ms).toFixed(1),
+          formatNumber(num(row.cpu_pct), 1),
+          formatNumber(num(row.plc_scan_ms), 1),
           str(row.missed),
           str(row.queue_depth),
         ]),
@@ -281,7 +281,7 @@ async function buildServerReport(
           str(row.line),
           valueLabel(str(row.run_mode)),
           str(row.io_faults),
-          num(row.scan_ms_p95).toFixed(1),
+          formatNumber(num(row.scan_ms_p95), 1),
           str(row.last_fault_code),
         ]),
       },

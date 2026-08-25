@@ -354,7 +354,7 @@ export function DashboardPage() {
           <CardHeader>
             <CardTitle>Takt gegen Soll</CardTitle>
             <CardDescription>
-              Anzahl je 1-s-Bucket. Senkrechte Linie ist der mittlere Soll-Takt.
+              Anzahl je 1-s-Intervall. Senkrechte Linie ist der mittlere Soll-Takt.
             </CardDescription>
           </CardHeader>
           <CardContent>
