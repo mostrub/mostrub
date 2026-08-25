@@ -87,6 +87,33 @@ function stationName(station: string): string {
   return station;
 }
 
+function akteStand(status: CaseRecord["status"]): string {
+  switch (status) {
+    case "open":
+      return de.aktenStand.open;
+    case "pinned":
+      return de.aktenStand.pinned;
+    case "closed":
+      return de.aktenStand.closed;
+    default: {
+      const _exhaustive: never = status;
+      return _exhaustive;
+    }
+  }
+}
+
+function speicherLabel(store: string | undefined): string {
+  if (store === "ducklake") return de.speicher.ducklake;
+  return store ?? "—";
+}
+
+function abfrageLabel(query: string | undefined): string {
+  if (query === "line_board") return de.abfragen.line_board;
+  if (query === "shift_report") return de.abfragen.shift_report;
+  if (query === "cell_dossier") return de.abfragen.cell_dossier;
+  return query ?? "—";
+}
+
 function latestInspection(dossier: Dossier | null) {
   const rows = dossier?.inspections ?? [];
   return rows.reduce<(typeof rows)[number] | null>((best, row) => {
@@ -416,7 +443,7 @@ export function Floor() {
             try {
               setAkte(
                 await api.pinCase(akte.id, {
-                  label: `Snap ${board?.snapshotId ?? ""}`,
+                  label: `${de.kpis.snap} ${board?.snapshotId ?? ""}`,
                   pinnedBy: "kaliber",
                 }),
               );
@@ -489,8 +516,8 @@ export function Floor() {
       {tape ? <Band events={tape.events} selected={selected} onPick={pick} /> : null}
       <footer className="provenance">
         <span>{de.quellen}</span>
-        <span>{board?._provenance.store ?? "—"}</span>
-        <span>{board?._provenance.query ?? "—"}</span>
+        <span>{speicherLabel(board?._provenance.store)}</span>
+        <span>{abfrageLabel(board?._provenance.query)}</span>
         <span>
           {de.kpis.snap} {board?.snapshotId ?? "—"}
         </span>
@@ -994,7 +1021,7 @@ function Schicht({
                       <button type="button" onClick={() => onPick(record.dmc)}>
                         <span className="mono">{record.dmc}</span>
                         <span>
-                          {de.akteNr} {record.id} · {record.status}
+                          {de.akteNr} {record.id} · {akteStand(record.status)}
                         </span>
                       </button>
                     </li>
@@ -1221,7 +1248,7 @@ function See({
     <section>
       <h2>{de.lenses.see}</h2>
       <p className="lede">
-        {de.seeLede} Snap #{lake?.currentSnapshotId ?? "—"} {de.see.current}.
+        {de.seeLede} {de.kpis.snap} #{lake?.currentSnapshotId ?? "—"} {de.see.current}.
       </p>
       {!selected ? <p className="hint">{de.see.needCell}</p> : null}
       <ol className="film">
@@ -1397,7 +1424,7 @@ function Coupon({
       ) : null}
       {akte ? (
         <p className="hint">
-          {de.akteNr} {akte.id} · {akte.status}
+          {de.akteNr} {akte.id} · {akteStand(akte.status)}
           {akte.pins.length ? ` · ${akte.pins[akte.pins.length - 1]?.label}` : ""}
         </p>
       ) : null}

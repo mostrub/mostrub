@@ -13,51 +13,51 @@ bin/dev.sh --seed 2026-08-24
 Datenbanken `ledger` und `ledger_test`. Fehlt `.env`, kopiert das Skript
 `.env.example`.
 
-Ohne Seed:
+Ohne Übungsdaten:
 
 ```bash
 bin/dev.sh
 ```
 
-API: `http://127.0.0.1:5757`. Kaliber: `http://127.0.0.1:5759`. Vom Band aus
-die LAN-Adresse, die `bin/dev.sh` druckt.
+Schnittstelle: `http://127.0.0.1:5757`. Kaliber: `http://127.0.0.1:5759`. Vom
+Band aus die Hallenadresse, die `bin/dev.sh` druckt.
 
 ## Tokens
 
 | Variable | Zweck |
 | --- | --- |
-| `LEDGER_INGEST_TOKEN` | Schreiben ins Lake. Leer heisst zu. |
+| `LEDGER_INGEST_TOKEN` | Schreiben in den Datensee. Leer heisst zu. |
 | `LEDGER_OPERATOR_TOKEN` | Akte öffnen, pinnen, entscheiden. |
-| `VITE_LEDGER_OPERATOR_TOKEN` | Gleicher Wert für den Browser. Vite nimmt `LEDGER_OPERATOR_TOKEN`. |
+| `VITE_LEDGER_OPERATOR_TOKEN` | Gleicher Wert für den Browser. Die Oberfläche nimmt `LEDGER_OPERATOR_TOKEN`. |
 
-Ingest und Mutationen gehen mit `Authorization: Bearer …`. Ohne Token kommt
+Aufnahme und Mutationen gehen mit `Authorization: Bearer …`. Ohne Token kommt
 `INGEST_FORBIDDEN` und HTTP 401.
 
-## Lake
+## Datensee
 
 `LEDGER_LAKE_PATH` ist der Parquet-Pfad. Er muss zum `DATA_PATH` im
-Postgres-Katalog passen. Vom Repo-Root:
+Postgres-Katalog passen. Vom Stammverzeichnis:
 
 ```bash
 LEDGER_LAKE_PATH=./data/lake
 ```
 
 Ein anderer Arbeitsordner (etwa `apps/api`) legt einen zweiten Pfad an. Dann
-lehnt DuckLake den Attach ab.
+lehnt DuckLake das Anhängen ab.
 
 Lesefehler: `LAKEHOUSE_READ_UNAVAILABLE`, HTTP 503. Kaliber zeigt
-«Lakehouse nicht erreichbar.»
+«Datensee nicht erreichbar.»
 
 ## Schichtbericht
 
-Prüfung Schicht. Tag vor/zurück über die Tage im Lake. Berichtart wählen
+Prüfung Schicht. Tag vor/zurück über die Tage im Datensee. Berichtart wählen
 (Voll, Stunden, Stationen, Klassen, NIO, Akten), dann «Bericht drucken».
 «NIO-Liste kopieren» legt DMC, Klasse und Zeit in die Zwischenablage.
 Lünette, Takt, Band und Kupon bleiben vom Papier weg.
 
 `GET /api/schicht?tag=2026-08-24` und `GET /api/schicht/tage`.
 
-## Seed
+## Übungsdaten
 
 ```bash
 npm run seed -- 2026-08-24

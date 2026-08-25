@@ -72,7 +72,7 @@ export class Lake {
     const rows = await this.query<{ id: unknown }>("FROM lake.current_snapshot()");
     const first = rows[0];
     if (!first) {
-      throw ledgerError("LAKEHOUSE_READ_UNAVAILABLE", "kein aktueller Snapshot", 503);
+      throw ledgerError("LAKEHOUSE_READ_UNAVAILABLE", "kein aktueller Stand", 503);
     }
     return asSnapshotId(asSafeInt(first.id));
   }
@@ -245,8 +245,7 @@ function wrapLakeError(err: unknown): Error {
   if (err && typeof err === "object" && "code" in err) {
     return err as Error;
   }
-  const message = err instanceof Error ? err.message : String(err);
-  return ledgerError("LAKEHOUSE_READ_UNAVAILABLE", message, 503);
+  return ledgerError("LAKEHOUSE_READ_UNAVAILABLE", "Datensee nicht erreichbar.", 503);
 }
 
 function quoteIdent(name: string): string {

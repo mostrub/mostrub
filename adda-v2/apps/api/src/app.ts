@@ -48,13 +48,16 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
       );
     }
     if (err instanceof ZodError) {
+      const path = err.issues[0]?.path.join(".");
       return c.json(
-        { error: "VALIDATION_FAILED", message: err.issues[0]?.message ?? "ungültige Eingabe" },
+        {
+          error: "VALIDATION_FAILED",
+          message: path ? `ungültige Eingabe: ${path}` : "ungültige Eingabe",
+        },
         422,
       );
     }
-    const message = err instanceof Error ? err.message : "unbekannter Fehler";
-    return c.json({ error: "LAKEHOUSE_READ_UNAVAILABLE", message }, 503);
+    return c.json({ error: "LAKEHOUSE_READ_UNAVAILABLE", message: "unbekannter Fehler" }, 503);
   });
 
   app.get("/health", async (c) => {
@@ -85,7 +88,7 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
   app.get("/api/see/at/:snapshotId/cells/:dmc", async (c) => {
     const snapshotId = asSnapshotId(Number(c.req.param("snapshotId")));
     if (!Number.isFinite(snapshotId)) {
-      return c.json({ error: "VALIDATION_FAILED", message: "ungültige Snapshot-Id" }, 422);
+      return c.json({ error: "VALIDATION_FAILED", message: "ungültige Stand-Nummer" }, 422);
     }
     const dossier = await c.get("ledger").loadDossierAt(
       parseDmc(c.req.param("dmc")),
@@ -189,15 +192,15 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
 function denyIfIngestBlocked(c: { req: { header: (n: string) => string | undefined }; get: (k: "api") => ApiConfig }): void {
   const api = c.get("api");
   if (!api.ingestToken) {
-    throw new LedgerError("INGEST_FORBIDDEN", "Ingest-Token fehlt, Schreibzugriff gesperrt", 401);
+    throw new LedgerError("INGEST_FORBIDDEN", "Aufnahme-Token fehlt, Schreibzugriff gesperrt", 401);
   }
   const token = bearerToken(c.req.header("authorization"));
   if (token !== api.ingestToken) {
-    throw new LedgerError("INGEST_FORBIDDEN", "Ingest nicht autorisiert", 401);
+    throw new LedgerError("INGEST_FORBIDDEN", "Aufnahme nicht autorisiert", 401);
   }
   const forwarded = c.req.header("x-forwarded-for") ?? c.req.header("x-real-ip");
   if (forwarded) {
-    throw new LedgerError("INGEST_FORBIDDEN", "Forwarding-Header abgelehnt", 403);
+    throw new LedgerError("INGEST_FORBIDDEN", "Weiterleitungs-Kopfzeile abgelehnt", 403);
   }
 }
 

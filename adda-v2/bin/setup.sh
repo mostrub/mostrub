@@ -109,4 +109,4 @@ if [[ "$(node_major)" -lt 22 ]]; then
 fi
 
 npm install
-echo "Bereit. Seed und Start: bin/dev.sh --seed 2026-08-24"
+echo "Bereit. Übungsdaten und Start: bin/dev.sh --seed 2026-08-24"

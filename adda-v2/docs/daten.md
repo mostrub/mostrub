@@ -21,9 +21,9 @@ Geschlossene Menge, elf Stück:
 - Separator
 - Verletzung_Becherrand
 
-Andere Namen weist der Ingest ab.
+Andere Namen weist die Aufnahme ab.
 
-## Lake
+## Datensee
 
 DuckDB hängt so an:
 
@@ -33,19 +33,19 @@ ATTACH 'ducklake:postgres:dbname=… host=127.0.0.1 user=ledger password=ledger'
 ```
 
 Nur DuckDB schreibt Parquet. Zeitreise geht über `SNAPSHOT_VERSION`. Ein
-früher Snap ohne `findings` gibt `SNAPSHOT_CONFLICT` 409, nicht die live
-Befunde.
+früher Stand ohne `findings` gibt `SNAPSHOT_CONFLICT` 409, nicht die
+laufenden Befunde.
 
 Das Linienboard (`/api/linie`) und der Schichtbericht (`/api/schicht`)
-schneiden den letzten zivilen Tag Europe/Zurich, nicht den ganzen Lake.
+schneiden den letzten zivilen Tag Zürich, nicht den ganzen Datensee.
 
 ## Akten
 
 Postgres, Schema `control`. Status `open`, `pinned`, `closed`. Pins halten
-einen Snapshot. Dispositionen `hold`, `release`, `scrap`, `needs_line`.
+einen Stand. Dispositionen `hold`, `release`, `scrap`, `needs_line`.
 `release` und `scrap` schliessen die Akte.
 
-## Provenienz
+## Herkunft
 
-Auswertungen tragen `_provenance`: Store `ducklake`, Query-Name, Snapshot-Id.
-Kaliber schreibt das in die Fusszeile.
+Auswertungen tragen `_provenance`: Speicher `ducklake`, Abfragename,
+Stand-Nummer. Kaliber schreibt das auf Deutsch in die Fusszeile.

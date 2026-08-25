@@ -4,7 +4,7 @@ Privates Produkt: [`mostrub/ADDA-light`](https://github.com/mostrub/ADDA-light).
 
 ADDA light ist der lokale Boden für HLL-2. Postgres hält Akten und den
 DuckLake-Katalog. DuckLake hält die Inspektionen. Nur DuckDB schreibt in den
-Lake und reist in der Zeit.
+Datensee und reist in der Zeit.
 
 Das ersetzt [`mostrub/ADDA`](https://github.com/mostrub/ADDA) nicht.
 
@@ -17,10 +17,10 @@ und [docs/daten.md](docs/daten.md).
 | --- | --- |
 | PostgreSQL 16 | Schema `control` plus DuckLake-Katalog |
 | DuckLake | `inspections`, `measurements`, `findings`, `line_events` |
-| DuckDB | Attach `ducklake:postgres:…`, Auswertungen, `SNAPSHOT_VERSION` |
+| DuckDB | Anhängen `ducklake:postgres:…`, Auswertungen, `SNAPSHOT_VERSION` |
 
-Ports: API `5757`, Vite `5759`. Bind standardmässig `0.0.0.0`. Env-Präfix
-`LEDGER_`. Zeitzone `Europe/Zurich`.
+Ports: Schnittstelle `5757`, Oberfläche `5759`. Horcht standardmässig auf
+`0.0.0.0`. Umgebungspräfix `LEDGER_`. Zeitzone Zürich (`Europe/Zurich`).
 
 ## Kaliber
 
@@ -34,12 +34,12 @@ Sieben Prüfungen auf demselben Chassis (`?sicht=`):
 | Maschine | Anode → Kathode → OQC, NIO zuerst |
 | Tablett | Magazine mit 12 Fächern |
 | Fach | Dieselbe Lage über alle Magazine |
-| Fenster | Span-Histogramm, p50/p95, Zellen über der Grenze |
-| Klasse | 11 Fehlerklassen × 24 Zurich-Stunden |
+| Fenster | Span-Histogramm, Median und 95-Perzentil, Zellen über der Grenze |
+| Klasse | 11 Fehlerklassen × 24 Stunden Zürich |
 | Schicht | Bericht mit Tagwahl und Arten (Voll, Stunden, Stationen, Klassen, NIO, Akten). Druck und NIO-Liste. |
-| Zeitreise | Lake-Snapshots der gewählten Zelle |
+| Zeitreise | Stände im Datensee der gewählten Zelle |
 
-Takt (24 h, Europe/Zurich) und der Zellkupon bleiben am Instrument. Eine Zelle
+Takt (24 h, Zürich) und der Zellkupon bleiben am Instrument. Eine Zelle
 öffnen verlässt den Boden nicht.
 
 ## Auf der Box
@@ -57,13 +57,13 @@ bin/dev.sh --seed 2026-08-24
 ```
 
 Auf der Box `http://127.0.0.1:5759`, in der Halle `http://<box-ip>:5759`.
-`bin/dev.sh` schreibt die LAN-Adressen.
+`bin/dev.sh` schreibt die Hallenadressen.
 
 Akten schreiben braucht `Authorization: Bearer $LEDGER_OPERATOR_TOKEN`. Der
-Vite-Devserver legt das Token aus der Umgebung. Ingest ohne
-`LEDGER_INGEST_TOKEN` bleibt zu. Lake-Lesefehler kommen als
+Oberflächen-Entwicklungsserver legt das Token aus der Umgebung. Aufnahme ohne
+`LEDGER_INGEST_TOKEN` bleibt zu. Lesefehler im Datensee kommen als
 `LAKEHOUSE_READ_UNAVAILABLE` und HTTP 503. Das Linienboard ist der letzte
-zivile Tag in Zurich, nicht der ganze Lake.
+zivile Tag in Zürich, nicht der ganze Datensee.
 
 ```bash
 cp .env.example .env
@@ -81,10 +81,10 @@ LEDGER_PG_URL=postgres://ledger:ledger@127.0.0.1:5432/ledger \
 npm run dev:web
 ```
 
-`LEDGER_LAKE_PATH` vom Repo-Root aus setzen. Relativ aus `apps/api` zeigt der
-Lake woanders hin als der Katalog.
+`LEDGER_LAKE_PATH` vom Stammverzeichnis aus setzen. Relativ aus `apps/api`
+zeigt der Datensee woanders hin als der Katalog.
 
-Seed-Zeilen tragen `source=seed`. Das ist nicht live VALTR.
+Übungszeilen tragen `source=seed`. Das ist nicht laufendes VALTR.
 
 ## Was das nicht ist
 

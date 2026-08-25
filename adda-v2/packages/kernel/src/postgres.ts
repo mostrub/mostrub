@@ -12,7 +12,7 @@ export function assertTestDatabase(url: string): void {
   if (!name.toLowerCase().includes("test")) {
     throw ledgerError(
       "INVALID_DATABASE",
-      `Migration oder Wipe von '${name}' verweigert, der Name enthält kein 'test'`,
+      `Migration oder Leeren von '${name}' verweigert, der Name enthält kein «test»`,
       500,
     );
   }

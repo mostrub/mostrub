@@ -49,14 +49,14 @@ export function closeDb(db: DuckDatabase): Promise<void> {
 export function asSafeInt(value: unknown): number {
   if (typeof value === "bigint") {
     if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
-      throw new Error(`snapshot id ${value} exceeds MAX_SAFE_INTEGER`);
+      throw new Error(`Stand-Nummer ${value} überschreitet die sichere Ganzzahl`);
     }
     return Number(value);
   }
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
   }
-  throw new Error(`expected integer, got ${typeof value}`);
+  throw new Error(`ganze Zahl erwartet, erhalten ${typeof value}`);
 }
 
 export function sqlLiteral(value: string): string {

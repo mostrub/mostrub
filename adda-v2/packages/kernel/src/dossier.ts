@@ -61,7 +61,7 @@ export async function loadDossierAt(
     if (err instanceof LedgerError && /does not exist/i.test(err.message)) {
       throw ledgerError(
         "SNAPSHOT_CONFLICT",
-        `Snapshot ${snapshotId} liegt vor dem Evidenzschema`,
+        `Stand ${snapshotId} liegt vor dem Evidenzschema`,
         409,
       );
     }
