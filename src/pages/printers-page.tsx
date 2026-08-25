@@ -43,7 +43,7 @@ export function PrintersPage() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Printers"
         description="Shop floor labelers, plotters, and office MFPs. IP and location stay on the consulting printer tab."
@@ -65,11 +65,14 @@ export function PrintersPage() {
           </>
         }
       />
-      <Input
-        placeholder="Search tag, IP, location, type..."
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
+      <div className="border bg-muted/30 px-2 py-2">
+        <Input
+          className="w-72"
+          placeholder="Search tag, IP, location, type..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
       <DataTable
         rows={rows}
         emptyTitle="No printers match"

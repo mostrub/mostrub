@@ -2,13 +2,13 @@ import type { ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 export function RecordSheet({
   open,
@@ -28,12 +28,12 @@ export function RecordSheet({
   submitLabel: string
 }) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-xl">
-        <SheetHeader>
-          <SheetTitle>{title}</SheetTitle>
-          <SheetDescription>{description}</SheetDescription>
-        </SheetHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex max-h-[85vh] w-[760px] max-w-[760px] flex-col gap-0 overflow-hidden p-0 sm:max-w-[760px]">
+        <DialogHeader className="border-b px-4 py-3">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
         <form
           className="flex min-h-0 flex-1 flex-col"
           onSubmit={(event) => {
@@ -41,12 +41,12 @@ export function RecordSheet({
             onSubmit()
           }}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto px-4">{children}</div>
-          <SheetFooter>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">{children}</div>
+          <DialogFooter className="rounded-none">
             <Button type="submit">{submitLabel}</Button>
-          </SheetFooter>
+          </DialogFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }

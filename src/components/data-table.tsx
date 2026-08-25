@@ -44,27 +44,29 @@ export function DataTable<T extends { id: string }>({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          {columns.map((column) => (
-            <TableHead key={column.header} className={column.className}>
-              {column.header}
-            </TableHead>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <TableRow key={row.id}>
+    <div className="overflow-hidden border bg-card">
+      <Table>
+        <TableHeader className="bg-muted/70">
+          <TableRow>
             {columns.map((column) => (
-              <TableCell key={column.header} className={column.className}>
-                {column.cell(row)}
-              </TableCell>
+              <TableHead key={column.header} className={column.className}>
+                {column.header}
+              </TableHead>
             ))}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.id}>
+              {columns.map((column) => (
+                <TableCell key={column.header} className={column.className}>
+                  {column.cell(row)}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

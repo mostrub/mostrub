@@ -1,7 +1,6 @@
-import { NavLink, Outlet } from "react-router-dom"
+import { NavLink, Outlet, useLocation } from "react-router-dom"
 
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { ExportMenu } from "@/components/export-menu"
 import { useTheme } from "@/components/theme-provider"
 import { ORG_NAME } from "@/domain/seed"
@@ -17,7 +16,15 @@ const NAV = [
   { to: "/audit", label: "Audit" },
 ]
 
+function registerTitle(pathname: string): string {
+  const match = NAV.find((item) =>
+    item.end ? pathname === item.to : pathname.startsWith(item.to),
+  )
+  return match?.label ?? "Overview"
+}
+
 export function AppShell() {
+  const location = useLocation()
   const { theme, setTheme } = useTheme()
   const resolvedDark =
     theme === "dark" ||
@@ -26,16 +33,16 @@ export function AppShell() {
       window.matchMedia("(prefers-color-scheme: dark)").matches)
 
   return (
-    <div className="flex min-h-svh bg-background">
-      <aside className="hidden w-56 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
-        <div className="flex flex-col gap-1 px-4 py-5">
-          <p className="text-xs tracking-wide text-muted-foreground uppercase">
-            IT operations
+    <div className="flex min-h-screen min-w-[1180px] bg-background">
+      <aside className="flex w-52 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground">
+        <div className="border-b px-3 py-3">
+          <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
+            Plant floor
           </p>
-          <p className="font-heading text-base font-medium">{ORG_NAME}</p>
+          <p className="text-sm font-semibold">{ORG_NAME}</p>
+          <p className="text-xs text-muted-foreground">Asset register</p>
         </div>
-        <Separator />
-        <nav className="flex flex-col gap-1 p-3">
+        <nav className="flex flex-col py-1">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
@@ -43,10 +50,10 @@ export function AppShell() {
               end={item.end}
               className={({ isActive }) =>
                 cn(
-                  "rounded-lg px-3 py-2 text-sm transition-colors",
+                  "border-l-2 px-3 py-1.5 text-sm",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground",
+                    ? "border-foreground bg-sidebar-accent font-medium text-foreground"
+                    : "border-transparent text-muted-foreground hover:bg-sidebar-accent/70 hover:text-foreground",
                 )
               }
             >
@@ -56,27 +63,13 @@ export function AppShell() {
         </nav>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-3 border-b px-4 py-3 md:px-6">
-          <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto md:hidden">
-            {NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    "shrink-0 rounded-lg px-2.5 py-1.5 text-sm",
-                    isActive
-                      ? "bg-muted text-foreground"
-                      : "text-muted-foreground",
-                  )
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
+        <header className="flex h-10 shrink-0 items-center gap-3 border-b bg-muted/40 px-3">
+          <p className="text-sm">
+            <span className="text-muted-foreground">Register</span>
+            <span className="px-1.5 text-muted-foreground">/</span>
+            <span className="font-medium">{registerTitle(location.pathname)}</span>
+          </p>
+          <div className="ml-auto flex items-center gap-1.5">
             <ExportMenu />
             <Button
               variant="ghost"
@@ -88,7 +81,7 @@ export function AppShell() {
             </Button>
           </div>
         </header>
-        <main className="flex-1 px-4 py-6 md:px-6">
+        <main className="min-h-0 flex-1 overflow-auto p-3">
           <Outlet />
         </main>
       </div>

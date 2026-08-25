@@ -39,7 +39,7 @@ export function SoftwarePage() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Software"
         description="Seat counts, renewals, and entitlement IDs. Over-assigned titles are saved and listed on the audit tab."
@@ -61,11 +61,14 @@ export function SoftwarePage() {
           </>
         }
       />
-      <Input
-        placeholder="Search name, vendor, entitlement..."
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
+      <div className="border bg-muted/30 px-2 py-2">
+        <Input
+          className="w-72"
+          placeholder="Search name, vendor, entitlement..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
       <DataTable
         rows={rows}
         emptyTitle="No software matches"

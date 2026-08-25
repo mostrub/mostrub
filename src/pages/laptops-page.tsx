@@ -84,7 +84,7 @@ export function LaptopsPage() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Laptops"
         description="Tracked by department, hardware type, and operating system. Use Destroy on the destruction register when a unit is wiped or shredded."
@@ -106,9 +106,9 @@ export function LaptopsPage() {
           </>
         }
       />
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="flex flex-wrap items-center gap-2 border bg-muted/30 px-2 py-2">
         <Input
-          className="lg:col-span-1"
+          className="w-72"
           placeholder="Search tag, serial, user, department, OS..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -238,10 +238,10 @@ function FilterSelect<T extends string>({
   items: { value: T; label: string }[]
 }) {
   return (
-    <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+    <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
       {label}
       <select
-        className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground dark:bg-input/30"
+        className="h-8 rounded-sm border border-input bg-background px-2 text-sm text-foreground"
         value={value}
         onChange={(event) => onChange(event.target.value as T)}
       >

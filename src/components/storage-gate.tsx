@@ -21,8 +21,8 @@ export function StorageGate({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-background p-6">
-      <Card className="w-full max-w-lg">
+    <div className="flex min-h-screen min-w-[1180px] items-center justify-center bg-background p-8">
+      <Card className="w-[560px] rounded-sm">
         <CardHeader>
           <CardTitle>Saved inventory could not be read</CardTitle>
           <CardDescription>

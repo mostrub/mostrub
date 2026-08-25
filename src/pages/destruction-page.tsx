@@ -45,7 +45,7 @@ export function DestructionPage() {
   )
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Destruction"
         description="Chain of custody for wiped, shredded, degaussed, or vendor-returned assets. If the tag still exists on a laptop or printer, that record is marked destroyed."
@@ -69,11 +69,14 @@ export function DestructionPage() {
           </>
         }
       />
-      <Input
-        placeholder="Search tag, witness, certificate, method..."
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
+      <div className="border bg-muted/30 px-2 py-2">
+        <Input
+          className="w-72"
+          placeholder="Search tag, witness, certificate, method..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </div>
       <DataTable
         rows={rows}
         emptyTitle="No destruction records"

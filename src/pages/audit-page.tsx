@@ -16,7 +16,7 @@ export function AuditPage() {
   }).map((finding) => ({ ...finding, id: `${finding.code}-${finding.recordId}` }))
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Audit"
         description="Exceptions consulting teams usually ask for: missing serials, expired warranties, unassigned in-service laptops, expired or soon-to-renew licenses, and destruction without a witness."
