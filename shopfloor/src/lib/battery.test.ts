@@ -137,5 +137,7 @@ describe("dependentLineSql", () => {
     expect(sql).toContain("MOD-1")
     expect(sql).toContain("PACK-1")
     expect(sql).toContain("STARVE")
+    expect(sql).toContain("edges.up_plant")
+    expect(sql).not.toMatch(/AS edges\([^)]+\)\s+e\b/)
   })
 })

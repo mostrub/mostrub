@@ -273,22 +273,22 @@ export function dependentLineSql(filters: ProductionFilters): string {
   const downtime = sqlFrom("downtime", filters)
   return `
     SELECT
-      e.up_plant, e.up_line, e.down_plant, e.down_line,
+      edges.up_plant, edges.up_line, edges.down_plant, edges.down_line,
       COALESCE(u.downtime_min, 0) AS upstream_downtime_min,
       COALESCE(s.starve_min, 0) AS downstream_starve_min
-    FROM ${lineEdgesSql()} e
+    FROM ${lineEdgesSql()}
     LEFT JOIN (
       SELECT plant, line, SUM(duration_ms) / 60000.0 AS downtime_min
       FROM ${downtime}
       WHERE category = 'UNPLANNED'
       GROUP BY 1, 2
-    ) u ON u.plant = e.up_plant AND u.line = e.up_line
+    ) u ON u.plant = edges.up_plant AND u.line = edges.up_line
     LEFT JOIN (
       SELECT plant, line, SUM(duration_ms) / 60000.0 AS starve_min
       FROM ${downtime}
       WHERE reason_code = 'STARVE'
       GROUP BY 1, 2
-    ) s ON s.plant = e.down_plant AND s.line = e.down_line
+    ) s ON s.plant = edges.down_plant AND s.line = edges.down_line
     ORDER BY upstream_downtime_min DESC
   `
 }
