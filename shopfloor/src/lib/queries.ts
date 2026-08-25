@@ -178,7 +178,8 @@ export function oeeSql(filters: ProductionFilters): string {
           CAST(MAX(ended_at) AS TIMESTAMP)), 0) AS window_ms,
         COALESCE(SUM(good_qty + scrap_qty + rework_qty), 0) AS units,
         COALESCE(SUM(good_qty), 0) AS good_units,
-        COALESCE(AVG(target_cycle_ms), 0) AS target_cycle_ms
+        COALESCE(AVG(target_cycle_ms), 0) AS target_cycle_ms,
+        COALESCE(SUM(target_cycle_ms * (good_qty + scrap_qty + rework_qty)), 0) AS ideal_ms
       FROM ${sqlFrom("cycles", filters)}
     ),
     losses AS (
@@ -191,7 +192,8 @@ export function oeeSql(filters: ProductionFilters): string {
       losses.unplanned_ms,
       span.units,
       span.good_units,
-      span.target_cycle_ms
+      span.target_cycle_ms,
+      span.ideal_ms
     FROM span, losses
   `
 }

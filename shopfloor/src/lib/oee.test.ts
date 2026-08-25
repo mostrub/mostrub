@@ -39,4 +39,29 @@ describe("computeOee", () => {
     })
     expect(parts.performance).toBe(100)
   })
+
+  it("prefers weighted ideal time when mix-model targets differ", () => {
+    const windowMs = 400_000
+    const avgTargetMs = 15_000
+    const units = 11
+    const weightedIdealMs = 10_000 * 1 + 20_000 * 10
+    const fromAverage = computeOee({
+      windowMs,
+      unplannedDowntimeMs: 0,
+      units,
+      goodUnits: units,
+      targetCycleMs: avgTargetMs,
+    })
+    const fromIdeal = computeOee({
+      windowMs,
+      unplannedDowntimeMs: 0,
+      units,
+      goodUnits: units,
+      targetCycleMs: avgTargetMs,
+      idealMs: weightedIdealMs,
+    })
+    expect(fromAverage.performance).toBeCloseTo((100 * avgTargetMs * units) / windowMs)
+    expect(fromIdeal.performance).toBeCloseTo((100 * weightedIdealMs) / windowMs)
+    expect(fromIdeal.performance).not.toBeCloseTo(fromAverage.performance)
+  })
 })

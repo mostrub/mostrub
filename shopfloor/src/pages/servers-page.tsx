@@ -9,6 +9,7 @@ import {
   serverLatestSql,
   serverSeriesSql,
 } from "@/lib/queries"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -37,6 +38,7 @@ export function ServersPage() {
   const [latest, setLatest] = useState<QueryRow[]>([])
   const [controllers, setControllers] = useState<QueryRow[]>([])
   const [series, setSeries] = useState<QueryRow[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
   const selected = filters.servers[0] ?? ""
 
   useEffect(() => {
@@ -44,16 +46,23 @@ export function ServersPage() {
       return
     }
     let cancelled = false
+    setLoadError(null)
     Promise.all([
       queryRows(serverLatestSql(filters)),
       queryRows(controllersSql(filters)),
-    ]).then(([serverRows, controllerRows]) => {
-      if (cancelled) {
-        return
-      }
-      setLatest(serverRows)
-      setControllers(controllerRows)
-    })
+    ])
+      .then(([serverRows, controllerRows]) => {
+        if (cancelled) {
+          return
+        }
+        setLatest(serverRows)
+        setControllers(controllerRows)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setLoadError(err instanceof Error ? err.message : "Server query failed")
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -65,11 +74,17 @@ export function ServersPage() {
       return
     }
     let cancelled = false
-    void queryRows(serverSeriesSql(filters, selected)).then((rows) => {
-      if (!cancelled) {
-        setSeries(rows)
-      }
-    })
+    void queryRows(serverSeriesSql(filters, selected))
+      .then((rows) => {
+        if (!cancelled) {
+          setSeries(rows)
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setLoadError(err instanceof Error ? err.message : "Server series query failed")
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -86,6 +101,12 @@ export function ServersPage() {
           faults, and run mode. Click a server to pin it and plot the series.
         </p>
       </div>
+      {loadError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Could not load servers</AlertTitle>
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      ) : null}
       <Card>
         <CardHeader>
           <CardTitle>Servers</CardTitle>

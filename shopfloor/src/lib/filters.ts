@@ -1,4 +1,11 @@
-import type { ProductionFilters, TableName } from "@/lib/types"
+import {
+  isAlarmSeverity,
+  isCycleResult,
+  isDowntimeCategory,
+  type AppView,
+  type ProductionFilters,
+  type TableName,
+} from "@/lib/types"
 
 export const EMPTY_FILTERS: ProductionFilters = {
   plants: [],
@@ -251,16 +258,74 @@ export function encodeFilters(filters: ProductionFilters): string {
   return btoa(unescape(encodeURIComponent(JSON.stringify(filters))))
 }
 
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value.filter((item) => typeof item === "string")
+}
+
+function stringOrNull(value: unknown): string | null {
+  return typeof value === "string" && value !== "" ? value : null
+}
+
+function finiteOrNull(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null
+}
+
+function asRecord(raw: object): Record<string, unknown> {
+  const rec: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(raw)) {
+    rec[key] = value
+  }
+  return rec
+}
+
+export function sanitizeFilters(raw: unknown): ProductionFilters {
+  if (!raw || typeof raw !== "object") {
+    return { ...EMPTY_FILTERS }
+  }
+  const rec = asRecord(raw)
+  return {
+    plants: stringList(rec.plants),
+    lines: stringList(rec.lines),
+    stations: stringList(rec.stations),
+    machines: stringList(rec.machines),
+    controllers: stringList(rec.controllers),
+    servers: stringList(rec.servers),
+    shifts: stringList(rec.shifts),
+    skus: stringList(rec.skus),
+    workOrders: stringList(rec.workOrders),
+    results: stringList(rec.results).filter(isCycleResult),
+    severities: stringList(rec.severities).filter(isAlarmSeverity),
+    downtimeCategories: stringList(rec.downtimeCategories).filter(
+      isDowntimeCategory
+    ),
+    from: stringOrNull(rec.from),
+    to: stringOrNull(rec.to),
+    search: typeof rec.search === "string" ? rec.search : "",
+    minCycleMs: finiteOrNull(rec.minCycleMs),
+    maxCycleMs: finiteOrNull(rec.maxCycleMs),
+    onlyAnomalies: rec.onlyAnomalies === true,
+  }
+}
+
 export function decodeFilters(raw: string): ProductionFilters | null {
   try {
     const parsed: unknown = JSON.parse(decodeURIComponent(escape(atob(raw))))
     if (!parsed || typeof parsed !== "object") {
       return null
     }
-    return { ...EMPTY_FILTERS, ...parsed } as ProductionFilters
+    return sanitizeFilters(parsed)
   } catch {
     return null
   }
+}
+
+export function viewHash(view: AppView, filters: ProductionFilters): string {
+  const suffix =
+    activeFilterCount(filters) > 0 ? `?f=${encodeFilters(filters)}` : ""
+  return `#${view}${suffix}`
 }
 
 export function toggleValue<T extends string>(

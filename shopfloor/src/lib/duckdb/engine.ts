@@ -4,14 +4,24 @@ import ehWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?url"
 import duckdbMvp from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url"
 import mvpWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url"
 
-import { INSERT_SQL, SCHEMA_SQL } from "@/lib/duckdb/schema"
+import {
+  INSERT_SQL,
+  SCHEMA_SQL,
+  deleteByFileIdsSql,
+  insertParquetByName,
+} from "@/lib/duckdb/schema"
 import {
   clearPersisted,
+  deleteParquet,
   loadAllParquet,
   persistParquet,
 } from "@/lib/duckdb/persist"
 import { guessTable } from "@/lib/ingest-kind"
 import { TABLE_NAMES, type ProductionBatch, type TableName } from "@/lib/types"
+
+export type EngineInitResult = {
+  restoreFailed: TableName[]
+}
 
 export type QueryRow = Record<string, string | number | boolean | null>
 
@@ -29,9 +39,9 @@ const BUNDLES: duckdb.DuckDBBundles = {
   },
 }
 
-export async function initEngine(): Promise<void> {
+export async function initEngine(): Promise<EngineInitResult> {
   if (conn) {
-    return
+    return { restoreFailed: [] }
   }
   const bundle = await duckdb.selectBundle(BUNDLES)
   const workerUrl = bundle.mainWorker
@@ -45,11 +55,8 @@ export async function initEngine(): Promise<void> {
   await connection.query(SCHEMA_SQL)
   db = instance
   conn = connection
-  try {
-    await restorePersisted()
-  } catch {
-    // Corrupt cache should not block a fresh session.
-  }
+  const restoreFailed = await restorePersisted()
+  return { restoreFailed }
 }
 
 function requireConn(): {
@@ -125,12 +132,26 @@ export async function ingestBatches(batches: ProductionBatch[]): Promise<void> {
   await registerJson("server_samples", serverSamples)
   await registerJson("controllers", controllers)
 
-  if (files.length > 0) await connection.query(INSERT_SQL.ingest_files)
-  if (cycles.length > 0) await connection.query(INSERT_SQL.cycles)
-  if (downtime.length > 0) await connection.query(INSERT_SQL.downtime)
-  if (alarms.length > 0) await connection.query(INSERT_SQL.alarms)
-  if (serverSamples.length > 0) await connection.query(INSERT_SQL.server_samples)
-  if (controllers.length > 0) await connection.query(INSERT_SQL.controllers)
+  await connection.query("BEGIN TRANSACTION")
+  try {
+    const fileIds = files.map((file) => file.file_id).filter((id) => id !== "")
+    for (const table of TABLE_NAMES) {
+      const sql = deleteByFileIdsSql(table, fileIds)
+      if (sql) {
+        await connection.query(sql)
+      }
+    }
+    if (files.length > 0) await connection.query(INSERT_SQL.ingest_files)
+    if (cycles.length > 0) await connection.query(INSERT_SQL.cycles)
+    if (downtime.length > 0) await connection.query(INSERT_SQL.downtime)
+    if (alarms.length > 0) await connection.query(INSERT_SQL.alarms)
+    if (serverSamples.length > 0) await connection.query(INSERT_SQL.server_samples)
+    if (controllers.length > 0) await connection.query(INSERT_SQL.controllers)
+    await connection.query("COMMIT")
+  } catch (err) {
+    await connection.query("ROLLBACK")
+    throw err
+  }
   await persistAllTables()
 }
 
@@ -156,24 +177,32 @@ export async function ingestTabularFile(file: File): Promise<TableName> {
   return table
 }
 
-async function restorePersisted(): Promise<void> {
+async function restorePersisted(): Promise<TableName[]> {
   const { db: instance, conn: connection } = requireConn()
   const stored = await loadAllParquet()
+  const failed: TableName[] = []
   for (const table of TABLE_NAMES) {
     const bytes = stored[table]
     if (!bytes) {
       continue
     }
     const path = `restore-${table}.parquet`
-    await instance.registerFileBuffer(path, bytes)
-    await connection.query(`INSERT INTO ${table} SELECT * FROM read_parquet('${path}')`)
+    try {
+      await instance.registerFileBuffer(path, bytes)
+      await connection.query(insertParquetByName(table, path))
+    } catch {
+      failed.push(table)
+      await deleteParquet(table)
+    }
   }
+  return failed
 }
 
 export async function persistAllTables(): Promise<void> {
   for (const table of TABLE_NAMES) {
     const count = await tableCount(table)
     if (count === 0) {
+      await deleteParquet(table)
       continue
     }
     const bytes = await exportCopy({

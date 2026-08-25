@@ -21,6 +21,12 @@ describe("guessTable", () => {
   it("returns null when overlap is too thin", () => {
     expect(guessTable(["foo", "bar"])).toBeNull()
   })
+
+  it("rejects cycle-like columns that omit cycle_id", () => {
+    expect(
+      guessTable(["plant", "line", "station", "result", "cycle_ms", "good_qty"])
+    ).toBeNull()
+  })
 })
 
 describe("pickIngestFiles", () => {

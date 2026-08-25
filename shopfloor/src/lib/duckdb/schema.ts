@@ -1,3 +1,6 @@
+import { escapeSqlLiteral } from "@/lib/filters"
+import type { TableName } from "@/lib/types"
+
 export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS ingest_files (
   file_id VARCHAR,
@@ -118,10 +121,27 @@ CREATE TABLE IF NOT EXISTS controllers (
 `
 
 export const INSERT_SQL = {
-  ingest_files: `INSERT INTO ingest_files SELECT * FROM read_json_auto('ingest_files.json')`,
-  cycles: `INSERT INTO cycles SELECT * FROM read_json_auto('cycles.json')`,
-  downtime: `INSERT INTO downtime SELECT * FROM read_json_auto('downtime.json')`,
-  alarms: `INSERT INTO alarms SELECT * FROM read_json_auto('alarms.json')`,
-  server_samples: `INSERT INTO server_samples SELECT * FROM read_json_auto('server_samples.json')`,
-  controllers: `INSERT INTO controllers SELECT * FROM read_json_auto('controllers.json')`,
+  ingest_files: `INSERT INTO ingest_files BY NAME SELECT * FROM read_json_auto('ingest_files.json')`,
+  cycles: `INSERT INTO cycles BY NAME SELECT * FROM read_json_auto('cycles.json')`,
+  downtime: `INSERT INTO downtime BY NAME SELECT * FROM read_json_auto('downtime.json')`,
+  alarms: `INSERT INTO alarms BY NAME SELECT * FROM read_json_auto('alarms.json')`,
+  server_samples: `INSERT INTO server_samples BY NAME SELECT * FROM read_json_auto('server_samples.json')`,
+  controllers: `INSERT INTO controllers BY NAME SELECT * FROM read_json_auto('controllers.json')`,
 } as const
+
+export function insertParquetByName(table: TableName, path: string): string {
+  return `INSERT INTO ${table} BY NAME SELECT * FROM read_parquet('${path}')`
+}
+
+export function deleteByFileIdsSql(
+  table: TableName,
+  fileIds: readonly string[]
+): string | null {
+  if (fileIds.length === 0) {
+    return null
+  }
+  const body = fileIds
+    .map((id) => `'${escapeSqlLiteral(id)}'`)
+    .join(", ")
+  return `DELETE FROM ${table} WHERE file_id IN (${body})`
+}

@@ -1,4 +1,4 @@
-import { EMPTY_FILTERS } from "@/lib/filters"
+import { sanitizeFilters } from "@/lib/filters"
 import type { ProductionFilters } from "@/lib/types"
 
 export type FilterPreset = {
@@ -31,10 +31,7 @@ export function loadPresets(): FilterPreset[] {
       if (typeof rec.id !== "string" || typeof rec.name !== "string") {
         return []
       }
-      const filters =
-        rec.filters && typeof rec.filters === "object"
-          ? { ...EMPTY_FILTERS, ...rec.filters }
-          : EMPTY_FILTERS
+      const filters = sanitizeFilters(rec.filters)
       return [
         {
           id: rec.id,

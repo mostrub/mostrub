@@ -9,6 +9,7 @@ import {
   openAlarmsSql,
   triageTreeSql,
 } from "@/lib/queries"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import {
   Breadcrumb,
@@ -35,26 +36,34 @@ export function TriagePage() {
   const [downtime, setDowntime] = useState<QueryRow[]>([])
   const [alarms, setAlarms] = useState<QueryRow[]>([])
   const [fails, setFails] = useState<QueryRow[]>([])
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!ready || rowCounts.cycles === 0) {
       return
     }
     let cancelled = false
+    setLoadError(null)
     Promise.all([
       queryRows(triageTreeSql(filters)),
       queryRows(longDowntimeSql(filters)),
       queryRows(openAlarmsSql(filters)),
       queryRows(failCodesSql(filters)),
-    ]).then(([treeRows, dtRows, alarmRows, failRows]) => {
-      if (cancelled) {
-        return
-      }
-      setTree(treeRows)
-      setDowntime(dtRows)
-      setAlarms(alarmRows)
-      setFails(failRows)
-    })
+    ])
+      .then(([treeRows, dtRows, alarmRows, failRows]) => {
+        if (cancelled) {
+          return
+        }
+        setTree(treeRows)
+        setDowntime(dtRows)
+        setAlarms(alarmRows)
+        setFails(failRows)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setLoadError(err instanceof Error ? err.message : "Triage query failed")
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -104,6 +113,12 @@ export function TriagePage() {
             Click a hierarchy row to pin plant → line → station → machine →
             controller. Losses and alarms follow the same filter.
           </p>
+          {loadError ? (
+            <Alert variant="destructive" className="mt-3">
+              <AlertTitle>Could not load triage</AlertTitle>
+              <AlertDescription>{loadError}</AlertDescription>
+            </Alert>
+          ) : null}
         </div>
         <Breadcrumb>
           <BreadcrumbList>

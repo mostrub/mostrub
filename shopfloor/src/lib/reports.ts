@@ -79,6 +79,7 @@ async function buildShiftReport(
     units: num(oeeRow?.units ?? 0),
     goodUnits: num(oeeRow?.good_units ?? 0),
     targetCycleMs: num(oeeRow?.target_cycle_ms ?? 0),
+    idealMs: num(oeeRow?.ideal_ms ?? 0),
   })
   findings.push(
     `OEE is ${pct(oee.oee)} (A ${pct(oee.availability)} · P ${pct(oee.performance)} · Q ${pct(oee.quality)}).`

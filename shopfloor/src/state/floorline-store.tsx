@@ -33,8 +33,8 @@ import {
   EMPTY_FILTERS,
   activeFilterCount,
   decodeFilters,
-  encodeFilters,
   sqlFrom,
+  viewHash,
 } from "@/lib/filters"
 import { FACET_SQL } from "@/lib/queries"
 import { buildAutoReports } from "@/lib/reports"
@@ -112,9 +112,7 @@ function parseHash(): { view: AppView; filters: ProductionFilters } {
 }
 
 function writeHash(view: AppView, filters: ProductionFilters): void {
-  const count = activeFilterCount(filters)
-  const suffix = count > 0 ? `?f=${encodeFilters(filters)}` : ""
-  const next = `#${view}${suffix}`
+  const next = viewHash(view, filters)
   if (window.location.hash !== next) {
     window.history.replaceState(null, "", next)
   }
@@ -196,12 +194,17 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
     initEngine()
-      .then(async () => {
+      .then(async (result) => {
         if (cancelled) {
           return
         }
         setReady(true)
         await refreshMeta()
+        if (result.restoreFailed.length > 0) {
+          toast.warning(
+            `Could not restore ${result.restoreFailed.join(", ")} from local cache. Re-ingest those tables.`
+          )
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -362,7 +365,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
   )
 
   const shareUrl = useCallback(() => {
-    const url = `${window.location.origin}${window.location.pathname}#${view}?f=${encodeFilters(filters)}`
+    const url = `${window.location.origin}${window.location.pathname}${viewHash(view, filters)}`
     return url
   }, [filters, view])
 

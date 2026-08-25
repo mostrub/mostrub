@@ -3,6 +3,15 @@ import { TABLE_NAMES, type TableName } from "@/lib/types"
 export const INGEST_KINDS = ["xml", "csv", "parquet"] as const
 export type IngestKind = (typeof INGEST_KINDS)[number]
 
+const TABLE_PRIMARY_KEY: Record<TableName, string> = {
+  ingest_files: "file_id",
+  cycles: "cycle_id",
+  downtime: "event_id",
+  alarms: "alarm_id",
+  server_samples: "sample_id",
+  controllers: "controller_id",
+}
+
 const TABLE_COLUMNS: Record<TableName, readonly string[]> = {
   ingest_files: [
     "file_id",
@@ -45,6 +54,9 @@ export function guessTable(columnNames: string[]): TableName | null {
   const set = new Set(columnNames.map((name) => name.toLowerCase()))
   let best: { table: TableName; score: number } | null = null
   for (const table of TABLE_NAMES) {
+    if (!set.has(TABLE_PRIMARY_KEY[table])) {
+      continue
+    }
     let score = 0
     for (const col of TABLE_COLUMNS[table]) {
       if (set.has(col)) {

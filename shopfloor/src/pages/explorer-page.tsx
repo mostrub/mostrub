@@ -47,6 +47,7 @@ export function ExplorerPage() {
   )
   const [sqlRows, setSqlRows] = useState<QueryRow[]>([])
   const [sqlError, setSqlError] = useState<string | null>(null)
+  const [tableError, setTableError] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("DESC")
   const [page, setPage] = useState(0)
   const [rows, setRows] = useState<QueryRow[]>([])
@@ -71,23 +72,30 @@ export function ExplorerPage() {
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
     })
+    setTableError(null)
     Promise.all([
       queryRows(sql),
       queryValue(explorerCountSql({ table, filters })),
-    ]).then(([nextRows, count]) => {
-      if (cancelled) {
-        return
-      }
-      setRows(nextRows)
-      setTotal(count)
-      const first = nextRows[0]
-      if (first && !(sortColumn in first)) {
-        const fallback = Object.keys(first)[0]
-        if (fallback) {
-          setSortColumn(fallback)
+    ])
+      .then(([nextRows, count]) => {
+        if (cancelled) {
+          return
         }
-      }
-    })
+        setRows(nextRows)
+        setTotal(count)
+        const first = nextRows[0]
+        if (first && !(sortColumn in first)) {
+          const fallback = Object.keys(first)[0]
+          if (fallback) {
+            setSortColumn(fallback)
+          }
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setTableError(err instanceof Error ? err.message : "Explorer query failed")
+        }
+      })
     return () => {
       cancelled = true
     }
@@ -185,6 +193,9 @@ export function ExplorerPage() {
               />
             </Field>
           </div>
+          {tableError ? (
+            <p className="text-sm text-destructive">{tableError}</p>
+          ) : null}
           <DataTable
             rows={rows}
             maxHeight="32rem"

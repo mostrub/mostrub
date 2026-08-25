@@ -15,6 +15,7 @@ import {
   oeeSql,
   shiftCompareSql,
 } from "@/lib/queries"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -63,6 +64,7 @@ export function DashboardPage() {
     targetCycleMs: 0,
   }))
   const [busy, setBusy] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!ready || rowCounts.cycles === 0) {
@@ -70,6 +72,7 @@ export function DashboardPage() {
     }
     let cancelled = false
     setBusy(true)
+    setLoadError(null)
     Promise.all([
       queryRows(kpiSql(filters)),
       queryRows(hourlyThroughputSql(filters)),
@@ -99,8 +102,14 @@ export function DashboardPage() {
             units: Number(oeeRow?.units ?? 0),
             goodUnits: Number(oeeRow?.good_units ?? 0),
             targetCycleMs: Number(oeeRow?.target_cycle_ms ?? 0),
+            idealMs: Number(oeeRow?.ideal_ms ?? 0),
           })
         )
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setLoadError(err instanceof Error ? err.message : "Dashboard query failed")
+        }
       })
       .finally(() => {
         if (!cancelled) {
@@ -141,6 +150,12 @@ export function DashboardPage() {
           Live DuckDB aggregates for the current filter set.
         </p>
       </div>
+      {loadError ? (
+        <Alert variant="destructive">
+          <AlertTitle>Could not load the dashboard</AlertTitle>
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      ) : null}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
         <Kpi label="Units" value={formatNumber(units)} busy={busy} />
         <Kpi label="OEE" value={formatPct(oee.oee)} busy={busy} tone={oee.oee < 65 ? "bad" : "ok"} />
