@@ -1,0 +1,28 @@
+{
+  "name": "adda-ledger",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b",
+    "dev": "npm run dev --workspace=@ledger/api & npm run dev --workspace=@ledger/web",
+    "dev:api": "npm run dev --workspace=@ledger/api",
+    "dev:web": "npm run dev --workspace=@ledger/web",
+    "seed": "npm run seed --workspace=@ledger/api",
+    "build": "npm run build --workspace=@ledger/web && npm run build --workspace=@ledger/api"
+  },
+  "devDependencies": {
+    "@types/node": "^22.17.1",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
