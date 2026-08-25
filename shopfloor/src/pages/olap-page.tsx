@@ -141,6 +141,7 @@ export function OlapPage() {
           <Field>
             <FieldLabel>Dimensions</FieldLabel>
             <ToggleGroup
+              multiple
               value={dimensions}
               onValueChange={(values) =>
                 setDimensions(sanitizeOlapDimensions(values))
@@ -156,6 +157,7 @@ export function OlapPage() {
           <Field>
             <FieldLabel>Measures</FieldLabel>
             <ToggleGroup
+              multiple
               value={measures}
               onValueChange={(values) =>
                 setMeasures(sanitizeOlapMeasures(values))
