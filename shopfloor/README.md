@@ -23,7 +23,7 @@ chmod +x install-macos.sh
 ./install-macos.sh
 ```
 
-That installs Node.js with Homebrew if it is missing, runs `npm install`, and puts the same Desktop shortcuts on the Mac. If macOS blocks a `.command` file: right-click → Open.
+That installs Homebrew and Node.js if they are missing, runs `npm install`, and puts **Floorline** and **Stop Floorline** on the Desktop (including localized Desktop folders). If macOS blocks a `.command` file: right-click → Open.
 
 After that, people on the floor only need the Desktop icons. **Floorline** starts the server and opens Edge or Chrome full screen. **Stop Floorline** quits it. The header also has **Full screen**.
 
