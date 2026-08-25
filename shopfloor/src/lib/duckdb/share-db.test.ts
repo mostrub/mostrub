@@ -72,6 +72,10 @@ describe("packFloorlineDb", () => {
     expect(new TextDecoder().decode(loaded.tables.cycles)).toBe("PARQUET-CYCLES")
     expect(new TextDecoder().decode(loaded.tables.downtime)).toBe("PARQUET-DT")
     expect(loaded.tables.alarms).toBeUndefined()
+    expect(loaded.tables.cycles?.byteOffset).toBe(0)
+    expect(loaded.tables.cycles?.buffer.byteLength).toBe(
+      loaded.tables.cycles?.byteLength
+    )
 
     const broken = new Uint8Array(packed)
     broken[0] = 88

@@ -147,7 +147,7 @@ export function unpackFloorlineDb(bytes: Uint8Array): FloorlineDbPack {
     if (end > bytes.byteLength) {
       throw new Error("Floorline-Stand ist beschädigt (Tabelle).")
     }
-    tables[entry.name] = bytes.subarray(offset, end)
+    tables[entry.name] = bytes.slice(offset, end)
     offset = end
   }
   return { manifest, tables }

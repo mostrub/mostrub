@@ -349,8 +349,10 @@ export async function loadFloorlineDbBytes(bytes: Uint8Array): Promise<string> {
       continue
     }
     const path = `restore-${table}.parquet`
+    const copy = new Uint8Array(parquet.byteLength)
+    copy.set(parquet)
     try {
-      await instance.registerFileBuffer(path, parquet)
+      await instance.registerFileBuffer(path, copy)
       await connection.query(insertParquetByName(table, path))
     } finally {
       try {
