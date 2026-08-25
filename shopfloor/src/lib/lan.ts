@@ -1,60 +1,66 @@
+import {
+  hostOperatingSystemLabel,
+  uniqueOperatingSystems,
+  visitorOperatingSystem,
+  type NetworkPeer,
+} from "@/lib/os-label"
+
+export type { NetworkPeer } from "@/lib/os-label"
+export {
+  formatPeerLabel,
+  hostOperatingSystemLabel,
+  parsePresenceOs,
+  uniqueOperatingSystems,
+  visitorOperatingSystem,
+} from "@/lib/os-label"
+
 export type LanShareInfo = {
   hostname: string
   os: string
   platform: string
   port: number
   urls: string[]
+  peers: NetworkPeer[]
   thisOrigin: string
   visitorOs: string
 }
 
-export function visitorOperatingSystem(userAgent: string): string {
-  if (userAgent.includes("Windows")) {
-    return "Windows"
-  }
-  if (userAgent.includes("Mac OS X") || userAgent.includes("Macintosh")) {
-    return "macOS"
-  }
-  if (userAgent.includes("CrOS")) {
-    return "ChromeOS"
-  }
-  if (userAgent.includes("Android")) {
-    return "Android"
-  }
-  if (userAgent.includes("Linux")) {
-    return "Linux"
-  }
-  return "this device"
-}
-
-export function hostOperatingSystemLabel(platform: string, os: string): string {
-  switch (platform) {
-    case "win32":
-      return "Windows"
-    case "darwin":
-      return "macOS"
-    case "linux":
-      return "Linux"
-    default: {
-      if (os.length > 0) {
-        return os
-      }
-      return "this computer"
-    }
-  }
-}
-
 function fallbackInfo(): LanShareInfo {
   const port = Number(window.location.port)
+  const visitorOs = visitorOperatingSystem(navigator.userAgent)
   return {
     hostname: window.location.hostname,
     os: navigator.userAgent,
     platform: "",
     port: Number.isFinite(port) && port > 0 ? port : 80,
     urls: [`${window.location.origin}/`],
+    peers: [{ os: visitorOs, ip: window.location.hostname, role: "host" }],
     thisOrigin: window.location.origin,
-    visitorOs: visitorOperatingSystem(navigator.userAgent),
+    visitorOs,
   }
+}
+
+function readPeers(value: unknown): NetworkPeer[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+  const peers: NetworkPeer[] = []
+  for (const item of value) {
+    if (typeof item !== "object" || item === null) {
+      continue
+    }
+    if (!("os" in item) || !("ip" in item) || !("role" in item)) {
+      continue
+    }
+    if (typeof item.os !== "string" || typeof item.ip !== "string") {
+      continue
+    }
+    if (item.role !== "host" && item.role !== "client") {
+      continue
+    }
+    peers.push({ os: item.os, ip: item.ip, role: item.role })
+  }
+  return peers
 }
 
 export async function fetchLanShare(): Promise<LanShareInfo> {
@@ -73,24 +79,58 @@ export async function fetchLanShare(): Promise<LanShareInfo> {
     ) {
       return { ...fallbackInfo(), visitorOs }
     }
-    const record = data as {
-      hostname?: unknown
-      os?: unknown
-      platform?: unknown
-      port?: unknown
-      urls: unknown[]
-    }
-    const urls = record.urls.filter((url): url is string => typeof url === "string")
+    const urls = data.urls.filter((url): url is string => typeof url === "string")
+    const hostname =
+      "hostname" in data && typeof data.hostname === "string"
+        ? data.hostname
+        : window.location.hostname
+    const os = "os" in data && typeof data.os === "string" ? data.os : ""
+    const platform =
+      "platform" in data && typeof data.platform === "string" ? data.platform : ""
+    const port =
+      "port" in data && typeof data.port === "number"
+        ? data.port
+        : fallbackInfo().port
+    const peers = "peers" in data ? readPeers(data.peers) : []
     return {
-      hostname: typeof record.hostname === "string" ? record.hostname : window.location.hostname,
-      os: typeof record.os === "string" ? record.os : "",
-      platform: typeof record.platform === "string" ? record.platform : "",
-      port: typeof record.port === "number" ? record.port : fallbackInfo().port,
+      hostname,
+      os,
+      platform,
+      port,
       urls: urls.length > 0 ? urls : fallbackInfo().urls,
+      peers,
       thisOrigin: window.location.origin,
       visitorOs,
     }
   } catch {
     return { ...fallbackInfo(), visitorOs }
   }
+}
+
+export async function reportPresence(): Promise<void> {
+  try {
+    await fetch("/__floorline/presence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ os: visitorOperatingSystem(navigator.userAgent) }),
+    })
+  } catch {
+    return
+  }
+}
+
+export function buildJoinMessage(info: LanShareInfo): string {
+  const hostOs = hostOperatingSystemLabel(info.platform, info.os)
+  const systems = uniqueOperatingSystems(info.peers)
+  const systemLine =
+    systems.length > 0
+      ? `Operating systems on this instance: ${systems.join(", ")}.`
+      : "Open from Windows, macOS, or Linux on this LAN."
+  return [
+    `Floorline on ${info.hostname} (${hostOs})`,
+    ...info.urls,
+    "",
+    systemLine,
+    "Data stays on the host PC.",
+  ].join("\n")
 }

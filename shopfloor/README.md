@@ -31,7 +31,7 @@ Light, Dark, and System live in the header. The `d` key still flips light and da
 
 ## Share on the shopfloor LAN
 
-The installer and Desktop launcher bind all network interfaces. Other Windows, macOS, and Linux machines on the same LAN open Floorline in a browser — use **Share** in the header and copy a `http://<this-pc>:5173/` address. Production data stays on the host PC.
+The installer and Desktop launcher bind all network interfaces. **Share** in the header lists LAN URLs, the host operating system, and every Windows / macOS / Linux browser that has opened this instance. Copy the join message and send it to the other PCs. Production data stays on the host PC.
 
 Manual equivalent (this PC only, or LAN if you keep the default Vite host):
 

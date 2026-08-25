@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/app-shell"
+import { PresenceBeacon } from "@/components/presence-beacon"
 import { DashboardPage } from "@/pages/dashboard-page"
 import { ExplorerPage } from "@/pages/explorer-page"
 import { ExportPage } from "@/pages/export-page"
@@ -11,7 +12,12 @@ import type { AppView } from "@/lib/types"
 
 export function App() {
   const { view } = useFloorline()
-  return <AppShell>{renderView(view)}</AppShell>
+  return (
+    <AppShell>
+      <PresenceBeacon />
+      {renderView(view)}
+    </AppShell>
+  )
 }
 
 function renderView(view: AppView) {

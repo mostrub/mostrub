@@ -4,8 +4,11 @@ import { toast } from "sonner"
 
 import { copyToClipboard } from "@/lib/download"
 import {
+  buildJoinMessage,
   fetchLanShare,
+  formatPeerLabel,
   hostOperatingSystemLabel,
+  uniqueOperatingSystems,
   type LanShareInfo,
 } from "@/lib/lan"
 import { Button } from "@/components/ui/button"
@@ -34,6 +37,7 @@ export function LanShare() {
   const hostOs = info
     ? hostOperatingSystemLabel(info.platform, info.os)
     : "this computer"
+  const systems = info ? uniqueOperatingSystems(info.peers) : []
 
   return (
     <Popover
@@ -56,7 +60,8 @@ export function LanShare() {
           <PopoverTitle>Share this instance</PopoverTitle>
           <PopoverDescription>
             Other Windows, macOS, and Linux machines on the same shopfloor LAN
-            can open Floorline in their browser. Data stays on this host.
+            can open Floorline in their browser. Their operating system shows
+            up here. Data stays on this host.
           </PopoverDescription>
         </PopoverHeader>
         {loading && !info ? (
@@ -68,6 +73,12 @@ export function LanShare() {
               Host <span className="font-medium">{info.hostname}</span> is{" "}
               {hostOs}. This browser is {info.visitorOs}.
             </p>
+            {systems.length > 0 ? (
+              <p className="text-xs">
+                Operating systems on this instance:{" "}
+                <span className="font-medium">{systems.join(", ")}</span>
+              </p>
+            ) : null}
             <ul className="flex flex-col gap-1">
               {info.urls.map((url) => (
                 <li key={url}>
@@ -86,6 +97,26 @@ export function LanShare() {
                 </li>
               ))}
             </ul>
+            {info.peers.length > 0 ? (
+              <ul className="text-muted-foreground flex flex-col gap-0.5 text-xs">
+                {info.peers.map((peer) => (
+                  <li key={`${peer.role}-${peer.ip}-${peer.os}`}>
+                    {formatPeerLabel(peer)}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                void copyToClipboard(buildJoinMessage(info)).then(() =>
+                  toast.success("Join message copied")
+                )
+              }}
+            >
+              Copy join message
+            </Button>
             <p className="text-muted-foreground text-xs">
               If another PC cannot connect, start Floorline from the desktop
               shortcut so it listens on the network, then try the address again.
