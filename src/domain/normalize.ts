@@ -110,22 +110,43 @@ function fillNumber(
 }
 
 export function inventoryIntegrityError(state: InventoryState): string | null {
-  const records = [
-    ...state.laptops,
-    ...state.printers,
-    ...state.software,
-    ...state.destructions,
-  ]
+  const live = [...state.laptops, ...state.printers, ...state.software]
+  const records = [...live, ...state.destructions]
   const ids = records.map((item) => item.id)
   if (new Set(ids).size !== ids.length) {
     return "Backup enthält doppelte Datensatz-IDs"
   }
-  const numbers = records
-    .map((item) => item.inventoryNumber.trim().toLowerCase())
-    .filter((value) => value.length > 0)
-  if (new Set(numbers).size !== numbers.length) {
-    return "Backup enthält doppelte Inventarnummern"
+
+  const liveNumberById = new Map(
+    live.map((item) => [item.id, normalizeKey(item.inventoryNumber)] as const),
+  )
+  const claimed = new Set<string>()
+
+  for (const item of live) {
+    const number = normalizeKey(item.inventoryNumber)
+    if (!number) {
+      continue
+    }
+    if (claimed.has(number)) {
+      return "Backup enthält doppelte Inventarnummern"
+    }
+    claimed.add(number)
   }
+
+  for (const item of state.destructions) {
+    const number = normalizeKey(item.inventoryNumber)
+    if (!number) {
+      continue
+    }
+    if (item.assetId && liveNumberById.get(item.assetId) === number) {
+      continue
+    }
+    if (claimed.has(number)) {
+      return "Backup enthält doppelte Inventarnummern"
+    }
+    claimed.add(number)
+  }
+
   return null
 }
 

@@ -105,6 +105,100 @@ describe("parseInventoryJson", () => {
     expect(parseInventoryJson(raw).ok).toBe(false)
   })
 
+  it("accepts a destruction log that shares the inventory number of its live asset", () => {
+    const laptop = {
+      id: "lap-1",
+      inventoryNumber: "INV-0001",
+      assetTag: "LT-1",
+      serialNumber: "SN",
+      hostname: "h",
+      make: "Dell",
+      model: "X",
+      laptopType: "standard",
+      operatingSystem: "windows-11",
+      department: "it",
+      assignedTo: "",
+      location: "",
+      status: "destroyed",
+      purchaseDate: "",
+      warrantyEnd: "",
+      notes: "",
+    }
+    const raw = JSON.stringify({
+      laptops: [laptop],
+      printers: [],
+      software: [],
+      destructions: [
+        {
+          id: "dst-1",
+          assetKind: "laptop",
+          assetId: "lap-1",
+          inventoryNumber: "INV-0001",
+          assetTag: "LT-1",
+          serialNumber: "SN",
+          department: "it",
+          method: "secure-wipe-recycle",
+          destroyedOn: "2026-08-25",
+          witnessedBy: "M. Chen",
+          certificateId: "COC-1",
+          reason: "EOL",
+          notes: "",
+        },
+      ],
+    })
+    const result = parseInventoryJson(raw)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.laptops[0]?.inventoryNumber).toBe("INV-0001")
+      expect(result.state.destructions[0]?.inventoryNumber).toBe("INV-0001")
+      expect(result.state.laptops[0]?.status).toBe("destroyed")
+    }
+  })
+
+  it("rejects an unlinked destruction that reuses a live inventory number", () => {
+    const laptop = {
+      id: "lap-1",
+      inventoryNumber: "INV-0001",
+      assetTag: "LT-1",
+      serialNumber: "SN",
+      hostname: "h",
+      make: "Dell",
+      model: "X",
+      laptopType: "standard",
+      operatingSystem: "windows-11",
+      department: "it",
+      assignedTo: "",
+      location: "",
+      status: "in-service",
+      purchaseDate: "",
+      warrantyEnd: "",
+      notes: "",
+    }
+    const raw = JSON.stringify({
+      laptops: [laptop],
+      printers: [],
+      software: [],
+      destructions: [
+        {
+          id: "dst-1",
+          assetKind: "other",
+          assetId: "",
+          inventoryNumber: "INV-0001",
+          assetTag: "XX-9",
+          serialNumber: "",
+          department: "it",
+          method: "secure-wipe-recycle",
+          destroyedOn: "2026-08-25",
+          witnessedBy: "M. Chen",
+          certificateId: "COC-1",
+          reason: "EOL",
+          notes: "",
+        },
+      ],
+    })
+    expect(parseInventoryJson(raw).ok).toBe(false)
+  })
+
   it("rejects a backup with two laptops sharing an inventory number", () => {
     const laptop = {
       id: "lap-1",

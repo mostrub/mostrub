@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest"
 
+import { parseInventoryJson } from "@/store/storage"
+
 import {
   emptyInventory,
   recordDestruction,
@@ -563,6 +565,23 @@ describe("catalog", () => {
       expect(result.state.destructions[0]?.inventoryNumber).toBe("INV-7777")
       expect(result.state.destructions[0]?.assetTag).toBe("LT-1001")
     }
+  })
+
+  it("keeps the same inventory number on a linked destruction so a reload stays valid", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const logged = recordDestruction(withLaptop.state, destruction({ assetId: "" }))
+    expect(logged.ok).toBe(true)
+    if (!logged.ok) {
+      throw new Error(logged.error)
+    }
+    expect(logged.state.destructions[0]?.inventoryNumber).toBe(
+      logged.state.laptops[0]?.inventoryNumber,
+    )
+    const reloaded = parseInventoryJson(JSON.stringify({ version: 1, state: logged.state }))
+    expect(reloaded.ok).toBe(true)
   })
 
   it("records printer field names in history the same way as laptops", () => {
