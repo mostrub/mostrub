@@ -19,13 +19,22 @@ It does not replace [`mostrub/ADDA`](https://github.com/mostrub/ADDA).
 Ports: API `5757`, Vite `5759`. Bind `0.0.0.0` by default. Env prefix `LEDGER_`.
 Timezone `Europe/Zurich`.
 
-## Leitstand
+## Kaliber
 
-One surface. No rooms.
+One instrument. No rooms, no ADDA chrome.
 
-The line is a set of physical trays. Each Fach is a cell. Takt is a 24-hour
-rule. Span is a process window with p50/p95 and a 0,12 mm limit. Defect classes
-and the Durchlauf sit on the same Blatt. Opening a cell keeps you on the floor.
+Five lenses on the same chassis:
+
+| Lens | What it shows |
+| --- | --- |
+| Maschine | Anode → Kathode → OQC, last cells per station |
+| Tablett | 12-slot magazines |
+| Fenster | Span histogram, p50/p95, 0,12 mm limit |
+| Klasse | Defect × Zurich-hour matrix |
+| See | Snapshot film and Zeitreise on the selected cell |
+
+Takt (24 h, Europe/Zurich) and the cell coupon stay on the bezel. Opening a
+cell does not leave the floor.
 
 ## Run on the box
 

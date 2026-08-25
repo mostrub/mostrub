@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { de } from "../i18n/de.ts";
+import { de, type Lens } from "../i18n/de.ts";
 import {
   api,
   ApiError,
@@ -12,14 +12,34 @@ import {
   type ShiftReport,
 } from "../lib/api.ts";
 import { formatCount, formatPercent, formatWhen, verdictLabel } from "../lib/format.ts";
-import { Rule, Stamp } from "../ui.tsx";
+import { Lcd, Note } from "../ui.tsx";
 
+const LENSES = ["maschine", "tablett", "fenster", "klasse", "see"] as const satisfies readonly Lens[];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const SPAN_LIMIT = 0.12;
+const BIN_W = 0.02;
+
+function fmtMm(value: number | null): string {
+  return value === null ? "—" : `${value.toFixed(3)} mm`;
+}
+
+function zurichHour(iso: string): number {
+  const hour = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Zurich",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).format(new Date(iso));
+  return Number(hour);
+}
+
+function defectLabel(value: string): string {
+  return value.replaceAll("_", " ");
+}
 
 export function Floor() {
   const { dmc: routeDmc, id: caseId } = useParams();
   const navigate = useNavigate();
+  const [lens, setLens] = useState<Lens>("maschine");
   const [board, setBoard] = useState<LineBoard | null>(null);
   const [tape, setTape] = useState<Chronik | null>(null);
   const [shift, setShift] = useState<ShiftReport | null>(null);
@@ -71,6 +91,17 @@ export function Floor() {
   }, [selected]);
 
   useEffect(() => {
+    if (!selected || !travelId) {
+      setTravel(null);
+      return;
+    }
+    api
+      .cellAt(Number(travelId), selected)
+      .then(setTravel)
+      .catch(() => setTravel(null));
+  }, [selected, travelId]);
+
+  useEffect(() => {
     if (!caseId) return;
     api
       .case(caseId)
@@ -83,354 +114,539 @@ export function Floor() {
 
   const peakHour = board?.hours.reduce((max, row) => Math.max(max, row.inspected), 0) ?? 0;
   const selectedCell = board?.cells.find((cell) => cell.dmc === selected) ?? null;
-  const defectMax = board?.defects[0]?.count ?? 1;
+
+  function pick(dmc: string) {
+    setSelected(dmc);
+    setTravelId("");
+    navigate(`/zelle/${dmc}`);
+  }
 
   return (
-    <div className="flex min-h-screen flex-col gap-3 p-4">
-      <header className="flex flex-wrap items-end justify-between gap-3 border-b border-ink pb-3">
+    <div className="chassis">
+      <header className="bezel">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.32em] text-mute">{de.line}</p>
-          <h1 className="text-4xl font-normal tracking-tight">{de.product}</h1>
+          <span className="brand-mark">{de.instrument}</span>
+          <span className="brand-sub">
+            {de.line} · {de.product}
+          </span>
         </div>
+        <nav className="lenses" aria-label={de.lensesTitle}>
+          {LENSES.map((id) => (
+            <button
+              key={id}
+              type="button"
+              className={id === lens ? "is-on" : undefined}
+              onClick={() => setLens(id)}
+            >
+              {de.lenses[id]}
+            </button>
+          ))}
+        </nav>
         {board ? (
-          <div className="flex flex-wrap gap-2">
-            <Stamp label="Teile" value={formatCount(board.inspected)} />
-            <Stamp label="Ausbeute" value={formatPercent(board.yield)} warn={(board.yield ?? 1) < 0.8} />
-            <Stamp label="NIO" value={formatCount(board.nio)} warn={board.nio > 0} />
-            <Stamp
-              label="Takt/h"
+          <div className="bezel-readouts">
+            <Lcd label={de.kpis.cells} value={formatCount(board.inspected)} />
+            <Lcd label={de.kpis.nio} value={formatCount(board.nio)} warn={board.nio > 0} />
+            <Lcd label={de.kpis.yield} value={formatPercent(board.yield)} warn={(board.yield ?? 1) < 0.8} />
+            <Lcd
+              label={de.kpis.takt}
               value={board.taktPerHour === null ? "—" : formatCount(Math.round(board.taktPerHour))}
             />
-            <Stamp
-              label="Span Ø"
-              value={board.spanWindow.mean === null ? "—" : board.spanWindow.mean.toFixed(3)}
-              warn={(board.spanWindow.mean ?? 0) > SPAN_LIMIT}
-            />
-            <Stamp label="Snap" value={String(board.snapshotId)} />
+            <Lcd label={de.kpis.snap} value={String(board.snapshotId)} />
           </div>
         ) : null}
       </header>
 
-      {error ? <Rule>{error}</Rule> : null}
-      {board && board.inspected === 0 ? <Rule>{de.empty}</Rule> : null}
-
-      {board ? (
-        <section>
-          <div className="mb-1 flex justify-between text-[11px] uppercase tracking-[0.2em] text-mute">
-            <span>{de.takt}</span>
-            <span>Europe/Zurich 00–23</span>
-          </div>
-          <div className="grid h-10 grid-cols-[repeat(24,minmax(0,1fr))] border border-ink">
-            {HOURS.map((hour) => {
-              const row = board.hours.find((item) => item.hour === hour);
-              const inspected = row?.inspected ?? 0;
-              const nio = row?.nio ?? 0;
-              const fill = peakHour === 0 ? 0 : inspected / peakHour;
-              return (
+      <section className="takt-strip" aria-label={de.takt}>
+        <div className="mb-1 flex justify-between text-[11px] uppercase tracking-[0.2em] text-mute">
+          <span>{de.takt}</span>
+          <span>{de.taktHint}</span>
+        </div>
+        <div className="grid h-10 grid-cols-[repeat(24,minmax(0,1fr))] border border-bezel bg-well">
+          {HOURS.map((hour) => {
+            const row = board?.hours.find((item) => item.hour === hour);
+            const inspected = row?.inspected ?? 0;
+            const nio = row?.nio ?? 0;
+            const fill = peakHour === 0 ? 0 : inspected / peakHour;
+            return (
+              <div
+                key={hour}
+                title={`${String(hour).padStart(2, "0")} · ${inspected} · ${nio} NIO`}
+                className="relative border-l border-steel/30 first:border-l-0"
+              >
                 <div
-                  key={hour}
-                  title={`${String(hour).padStart(2, "0")} · ${inspected} · ${nio} NIO`}
-                  className="relative border-l border-rule/40 first:border-l-0"
-                >
-                  <div
-                    className={`absolute inset-x-0 bottom-0 ${nio > 0 ? "bg-nio" : "bg-ink"}`}
-                    style={{ height: `${Math.round(fill * 100)}%`, opacity: nio > 0 ? 0.85 : 0.28 }}
-                  />
-                  <span className="absolute bottom-0 left-0.5 text-[9px] text-mute">
-                    {String(hour).padStart(2, "0")}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
-
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <section className="flex flex-col gap-3">
-          {board?.trays.map((tray) => (
-            <article key={tray.tray} className="border border-ink bg-sheet p-3">
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-sm uppercase tracking-[0.22em]">
-                  {de.tablett} {tray.tray}
-                </h2>
-                <p className="font-mono text-xs text-mute">
-                  {tray.slots.reduce((sum, slot) => sum + slot.cells.filter((cell) => !cell.partOk).length, 0)} NIO
-                </p>
+                  className={`absolute inset-x-0 bottom-0 ${nio > 0 ? "bg-nio" : "bg-ice"}`}
+                  style={{ height: `${Math.round(fill * 100)}%`, opacity: nio > 0 ? 0.9 : 0.45 }}
+                />
+                <span className="absolute bottom-0 left-0.5 text-[9px] text-ice/70">
+                  {String(hour).padStart(2, "0")}
+                </span>
               </div>
-              <ol className="grid grid-cols-6 gap-1.5">
-                {tray.slots.map((slot) => (
-                  <li key={`${tray.tray}-${slot.slot}`}>
-                    <SlotButton
-                      slot={slot.slot}
-                      cells={slot.cells}
-                      selected={selected}
-                      onSelect={(dmc) => {
-                        setSelected(dmc);
-                        navigate(`/zelle/${dmc}`);
-                      }}
-                    />
-                  </li>
-                ))}
-              </ol>
-            </article>
-          ))}
-          {board?.stations ? (
-            <div className="grid grid-cols-3 gap-2 text-xs">
-              {board.stations.map((column) => (
-                <p key={column.station} className="border border-ink px-2 py-1">
-                  {de.stations[column.station]} · {formatCount(column.inspected)} · NIO{" "}
-                  {formatPercent(column.nioRate)}
-                </p>
-              ))}
-            </div>
-          ) : null}
-        </section>
+            );
+          })}
+        </div>
+      </section>
 
-        <aside className="flex flex-col gap-3 border border-ink bg-sheet p-3">
-          {board ? <SpanRuler window={board.spanWindow} mark={selectedCell?.spanMm ?? null} /> : null}
-          {board && board.defects.length > 0 ? (
-            <div>
-              <h2 className="mb-2 text-[11px] uppercase tracking-[0.2em] text-mute">{de.mischung}</h2>
-              <ul className="flex flex-col gap-1">
-                {board.defects.map((item) => (
-                  <li key={item.defectClass} className="flex items-center gap-2">
-                    <span className="w-28 truncate text-[11px]">
-                      {item.defectClass.replaceAll("_", " ")}
-                    </span>
-                    <span className="h-2 flex-1 bg-paper">
-                      <span
-                        className="block h-2 bg-ink"
-                        style={{ width: `${Math.max(8, (item.count / defectMax) * 100)}%` }}
-                      />
-                    </span>
-                    <span className="font-mono text-[11px]">{formatCount(item.count)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {shift ? (
-            <p className="text-[11px] text-mute">
-              Schicht {formatCount(shift.io)} IO / {formatCount(shift.nio)} NIO
-            </p>
-          ) : null}
-          {selected ? (
-            <CellSheet
-              dmc={selected}
-              dossier={dossier}
-              travel={travel}
-              travelId={travelId}
-              snapshots={lake?.snapshots ?? []}
-              onTravelId={setTravelId}
-              onTravel={setTravel}
-              onOpened={(id) => navigate(`/akte/${id}`)}
-            />
-          ) : (
-            <p className="text-sm text-mute">Ein Fach antippen.</p>
-          )}
-        </aside>
+      <div className="well">
+        {error ? <Note>{error}</Note> : null}
+        {board && board.inspected === 0 ? <Note>{de.empty}</Note> : null}
+        <LensWell
+          lens={lens}
+          board={board}
+          lake={lake}
+          selected={selected}
+          travelId={travelId}
+          onPick={pick}
+          onTravelId={setTravelId}
+        />
       </div>
 
+      <aside className="coupon" aria-label={de.coupon}>
+        <Coupon
+          selected={selected}
+          selectedCell={selectedCell}
+          dossier={dossier}
+          travel={travel}
+          travelId={travelId}
+          onOpened={(id) => navigate(`/akte/${id}`)}
+        />
+        {shift ? (
+          <article>
+            <h3>{de.schicht}</h3>
+            <p className="text-sm">
+              {formatCount(shift.io)} {de.io.io} / {formatCount(shift.nio)} {de.io.nio} ·{" "}
+              {formatPercent(shift.yield)}
+            </p>
+          </article>
+        ) : null}
+      </aside>
+
       {tape ? (
-        <section>
-          <div className="mb-1 text-[11px] uppercase tracking-[0.2em] text-mute">{de.durchlauf}</div>
-          <div className="flex h-8 overflow-hidden border border-ink">
+        <section className="tape" aria-label={de.band}>
+          <div className="mb-1 text-[11px] uppercase tracking-[0.2em] text-mute">{de.band}</div>
+          <div className="tape-row">
             {tape.events.map((event, index) => {
-              const ok = verdictLabel(event.summary) === "IO";
+              const nio = verdictLabel(event.summary) === "NIO";
               return (
                 <button
                   key={`${event.dmc}-${event.at}-${index}`}
                   type="button"
                   title={`${event.dmc} ${event.summary}`}
-                  className={`h-full min-w-1.5 flex-1 border-l border-paper ${
-                    ok ? "bg-ink/25" : "bg-nio"
-                  } ${event.dmc === selected ? "outline outline-1 outline-ink" : ""}`}
-                  onClick={() => {
-                    setSelected(event.dmc);
-                    navigate(`/zelle/${event.dmc}`);
-                  }}
+                  className={[nio ? "is-nio" : "", event.dmc === selected ? "is-picked" : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={() => pick(event.dmc)}
                 />
               );
             })}
           </div>
         </section>
       ) : null}
-
-      {board ? (
-        <p className="text-[11px] text-mute">
-          {board._provenance.store} · {board._provenance.query} · {formatWhen(new Date())} Europe/Zurich
-        </p>
-      ) : null}
     </div>
   );
 }
 
-function SlotButton({
-  slot,
-  cells,
+function LensWell({
+  lens,
+  board,
+  lake,
   selected,
-  onSelect,
+  travelId,
+  onPick,
+  onTravelId,
 }: {
-  slot: number;
-  cells: LineCell[];
+  lens: Lens;
+  board: LineBoard | null;
+  lake: LakeStatus | null;
   selected: string;
-  onSelect: (dmc: string) => void;
+  travelId: string;
+  onPick: (dmc: string) => void;
+  onTravelId: (id: string) => void;
 }) {
-  const latest = cells[cells.length - 1];
-  const nio = cells.some((cell) => !cell.partOk);
-  const active = cells.some((cell) => cell.dmc === selected);
+  switch (lens) {
+    case "maschine":
+      return <Maschine board={board} selected={selected} onPick={onPick} />;
+    case "tablett":
+      return <Tablett board={board} selected={selected} onPick={onPick} />;
+    case "fenster":
+      return <Fenster board={board} selected={selected} />;
+    case "klasse":
+      return <Klasse board={board} />;
+    case "see":
+      return (
+        <See
+          lake={lake}
+          selected={selected}
+          travelId={travelId}
+          onTravelId={onTravelId}
+        />
+      );
+    default: {
+      const _never: never = lens;
+      return _never;
+    }
+  }
+}
+
+function Maschine({
+  board,
+  selected,
+  onPick,
+}: {
+  board: LineBoard | null;
+  selected: string;
+  onPick: (dmc: string) => void;
+}) {
+  return (
+    <section>
+      <h2>{de.lenses.maschine}</h2>
+      <p className="lede">Anode → Kathode → OQC. Letzte Zellen je Station.</p>
+      <ol className="stations">
+        {(board?.stations ?? []).map((st) => (
+          <li key={st.station}>
+            <header>
+              <strong>{de.stations[st.station]}</strong>
+              <span>{formatPercent(st.nioRate)}</span>
+            </header>
+            <div className="station-lcd">
+              <Lcd label={de.kpis.cells} value={formatCount(st.inspected)} />
+              <Lcd label={de.kpis.nio} value={formatCount(st.nio)} warn={st.nio > 0} />
+            </div>
+            <ol className="last-cells">
+              {st.last.map((cell) => (
+                <li key={cell.dmc}>
+                  <CellRow cell={cell} selected={selected} onPick={onPick} />
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function Tablett({
+  board,
+  selected,
+  onPick,
+}: {
+  board: LineBoard | null;
+  selected: string;
+  onPick: (dmc: string) => void;
+}) {
+  return (
+    <section>
+      <h2>{de.lenses.tablett}</h2>
+      <p className="lede">12 Fächer je Magazin. Antippen öffnet den Kupon.</p>
+      <div className="magazine">
+        {(board?.trays ?? []).map((tray) => {
+          const nio = tray.slots.reduce(
+            (sum, slot) => sum + slot.cells.filter((cell) => !cell.partOk).length,
+            0,
+          );
+          const cells = tray.slots.reduce((sum, slot) => sum + slot.cells.length, 0);
+          return (
+            <article key={tray.tray}>
+              <header>
+                <strong>{tray.tray}</strong>
+                <span>
+                  {formatCount(nio)} NIO · {formatCount(cells)} Zellen
+                </span>
+              </header>
+              <ol className="pockets">
+                {tray.slots.map((slot) => {
+                  const latest = slot.cells[slot.cells.length - 1];
+                  const bad = slot.cells.some((cell) => !cell.partOk);
+                  return (
+                    <li key={`${tray.tray}-${slot.slot}`}>
+                      {latest ? (
+                        <button
+                          type="button"
+                          className={[bad ? "is-nio" : "is-io", latest.dmc === selected ? "is-picked" : ""]
+                            .filter(Boolean)
+                            .join(" ")}
+                          onClick={() => onPick(latest.dmc)}
+                        >
+                          <span className="mono">{String(slot.slot).padStart(2, "0")}</span>
+                          <span className="mono">{latest.dmc.slice(-6)}</span>
+                        </button>
+                      ) : (
+                        <span className="pocket-empty">
+                          <span className="mono">{String(slot.slot).padStart(2, "0")}</span>
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Fenster({
+  board,
+  selected,
+}: {
+  board: LineBoard | null;
+  selected: string;
+}) {
+  const hist = useMemo(() => {
+    const values = (board?.cells ?? [])
+      .map((cell) => cell.spanMm)
+      .filter((n): n is number => n !== null);
+    const bins: { lo: number; n: number }[] = [];
+    for (let lo = 0; lo < 0.24; lo += BIN_W) bins.push({ lo: Number(lo.toFixed(2)), n: 0 });
+    for (const value of values) {
+      const i = Math.min(bins.length - 1, Math.max(0, Math.floor(value / BIN_W)));
+      const bin = bins[i];
+      if (bin) bin.n += 1;
+    }
+    return { bins, values };
+  }, [board]);
+  const max = Math.max(1, ...hist.bins.map((bin) => bin.n));
+  const span = board?.spanWindow;
+  const mark = board?.cells.find((cell) => cell.dmc === selected)?.spanMm ?? null;
+  return (
+    <section>
+      <h2>{de.lenses.fenster}</h2>
+      <p className="lede">{de.span.limit}. p50/p95 aus dem aktuellen Snap.</p>
+      <div className="span-readouts">
+        <Lcd label={de.span.min} value={fmtMm(span?.min ?? null)} />
+        <Lcd label={de.span.p50} value={fmtMm(span?.p50 ?? null)} />
+        <Lcd label={de.span.p95} value={fmtMm(span?.p95 ?? null)} />
+        <Lcd
+          label={de.span.max}
+          value={fmtMm(span?.max ?? null)}
+          warn={(span?.max ?? 0) > SPAN_LIMIT}
+        />
+      </div>
+      <svg className="hist" viewBox="0 0 480 160" role="img" aria-label={de.span.title}>
+        {hist.bins.map((bin, i) => {
+          const x = 20 + i * 36;
+          const h = (bin.n / max) * 120;
+          const over = bin.lo + BIN_W > SPAN_LIMIT;
+          return (
+            <g key={bin.lo}>
+              <rect
+                x={x}
+                y={140 - h}
+                width={28}
+                height={h}
+                fill={over ? "var(--color-nio)" : "var(--color-ice)"}
+                opacity={0.85}
+              />
+              <text x={x + 14} y={154} textAnchor="middle" fill="currentColor" fontSize="8">
+                {bin.lo.toFixed(2)}
+              </text>
+            </g>
+          );
+        })}
+        <line
+          x1={20 + (SPAN_LIMIT / BIN_W) * 36}
+          x2={20 + (SPAN_LIMIT / BIN_W) * 36}
+          y1={12}
+          y2={140}
+          stroke="var(--color-pick)"
+          strokeDasharray="3 3"
+        />
+        {mark !== null ? (
+          <circle
+            cx={20 + (mark / BIN_W) * 36}
+            cy={18}
+            r={4}
+            fill="var(--color-pick)"
+          />
+        ) : null}
+      </svg>
+      <p className="hint">
+        {de.span.limit} · n={formatCount(hist.values.length)}
+        {mark !== null ? ` · mark ${fmtMm(mark)}` : ""}
+      </p>
+    </section>
+  );
+}
+
+function Klasse({ board }: { board: LineBoard | null }) {
+  const grid = useMemo(() => {
+    const hours = [6, 14, 22];
+    const classes = [...new Set((board?.cells ?? []).map((cell) => cell.defectClass).filter(Boolean))] as string[];
+    const known = board?.defects.map((item) => item.defectClass) ?? [];
+    const rows = [...new Set([...known, ...classes])].map((cls) => {
+      const cells = hours.map(
+        (hour) =>
+          (board?.cells ?? []).filter(
+            (cell) => cell.defectClass === cls && zurichHour(cell.capturedAt) === hour,
+          ).length,
+      );
+      return { cls, cells, total: cells.reduce((a, b) => a + b, 0) };
+    });
+    return { hours, rows };
+  }, [board]);
+  const max = Math.max(1, ...grid.rows.flatMap((row) => row.cells));
+  return (
+    <section>
+      <h2>{de.lenses.klasse}</h2>
+      <p className="lede">{de.klasse.title}. Seed-Schichten 06 / 14 / 22.</p>
+      <table className="matrix">
+        <thead>
+          <tr>
+            <th>{de.klasse.cls}</th>
+            {grid.hours.map((hour) => (
+              <th key={hour}>{String(hour).padStart(2, "0")}:00</th>
+            ))}
+            <th>Σ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {grid.rows.map((row) => (
+            <tr key={row.cls}>
+              <th>{defectLabel(row.cls)}</th>
+              {row.cells.map((n, i) => (
+                <td key={grid.hours[i]}>
+                  <span className="heat" style={{ opacity: 0.12 + (n / max) * 0.88 }}>
+                    {n || "·"}
+                  </span>
+                </td>
+              ))}
+              <td className="mono">{row.total}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  );
+}
+
+function See({
+  lake,
+  selected,
+  travelId,
+  onTravelId,
+}: {
+  lake: LakeStatus | null;
+  selected: string;
+  travelId: string;
+  onTravelId: (id: string) => void;
+}) {
+  const snaps = [...(lake?.snapshots ?? [])].reverse();
+  return (
+    <section>
+      <h2>{de.lenses.see}</h2>
+      <p className="lede">
+        Snap #{lake?.currentSnapshotId ?? "—"} · {de.see.travel} lädt den Kupon auf den gewählten Stand.
+      </p>
+      {!selected ? <p className="hint">{de.see.needCell}</p> : null}
+      <ol className="film">
+        {snaps.map((snap) => (
+          <li key={snap.snapshotId}>
+            <button
+              type="button"
+              className={String(snap.snapshotId) === travelId ? "is-on" : undefined}
+              disabled={!selected}
+              onClick={() =>
+                onTravelId(String(snap.snapshotId) === travelId ? "" : String(snap.snapshotId))
+              }
+            >
+              <span className="mono">#{snap.snapshotId}</span>
+              <span>{formatWhen(snap.snapshotTime)}</span>
+              <span>{snap.commitMessage ?? snap.author ?? "—"}</span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function CellRow({
+  cell,
+  selected,
+  onPick,
+}: {
+  cell: LineCell;
+  selected: string;
+  onPick: (dmc: string) => void;
+}) {
   return (
     <button
       type="button"
-      disabled={!latest}
-      onClick={() => latest && onSelect(latest.dmc)}
-      className={`flex aspect-square w-full flex-col items-start justify-between border p-1 text-left ${
-        active ? "border-ink bg-mark" : nio ? "border-nio bg-nio text-sheet" : "border-ink bg-paper"
-      }`}
+      className={[!cell.partOk ? "is-nio" : "is-io", cell.dmc === selected ? "is-picked" : ""]
+        .filter(Boolean)
+        .join(" ")}
+      onClick={() => onPick(cell.dmc)}
     >
-      <span className="font-mono text-[10px]">{String(slot).padStart(2, "0")}</span>
-      <span className="w-full truncate font-mono text-[10px]">{latest?.dmc.slice(-4) ?? "·"}</span>
+      <span className="mono">{cell.dmc}</span>
+      <span>{cell.partOk ? de.io.io : de.io.nio}</span>
+      <span>{formatWhen(cell.capturedAt)}</span>
     </button>
   );
 }
 
-function SpanRuler({
-  window,
-  mark,
-}: {
-  window: LineBoard["spanWindow"];
-  mark: number | null;
-}) {
-  const max = Math.max(window.max ?? SPAN_LIMIT, SPAN_LIMIT, mark ?? 0);
-  const min = Math.min(window.min ?? 0, 0);
-  const span = max - min || 1;
-  const ticks = [
-    { key: "min", value: window.min },
-    { key: "p50", value: window.p50 },
-    { key: "mean", value: window.mean },
-    { key: "p95", value: window.p95 },
-    { key: "max", value: window.max },
-    { key: "lim", value: SPAN_LIMIT },
-  ];
-  return (
-    <div>
-      <h2 className="mb-2 text-[11px] uppercase tracking-[0.2em] text-mute">{de.fenster}</h2>
-      <div className="relative h-28 border border-ink">
-        <div
-          className="absolute inset-y-0 border-l border-dashed border-nio"
-          style={{ left: `${((SPAN_LIMIT - min) / span) * 100}%` }}
-        />
-        {ticks.map((tick) =>
-          tick.value === null ? null : (
-            <div
-              key={tick.key}
-              className="absolute top-0 h-full border-l border-ink/40"
-              style={{ left: `${((tick.value - min) / span) * 100}%` }}
-              title={`${tick.key} ${tick.value.toFixed(3)}`}
-            />
-          ),
-        )}
-        {mark !== null ? (
-          <div
-            className="absolute top-2 size-2 -translate-x-1/2 bg-nio"
-            style={{ left: `${((mark - min) / span) * 100}%` }}
-          />
-        ) : null}
-      </div>
-      <p className="mt-1 font-mono text-[11px] text-mute">
-        {fmt(window.min)} · p50 {fmt(window.p50)} · p95 {fmt(window.p95)} · {fmt(window.max)} · lim{" "}
-        {SPAN_LIMIT.toFixed(3)}
-      </p>
-    </div>
-  );
-}
-
-function fmt(value: number | null): string {
-  return value === null ? "—" : value.toFixed(3);
-}
-
-function CellSheet({
-  dmc,
+function Coupon({
+  selected,
+  selectedCell,
   dossier,
   travel,
   travelId,
-  snapshots,
-  onTravelId,
-  onTravel,
   onOpened,
 }: {
-  dmc: string;
+  selected: string;
+  selectedCell: LineCell | null;
   dossier: Dossier | null;
   travel: Dossier | null;
   travelId: string;
-  snapshots: LakeStatus["snapshots"];
-  onTravelId: (value: string) => void;
-  onTravel: (value: Dossier | null) => void;
   onOpened: (id: string) => void;
 }) {
-  const latest = useMemo(() => dossier?.inspections[0], [dossier]);
+  if (!selected) return <p className="hint">{de.pick}</p>;
+  const latest = dossier?.inspections[0];
+  const shown = travel?.inspections[0] ?? latest;
   return (
-    <div className="border-t border-ink pt-3">
-      <h2 className="text-[11px] uppercase tracking-[0.2em] text-mute">{de.zelle}</h2>
-      <p className="font-mono text-sm">{dmc}</p>
-      {latest ? (
-        <p className="mt-1 text-xs">
-          {latest.partOk ? "IO" : "NIO"} · {latest.station} ·{" "}
-          {latest.findings.map((item) => item.defectClass.replaceAll("_", " ")).join(", ") || "—"}
+    <article>
+      <h3>{de.coupon}</h3>
+      {travelId ? (
+        <p className="hint">
+          {de.see.travel} #{travelId}
         </p>
       ) : null}
-      <div className="mt-2 flex flex-wrap gap-2">
-        <button
-          type="button"
-          className="border border-ink bg-ink px-2 py-1 text-xs text-sheet"
-          onClick={async () => {
-            const opened = await api.openCase({
-              dmc,
-              title: `NIO ${dmc}`,
-              openedBy: "linie",
-            });
-            onOpened(opened.id);
-          }}
-        >
-          {de.openCase}
-        </button>
+      <div className="mb-2 flex flex-col gap-1">
+        <Lcd label={de.zelle} value={selected} warn={shown ? !shown.partOk : selectedCell ? !selectedCell.partOk : false} />
+        <Lcd
+          label="Fach"
+          value={`${selectedCell?.tray ?? shown?.tray ?? "—"} / ${selectedCell?.slot ?? shown?.slot ?? "—"}`}
+        />
+        <Lcd
+          label={de.span.title}
+          value={fmtMm(selectedCell?.spanMm ?? null)}
+          warn={(selectedCell?.spanMm ?? 0) > SPAN_LIMIT}
+        />
       </div>
-      <form
-        className="mt-3 flex flex-wrap items-end gap-2"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          onTravel(await api.cellAt(Number(travelId), dmc));
+      <ul className="defects text-sm">
+        {shown?.findings.length ? (
+          shown.findings.map((item) => <li key={item.defectClass}>{defectLabel(item.defectClass)}</li>)
+        ) : selectedCell?.defectClass ? (
+          <li>{defectLabel(selectedCell.defectClass)}</li>
+        ) : (
+          <li>{de.io.io}</li>
+        )}
+      </ul>
+      <button
+        type="button"
+        className="mt-3 w-full border border-ink bg-ink px-2 py-1.5 text-xs uppercase tracking-[0.16em] text-face"
+        onClick={async () => {
+          const opened = await api.openCase({
+            dmc: selected,
+            title: `NIO ${selected}`,
+            openedBy: "kaliber",
+          });
+          onOpened(opened.id);
         }}
       >
-        <label className="flex flex-col text-[11px] uppercase tracking-[0.16em] text-mute">
-          Snap
-          <select
-            className="mt-1 border border-ink bg-paper px-1 py-1 font-mono text-xs text-ink"
-            value={travelId}
-            onChange={(event) => onTravelId(event.target.value)}
-          >
-            <option value="">—</option>
-            {snapshots
-              .slice()
-              .reverse()
-              .map((snap) => (
-                <option key={snap.snapshotId} value={String(snap.snapshotId)}>
-                  #{snap.snapshotId}
-                </option>
-              ))}
-          </select>
-        </label>
-        <button type="submit" className="border border-ink px-2 py-1 text-xs">
-          {de.zeitreise}
-        </button>
-      </form>
-      {travel ? (
-        <p className="mt-2 text-xs">
-          @{travel.snapshotId} · {travel.inspections[0]?.partOk ? "IO" : "NIO"} ·{" "}
-          {travel.inspections[0]?.findings.map((item) => item.defectClass).join(" ") || "—"}
-        </p>
-      ) : null}
-    </div>
+        {de.openCase}
+      </button>
+    </article>
   );
 }

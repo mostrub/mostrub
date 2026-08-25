@@ -1,14 +1,22 @@
 import type { ReactNode } from "react";
 
-export function Stamp({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+export function Lcd({
+  label,
+  value,
+  warn,
+}: {
+  label: string;
+  value: string;
+  warn?: boolean;
+}) {
   return (
-    <div className="min-w-20 border border-ink px-2 py-1">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-mute">{label}</p>
-      <p className={`font-mono text-xl leading-none ${warn ? "text-nio" : "text-ink"}`}>{value}</p>
+    <div className={`lcd min-w-24 px-2.5 py-1.5 ${warn ? "lcd-warn" : ""}`}>
+      <p className="text-[9px] uppercase tracking-[0.2em] opacity-70">{label}</p>
+      <p className="font-mono text-2xl leading-none">{value}</p>
     </div>
   );
 }
 
-export function Rule({ children }: { children: ReactNode }) {
-  return <p className="border border-dashed border-rule px-3 py-4 text-sm text-mute">{children}</p>;
+export function Note({ children }: { children: ReactNode }) {
+  return <p className="border border-bezel bg-face px-3 py-3 text-sm text-mute">{children}</p>;
 }
