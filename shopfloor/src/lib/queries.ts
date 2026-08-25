@@ -179,7 +179,7 @@ export function oeeSql(filters: ProductionFilters): string {
         COALESCE(SUM(good_qty + scrap_qty + rework_qty), 0) AS units,
         COALESCE(SUM(good_qty), 0) AS good_units,
         COALESCE(AVG(target_cycle_ms), 0) AS target_cycle_ms,
-        COALESCE(SUM(target_cycle_ms * (good_qty + scrap_qty + rework_qty)), 0) AS ideal_ms
+        COALESCE(SUM(CAST(target_cycle_ms AS BIGINT) * (good_qty + scrap_qty + rework_qty)), 0) AS ideal_ms
       FROM ${sqlFrom("cycles", filters)}
     ),
     losses AS (

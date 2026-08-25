@@ -37,8 +37,14 @@ async function withStore<T>(
     return await new Promise<T>((resolve, reject) => {
       const tx = db.transaction(STORE, mode)
       const req = run(tx.objectStore(STORE))
-      req.onsuccess = () => resolve(req.result)
+      let result: T
+      req.onsuccess = () => {
+        result = req.result
+      }
       req.onerror = () => reject(req.error ?? new Error("IndexedDB request failed"))
+      tx.oncomplete = () => resolve(result)
+      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB transaction failed"))
+      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted"))
     })
   } finally {
     db.close()

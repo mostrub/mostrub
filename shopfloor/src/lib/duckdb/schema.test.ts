@@ -8,8 +8,9 @@ import {
 
 describe("INSERT_SQL", () => {
   it("binds JSON columns by name so extra or missing fields do not shift", () => {
-    expect(INSERT_SQL.cycles).toContain("INSERT INTO cycles BY NAME")
-    expect(INSERT_SQL.ingest_files).toContain("BY NAME")
+    for (const sql of Object.values(INSERT_SQL)) {
+      expect(sql).toContain("BY NAME")
+    }
   })
 })
 

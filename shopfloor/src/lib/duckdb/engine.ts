@@ -27,6 +27,8 @@ export type QueryRow = Record<string, string | number | boolean | null>
 
 let db: duckdb.AsyncDuckDB | null = null
 let conn: duckdb.AsyncDuckDBConnection | null = null
+let initPromise: Promise<EngineInitResult> | null = null
+let lastRestoreFailed: TableName[] = []
 
 const BUNDLES: duckdb.DuckDBBundles = {
   mvp: {
@@ -40,8 +42,20 @@ const BUNDLES: duckdb.DuckDBBundles = {
 }
 
 export async function initEngine(): Promise<EngineInitResult> {
+  if (!initPromise) {
+    initPromise = startEngine()
+  }
+  try {
+    return await initPromise
+  } catch (err) {
+    initPromise = null
+    throw err
+  }
+}
+
+async function startEngine(): Promise<EngineInitResult> {
   if (conn) {
-    return { restoreFailed: [] }
+    return { restoreFailed: lastRestoreFailed }
   }
   const bundle = await duckdb.selectBundle(BUNDLES)
   const workerUrl = bundle.mainWorker
@@ -55,8 +69,12 @@ export async function initEngine(): Promise<EngineInitResult> {
   await connection.query(SCHEMA_SQL)
   db = instance
   conn = connection
-  const restoreFailed = await restorePersisted()
-  return { restoreFailed }
+  try {
+    lastRestoreFailed = await restorePersisted()
+  } catch {
+    lastRestoreFailed = [...TABLE_NAMES]
+  }
+  return { restoreFailed: lastRestoreFailed }
 }
 
 function requireConn(): {
@@ -179,7 +197,12 @@ export async function ingestTabularFile(file: File): Promise<TableName> {
 
 async function restorePersisted(): Promise<TableName[]> {
   const { db: instance, conn: connection } = requireConn()
-  const stored = await loadAllParquet()
+  let stored: Partial<Record<TableName, Uint8Array>>
+  try {
+    stored = await loadAllParquet()
+  } catch {
+    return [...TABLE_NAMES]
+  }
   const failed: TableName[] = []
   for (const table of TABLE_NAMES) {
     const bytes = stored[table]
@@ -192,7 +215,11 @@ async function restorePersisted(): Promise<TableName[]> {
       await connection.query(insertParquetByName(table, path))
     } catch {
       failed.push(table)
-      await deleteParquet(table)
+      try {
+        await deleteParquet(table)
+      } catch {
+        // Cache cleanup must not take down a fresh session.
+      }
     }
   }
   return failed

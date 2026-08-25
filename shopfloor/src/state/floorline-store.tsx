@@ -199,12 +199,12 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
           return
         }
         setReady(true)
-        await refreshMeta()
         if (result.restoreFailed.length > 0) {
           toast.warning(
             `Could not restore ${result.restoreFailed.join(", ")} from local cache. Re-ingest those tables.`
           )
         }
+        await refreshMeta()
       })
       .catch((err: unknown) => {
         if (!cancelled) {
