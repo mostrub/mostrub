@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 
 import {
   emptyInventory,
@@ -20,7 +20,14 @@ import type {
   SaveResult,
   SoftwareLicense,
 } from "@/domain/types"
-import { clearToEmpty, loadInventory, resetInventory, saveInventory } from "./storage"
+import {
+  STORAGE_KEY,
+  clearToEmpty,
+  loadInventory,
+  parseInventoryJson,
+  resetInventory,
+  saveInventory,
+} from "./storage"
 
 type InventoryContextValue = {
   state: InventoryState
@@ -83,6 +90,22 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
   const [storageError, setStorageError] = useState<string | null>(
     boot.status === "corrupt" ? boot.reason : null,
   )
+
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (event.key !== STORAGE_KEY || !event.newValue) {
+        return
+      }
+      const parsed = parseInventoryJson(event.newValue)
+      if (!parsed.ok) {
+        return
+      }
+      setStorageError(null)
+      setState(parsed.state)
+    }
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
+  }, [])
 
   const value = useMemo<InventoryContextValue>(() => {
     return {

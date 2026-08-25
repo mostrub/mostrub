@@ -1,11 +1,10 @@
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import netlify from "@netlify/vite-plugin"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), netlify()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),

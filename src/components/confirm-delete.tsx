@@ -13,12 +13,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Field, FieldLabel } from "@/components/ui/field"
-
-export function deleteConfirmMatches(typed: string, required: string): boolean {
-  const needle = typed.trim().toLowerCase()
-  const expected = required.trim().toLowerCase()
-  return expected.length > 0 && needle === expected
-}
+import { deleteConfirmMatches } from "@/lib/delete-confirm"
 
 export function ConfirmDelete({
   label,

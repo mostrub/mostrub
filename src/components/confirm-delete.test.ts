@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { deleteConfirmMatches } from "./confirm-delete"
+import { deleteConfirmMatches } from "@/lib/delete-confirm"
 
 describe("deleteConfirmMatches", () => {
   it("rejects an empty confirmation even when the field is empty", () => {

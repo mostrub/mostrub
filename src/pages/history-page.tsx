@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -15,10 +15,11 @@ export function HistoryPage() {
   const [params, setParams] = useSearchParams()
   const query = params.get("q") ?? ""
   const [draft, setDraft] = useState(query)
-
-  useEffect(() => {
+  const [seenQuery, setSeenQuery] = useState(query)
+  if (query !== seenQuery) {
+    setSeenQuery(query)
     setDraft(query)
-  }, [query])
+  }
 
   const rows = useMemo(() => {
     if (!query.trim()) {

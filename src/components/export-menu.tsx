@@ -1,4 +1,6 @@
+import { DownloadIcon } from "lucide-react"
 import { useRef } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,10 +20,43 @@ import {
   downloadPlantReportHtml,
   downloadRegisterCsv,
 } from "@/export/download"
+import { AUDIT_SHEET_NAMES } from "@/export/workbook"
 import { parseInventoryJson } from "@/store/storage"
 import { useInventory } from "@/store/inventory-context"
-import { DownloadIcon } from "lucide-react"
-import { toast } from "sonner"
+
+const REGISTER_CSVS: {
+  name: (typeof AUDIT_SHEET_NAMES)[number]
+  label: string
+  toast: string
+}[] = [
+  { name: "Laptops", label: "Laptops", toast: "Laptops-CSV heruntergeladen" },
+  {
+    name: "Laptops by department",
+    label: "Laptops nach Abteilung",
+    toast: "Abteilungs-CSV heruntergeladen",
+  },
+  { name: "Printers", label: "Drucker", toast: "Drucker-CSV heruntergeladen" },
+  {
+    name: "Software licenses",
+    label: "Software",
+    toast: "Software-CSV heruntergeladen",
+  },
+  {
+    name: "Destruction log",
+    label: "Vernichtungsprotokoll",
+    toast: "Vernichtungs-CSV heruntergeladen",
+  },
+  {
+    name: "Audit findings",
+    label: "Prüfbefunde",
+    toast: "Befunde-CSV heruntergeladen",
+  },
+  {
+    name: "Device history",
+    label: "Gerätehistorie",
+    toast: "Historie-CSV heruntergeladen",
+  },
+]
 
 async function runExport(task: () => void | Promise<void>, success: string) {
   try {
@@ -114,76 +149,16 @@ export function ExportMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuLabel>Einzelnes CSV</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Laptops"),
-                  "Laptops-CSV heruntergeladen",
-                )
-              }}
-            >
-              Laptops
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Laptops by department"),
-                  "Abteilungs-CSV heruntergeladen",
-                )
-              }}
-            >
-              Laptops nach Abteilung
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Printers"),
-                  "Drucker-CSV heruntergeladen",
-                )
-              }}
-            >
-              Drucker
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Software licenses"),
-                  "Software-CSV heruntergeladen",
-                )
-              }}
-            >
-              Software
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Destruction log"),
-                  "Vernichtungs-CSV heruntergeladen",
-                )
-              }}
-            >
-              Vernichtungsprotokoll
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Audit findings"),
-                  "Befunde-CSV heruntergeladen",
-                )
-              }}
-            >
-              Prüfbefunde
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                void runExport(
-                  () => downloadRegisterCsv(state, "Device history"),
-                  "Historie-CSV heruntergeladen",
-                )
-              }}
-            >
-              Gerätehistorie
-            </DropdownMenuItem>
+            {REGISTER_CSVS.map((item) => (
+              <DropdownMenuItem
+                key={item.name}
+                onClick={() => {
+                  void runExport(() => downloadRegisterCsv(state, item.name), item.toast)
+                }}
+              >
+                {item.label}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

@@ -5,6 +5,8 @@ import {
   recordDestruction,
   removeDestruction,
   removeLaptop,
+  removePrinter,
+  removeSoftware,
   upsertLaptop,
   upsertPrinter,
   upsertSoftware,
@@ -560,6 +562,46 @@ describe("catalog", () => {
     if (result.ok) {
       expect(result.state.destructions[0]?.inventoryNumber).toBe("INV-7777")
       expect(result.state.destructions[0]?.assetTag).toBe("LT-1001")
+    }
+  })
+
+  it("records printer field names in history the same way as laptops", () => {
+    const first = upsertPrinter(emptyInventory(), printer())
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+    const second = upsertPrinter(first.state, {
+      ...first.state.printers[0]!,
+      location: "Warehouse dock",
+    })
+    expect(second.ok).toBe(true)
+    if (second.ok) {
+      const update = second.state.history.find((event) => event.action === "updated")
+      expect(update?.summary).toMatch(/location/)
+      expect(update?.changes.some((change) => change.field === "location")).toBe(true)
+    }
+  })
+
+  it("removes a printer and a software title", () => {
+    const withPrinter = upsertPrinter(emptyInventory(), printer())
+    if (!withPrinter.ok) {
+      throw new Error(withPrinter.error)
+    }
+    const withSoftware = upsertSoftware(withPrinter.state, software())
+    if (!withSoftware.ok) {
+      throw new Error(withSoftware.error)
+    }
+
+    const withoutPrinter = removePrinter(withSoftware.state, "prt-1")
+    expect(withoutPrinter.ok).toBe(true)
+    if (withoutPrinter.ok) {
+      expect(withoutPrinter.state.printers).toHaveLength(0)
+    }
+
+    const withoutSoftware = removeSoftware(withSoftware.state, "sw-1")
+    expect(withoutSoftware.ok).toBe(true)
+    if (withoutSoftware.ok) {
+      expect(withoutSoftware.state.software).toHaveLength(0)
     }
   })
 })

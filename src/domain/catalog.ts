@@ -369,39 +369,58 @@ export function upsertPrinter(
 
   return {
     ok: true,
-    state: appendHistory(nextState, {
-      action: previous ? "updated" : "created",
+    state: appendHistory(nextState, printerHistory(previous, { ...numbered, assetTag })),
+  }
+}
+
+function printerHistory(
+  previous: Printer | undefined,
+  next: Printer,
+): Omit<HistoryEvent, "id" | "at"> {
+  if (!previous) {
+    return {
+      action: "created",
       register: "printer",
-      recordId: numbered.id,
-      inventoryNumber: numbered.inventoryNumber,
-      assetTag: numbered.assetTag.trim(),
-      serialNumber: numbered.serialNumber,
-      summary: previous
-        ? `Drucker ${numbered.inventoryNumber} geändert`
-        : `Drucker ${numbered.inventoryNumber} angelegt (${numbered.assetTag.trim()})`,
-      changes: previous
-        ? diffFields(
-            {
-              inventoryNumber: previous.inventoryNumber,
-              assetTag: previous.assetTag,
-              serialNumber: previous.serialNumber,
-              location: previous.location,
-              department: previous.department,
-              status: previous.status,
-              ipAddress: previous.ipAddress,
-            },
-            {
-              inventoryNumber: numbered.inventoryNumber,
-              assetTag: numbered.assetTag.trim(),
-              serialNumber: numbered.serialNumber,
-              location: numbered.location,
-              department: numbered.department,
-              status: numbered.status,
-              ipAddress: numbered.ipAddress,
-            },
-          )
-        : [],
-    }),
+      recordId: next.id,
+      inventoryNumber: next.inventoryNumber,
+      assetTag: next.assetTag,
+      serialNumber: next.serialNumber,
+      summary: `Drucker ${next.inventoryNumber} angelegt (${next.assetTag})`,
+      changes: [],
+    }
+  }
+  const changes = diffFields(
+    {
+      inventoryNumber: previous.inventoryNumber,
+      assetTag: previous.assetTag,
+      serialNumber: previous.serialNumber,
+      location: previous.location,
+      department: previous.department,
+      status: previous.status,
+      ipAddress: previous.ipAddress,
+    },
+    {
+      inventoryNumber: next.inventoryNumber,
+      assetTag: next.assetTag,
+      serialNumber: next.serialNumber,
+      location: next.location,
+      department: next.department,
+      status: next.status,
+      ipAddress: next.ipAddress,
+    },
+  )
+  return {
+    action: "updated",
+    register: "printer",
+    recordId: next.id,
+    inventoryNumber: next.inventoryNumber,
+    assetTag: next.assetTag,
+    serialNumber: next.serialNumber,
+    summary:
+      changes.length > 0
+        ? `Drucker ${next.inventoryNumber}: ${changes.map((item) => item.field).join(", ")} geändert`
+        : `Drucker ${next.inventoryNumber} gespeichert`,
+    changes,
   }
 }
 

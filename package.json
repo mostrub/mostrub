@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10",
-    "@netlify/vite-plugin": "^2.12.9",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",

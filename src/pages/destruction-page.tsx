@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -22,28 +22,36 @@ import { historyHref, recordLabel } from "@/lib/hardware-links"
 import { matchesQuery } from "@/lib/search"
 import { useInventory } from "@/store/inventory-context"
 
+function draftFromSearchParams(params: URLSearchParams): DestructionRecord | null {
+  const tag = params.get("tag") ?? ""
+  const inv = params.get("inv") ?? ""
+  if (!tag && !inv) {
+    return null
+  }
+  const kind = params.get("kind") === "printer" ? "printer" : "laptop"
+  const department = DEPARTMENTS.find((item) => item === params.get("dept")) ?? "it"
+  return {
+    ...blankDestruction(`prefill:${kind}:${inv}:${tag}`),
+    assetKind: kind,
+    inventoryNumber: inv,
+    assetTag: tag,
+    serialNumber: params.get("serial") ?? "",
+    department,
+  }
+}
+
 export function DestructionPage() {
   const { state, saveDestruction, deleteDestruction } = useInventory()
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState("")
-  const [draft, setDraft] = useState<DestructionRecord | null>(null)
+  const [localDraft, setLocalDraft] = useState<DestructionRecord | null>(null)
+  const urlDraft = draftFromSearchParams(params)
+  const draft = localDraft ?? urlDraft
 
-  useEffect(() => {
-    const tag = params.get("tag")
-    const inv = params.get("inv")
-    if (!tag && !inv) {
+  function clearUrlPrefill() {
+    if (!params.get("tag") && !params.get("inv")) {
       return
     }
-    const kind = params.get("kind") === "printer" ? "printer" : "laptop"
-    const department = DEPARTMENTS.find((item) => item === params.get("dept")) ?? "it"
-    setDraft({
-      ...blankDestruction(newId()),
-      assetKind: kind,
-      inventoryNumber: inv ?? "",
-      assetTag: tag ?? "",
-      serialNumber: params.get("serial") ?? "",
-      department,
-    })
     const next = new URLSearchParams(params)
     next.delete("tag")
     next.delete("inv")
@@ -51,7 +59,17 @@ export function DestructionPage() {
     next.delete("serial")
     next.delete("dept")
     setParams(next, { replace: true })
-  }, [params, setParams])
+  }
+
+  function closeDraft() {
+    setLocalDraft(null)
+    clearUrlPrefill()
+  }
+
+  function openDraft(record: DestructionRecord) {
+    setLocalDraft(record)
+    clearUrlPrefill()
+  }
 
   const rows = useMemo(
     () =>
@@ -92,7 +110,7 @@ export function DestructionPage() {
             >
               CSV
             </Button>
-            <Button onClick={() => setDraft(blankDestruction(newId()))}>
+            <Button onClick={() => openDraft(blankDestruction(newId()))}>
               Vernichtung erfassen
             </Button>
           </>
@@ -134,7 +152,7 @@ export function DestructionPage() {
                 >
                   Historie
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
+                <Button variant="ghost" size="sm" onClick={() => openDraft(row)}>
                   Bearbeiten
                 </Button>
                 <ConfirmDelete
@@ -157,7 +175,7 @@ export function DestructionPage() {
         open={draft !== null}
         onOpenChange={(open) => {
           if (!open) {
-            setDraft(null)
+            closeDraft()
           }
         }}
         title={
@@ -177,10 +195,10 @@ export function DestructionPage() {
             return
           }
           toast.success("Vernichtung erfasst")
-          setDraft(null)
+          closeDraft()
         }}
       >
-        {draft ? <DestructionForm value={draft} onChange={setDraft} /> : null}
+        {draft ? <DestructionForm value={draft} onChange={setLocalDraft} /> : null}
       </RecordSheet>
     </div>
   )
