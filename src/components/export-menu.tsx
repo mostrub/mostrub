@@ -182,7 +182,11 @@ export function ExportMenu() {
                 ) {
                   return
                 }
-                resetToEmpty()
+                const error = resetToEmpty()
+                if (error) {
+                  toast.error(error)
+                  return
+                }
                 toast.success("Inventar geleert")
               }}
             >
@@ -197,7 +201,11 @@ export function ExportMenu() {
                 ) {
                   return
                 }
-                loadDemo()
+                const error = loadDemo()
+                if (error) {
+                  toast.error(error)
+                  return
+                }
                 toast.success("Werksdemo geladen")
               }}
             >

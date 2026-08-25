@@ -111,11 +111,13 @@ export function queryDeviceHistory(
     }
   }
 
-  return rows.filter(
-    (event) =>
-      liveIds.has(event.recordId) ||
-      [event.inventoryNumber, event.assetTag, event.serialNumber].some(
-        (value) => value.trim().toLowerCase() === needle,
-      ),
+  if (liveIds.size > 0) {
+    return rows.filter((event) => liveIds.has(event.recordId))
+  }
+
+  return rows.filter((event) =>
+    [event.inventoryNumber, event.assetTag, event.serialNumber].some(
+      (value) => value.trim().toLowerCase() === needle,
+    ),
   )
 }

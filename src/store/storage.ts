@@ -50,7 +50,7 @@ function coerceInventory(value: unknown): unknown {
     printers: coerceList(value.printers),
     software: coerceList(value.software),
     destructions: coerceList(value.destructions),
-    history: Array.isArray(value.history) ? value.history : [],
+    history: "history" in value ? value.history : [],
   }
 }
 
@@ -95,7 +95,12 @@ export function parseInventoryJson(raw: string): ParseInventoryResult {
 }
 
 export function loadInventory(): InventoryLoad {
-  const raw = localStorage.getItem(STORAGE_KEY)
+  let raw: string | null
+  try {
+    raw = localStorage.getItem(STORAGE_KEY)
+  } catch {
+    return { status: "ok", state: createSeedInventory() }
+  }
   if (!raw) {
     const seed = createSeedInventory()
     try {

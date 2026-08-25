@@ -117,6 +117,13 @@ export function inventoryIntegrityError(state: InventoryState): string | null {
     return "Backup enthält doppelte Datensatz-IDs"
   }
 
+  const linkedAssetIds = state.destructions
+    .map((item) => item.assetId)
+    .filter((id) => id.length > 0)
+  if (new Set(linkedAssetIds).size !== linkedAssetIds.length) {
+    return "Backup enthält zwei Vernichtungen für dasselbe Gerät"
+  }
+
   const liveNumberById = new Map(
     live.map((item) => [item.id, normalizeKey(item.inventoryNumber)] as const),
   )

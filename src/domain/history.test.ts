@@ -77,6 +77,36 @@ describe("queryDeviceHistory", () => {
     expect(rows.map((event) => event.action).sort()).toEqual(["created", "updated"])
   })
 
+  it("does not mix a reused inventory number with the previous device trail", () => {
+    const first = upsertLaptop(emptyInventory(), laptop({ inventoryNumber: "INV-0001" }))
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+    const renamed = upsertLaptop(first.state, {
+      ...first.state.laptops[0]!,
+      inventoryNumber: "INV-7777",
+    })
+    if (!renamed.ok) {
+      throw new Error(renamed.error)
+    }
+    const second = upsertLaptop(
+      renamed.state,
+      laptop({
+        id: "lap-2",
+        inventoryNumber: "INV-0001",
+        assetTag: "LT-2002",
+        serialNumber: "SN-BB22",
+      }),
+    )
+    if (!second.ok) {
+      throw new Error(second.error)
+    }
+
+    const rows = queryDeviceHistory(second.state, "INV-0001")
+    expect(rows.every((event) => event.recordId === "lap-2")).toBe(true)
+    expect(rows.some((event) => event.recordId === "lap-1")).toBe(false)
+  })
+
   it("finds history by serial number", () => {
     const created = upsertLaptop(emptyInventory(), laptop())
     if (!created.ok) {

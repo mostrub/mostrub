@@ -12,7 +12,7 @@ describe("csvEscape", () => {
     expect(csvEscape("-1")).toBe("'-1")
     expect(csvEscape("@sum")).toBe("'@sum")
     expect(csvEscape("\tcmd")).toBe("'\tcmd")
-    expect(csvEscape("\rcmd")).toBe("'\rcmd")
+    expect(csvEscape("\rcmd")).toBe("\"'\rcmd\"")
   })
 })
 
@@ -24,6 +24,15 @@ describe("rowsToCsv", () => {
     })
 
     expect(csv).toBe('Asset tag;Notes\r\nLT-1;"Needs ""dock"", then wipe"')
+  })
+
+  it("quotes cells that contain the semicolon delimiter", () => {
+    const csv = rowsToCsv({
+      headers: ["Kennzeichen", "Notizen"],
+      rows: [["LT-1", "NIST 800-88; Recycler"]],
+    })
+
+    expect(csv).toBe('Kennzeichen;Notizen\r\nLT-1;"NIST 800-88; Recycler"')
   })
 
   it("preserves empty cells", () => {

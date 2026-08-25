@@ -41,8 +41,8 @@ type InventoryContextValue = {
   deleteSoftware: (id: string) => string | null
   deleteDestruction: (id: string) => string | null
   replaceState: (next: InventoryState) => string | null
-  resetToEmpty: () => void
-  loadDemo: () => void
+  resetToEmpty: () => string | null
+  loadDemo: () => string | null
 }
 
 const InventoryContext = createContext<InventoryContextValue | undefined>(undefined)
@@ -61,25 +61,21 @@ function applyResult(
   mutator: (current: InventoryState) => SaveResult<InventoryState>,
 ): string | null {
   let error: string | null = null
-  let pending: InventoryState | undefined
   setState((current) => {
     const result = mutator(current)
     if (!result.ok) {
       error = result.error
       return current
     }
-    pending = result.state
-    return result.state
+    try {
+      persist(result.state)
+      return result.state
+    } catch (caught) {
+      error = storageFailure(caught)
+      return current
+    }
   })
-  if (!pending) {
-    return error
-  }
-  try {
-    persist(pending)
-  } catch (caught) {
-    return storageFailure(caught)
-  }
-  return null
+  return error
 }
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
@@ -124,16 +120,29 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       deleteDestruction: (id) =>
         applyResult(setState, (current) => removeDestruction(current, id)),
       replaceState: (next) => {
-        setStorageError(null)
-        return applyResult(setState, () => ({ ok: true, state: next }))
+        const error = applyResult(setState, () => ({ ok: true, state: next }))
+        if (!error) {
+          setStorageError(null)
+        }
+        return error
       },
       resetToEmpty: () => {
-        setStorageError(null)
-        setState(clearToEmpty())
+        try {
+          setState(clearToEmpty())
+          setStorageError(null)
+          return null
+        } catch (caught) {
+          return storageFailure(caught)
+        }
       },
       loadDemo: () => {
-        setStorageError(null)
-        setState(resetInventory())
+        try {
+          setState(resetInventory())
+          setStorageError(null)
+          return null
+        } catch (caught) {
+          return storageFailure(caught)
+        }
       },
     }
   }, [state, storageError])

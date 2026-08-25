@@ -155,6 +155,60 @@ describe("parseInventoryJson", () => {
     }
   })
 
+  it("rejects two destruction logs linked to the same live asset", () => {
+    const laptop = {
+      id: "lap-1",
+      inventoryNumber: "INV-0001",
+      assetTag: "LT-1",
+      serialNumber: "SN",
+      hostname: "h",
+      make: "Dell",
+      model: "X",
+      laptopType: "standard",
+      operatingSystem: "windows-11",
+      department: "it",
+      assignedTo: "",
+      location: "",
+      status: "destroyed",
+      purchaseDate: "",
+      warrantyEnd: "",
+      notes: "",
+    }
+    const log = {
+      id: "dst-1",
+      assetKind: "laptop" as const,
+      assetId: "lap-1",
+      inventoryNumber: "INV-0001",
+      assetTag: "LT-1",
+      serialNumber: "SN",
+      department: "it",
+      method: "secure-wipe-recycle",
+      destroyedOn: "2026-08-25",
+      witnessedBy: "M. Chen",
+      certificateId: "COC-1",
+      reason: "EOL",
+      notes: "",
+    }
+    const raw = JSON.stringify({
+      laptops: [laptop],
+      printers: [],
+      software: [],
+      destructions: [log, { ...log, id: "dst-2", certificateId: "COC-2" }],
+    })
+    expect(parseInventoryJson(raw).ok).toBe(false)
+  })
+
+  it("rejects a backup whose history field is the wrong type", () => {
+    const raw = JSON.stringify({
+      laptops: [],
+      printers: [],
+      software: [],
+      destructions: [],
+      history: "nope",
+    })
+    expect(parseInventoryJson(raw).ok).toBe(false)
+  })
+
   it("rejects an unlinked destruction that reuses a live inventory number", () => {
     const laptop = {
       id: "lap-1",
@@ -273,6 +327,24 @@ describe("isInventoryState", () => {
 describe("loadInventory", () => {
   afterEach(() => {
     Reflect.deleteProperty(globalThis, "localStorage")
+  })
+
+  it("still boots when localStorage getItem throws", () => {
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: {
+        ...memoryStorage(),
+        getItem: () => {
+          throw new Error("blocked")
+        },
+      },
+    })
+
+    const loaded = loadInventory()
+    expect(loaded.status).toBe("ok")
+    if (loaded.status === "ok") {
+      expect(loaded.state.laptops.length).toBeGreaterThan(0)
+    }
   })
 
   it("still boots when first-visit seed cannot be written", () => {

@@ -9,7 +9,7 @@ function neutralizeCsvValue(text: string): string {
 
 export function csvEscape(value: string | number): string {
   const text = neutralizeCsvValue(String(value))
-  if (/[",\n]/.test(text)) {
+  if (/[";,\n\r]/.test(text)) {
     return `"${text.replaceAll('"', '""')}"`
   }
   return text

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import type { InventoryState } from "@/domain/types"
 import { buildPlantReport } from "./report"
 import { renderBarChartSvg, renderDonutChartSvg } from "./charts"
-import { renderPlantReportHtml } from "./report-html"
+import { displayCell, renderPlantReportHtml } from "./report-html"
 import { rowsToCsv } from "./csv"
 
 const sample: InventoryState = {
@@ -176,5 +176,11 @@ describe("renderPlantReportHtml", () => {
     expect(html).toContain("INV-0001")
     expect(html).not.toContain("<script>alert(1)</script>")
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;")
+  })
+
+  it("renders a numeric zero instead of an em dash", () => {
+    expect(displayCell(0)).toBe("0")
+    expect(displayCell("")).toBe("—")
+    expect(displayCell("NIST")).toBe("NIST")
   })
 })

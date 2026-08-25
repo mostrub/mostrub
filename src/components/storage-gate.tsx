@@ -58,10 +58,26 @@ export function StorageGate({ children }: { children: React.ReactNode }) {
           />
           <div className="flex flex-wrap gap-2">
             <Button onClick={() => fileRef.current?.click()}>Backup importieren</Button>
-            <Button variant="outline" onClick={resetToEmpty}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const error = resetToEmpty()
+                if (error) {
+                  toast.error(error)
+                }
+              }}
+            >
               Leer starten
             </Button>
-            <Button variant="outline" onClick={loadDemo}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const error = loadDemo()
+                if (error) {
+                  toast.error(error)
+                }
+              }}
+            >
               Werksdemo laden
             </Button>
           </div>

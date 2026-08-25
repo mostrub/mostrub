@@ -10,8 +10,18 @@ export function escapeHtml(value: string | number): string {
     .replaceAll('"', "&quot;")
 }
 
+export function displayCell(value: string | number): string {
+  if (value === 0) {
+    return "0"
+  }
+  if (value === "") {
+    return "—"
+  }
+  return String(value)
+}
+
 function cells(values: Array<string | number>): string {
-  return values.map((value) => `<td>${escapeHtml(value || "—")}</td>`).join("")
+  return values.map((value) => `<td>${escapeHtml(displayCell(value))}</td>`).join("")
 }
 
 function table(block: ReportTable): string {
