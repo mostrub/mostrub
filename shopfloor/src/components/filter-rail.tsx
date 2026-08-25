@@ -17,15 +17,19 @@ function OptionList(args: {
   options: string[]
   selected: string[]
   onToggle: (value: string) => void
+  limit?: number
 }) {
   if (args.options.length === 0) {
     return null
   }
+  const limit = args.limit ?? 16
+  const visible = args.options.slice(0, limit)
+  const hidden = args.options.length - visible.length
   return (
     <FieldSet>
       <FieldLegend variant="label">{args.legend}</FieldLegend>
       <FieldGroup className="gap-2">
-        {args.options.map((option) => (
+        {visible.map((option) => (
           <Field key={option} orientation="horizontal" className="items-center">
             <Checkbox
               checked={args.selected.includes(option)}
@@ -37,6 +41,11 @@ function OptionList(args: {
             </FieldLabel>
           </Field>
         ))}
+        {hidden > 0 ? (
+          <p className="text-xs text-muted-foreground">
+            {hidden} more. Use search for the rest.
+          </p>
+        ) : null}
       </FieldGroup>
     </FieldSet>
   )
@@ -197,6 +206,7 @@ export function FilterRail() {
             legend="Work order"
             options={facets.workOrders}
             selected={filters.workOrders}
+            limit={8}
             onToggle={(value) =>
               patchFilters({
                 workOrders: toggleValue(filters.workOrders, value),

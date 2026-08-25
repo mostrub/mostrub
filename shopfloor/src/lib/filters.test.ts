@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   EMPTY_FILTERS,
   escapeSqlLiteral,
+  sqlFrom,
   sqlWhere,
 } from "./filters"
 
@@ -55,5 +56,16 @@ describe("sqlWhere", () => {
     )
     expect(sql).toContain("result <> 'PASS'")
     expect(sql).toContain("cycle_ms > target_cycle_ms * 1.2")
+  })
+
+  it("wraps filtered tables so callers can add another WHERE", () => {
+    const from = sqlFrom("alarms", {
+      ...EMPTY_FILTERS,
+      lines: ["ASM-2"],
+    })
+    expect(from).toBe("(SELECT * FROM alarms WHERE line IN ('ASM-2'))")
+    expect(`SELECT COUNT(*) FROM ${from} WHERE severity = 'CRITICAL'`).not.toContain(
+      "WHERE line IN ('ASM-2') WHERE"
+    )
   })
 })

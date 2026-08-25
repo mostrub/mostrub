@@ -218,7 +218,10 @@ export function sqlWhere(
 
 export function sqlFrom(table: TableName, filters: ProductionFilters): string {
   const where = sqlWhere(filters, table)
-  return where === "" ? table : `${table} ${where}`
+  if (where === "") {
+    return table
+  }
+  return `(SELECT * FROM ${table} ${where})`
 }
 
 export function activeFilterCount(filters: ProductionFilters): number {
