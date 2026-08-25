@@ -9,6 +9,7 @@ function inventory(overrides: Partial<InventoryState> = {}): InventoryState {
     printers: [],
     software: [],
     destructions: [],
+    history: [],
     ...overrides,
   }
 }
@@ -17,6 +18,7 @@ describe("collectAuditFindings", () => {
   it("flags an in-service laptop with no assignee", () => {
     const laptop: Laptop = {
       id: "lap-1",
+      inventoryNumber: "INV-0001",
       assetTag: "LT-1",
       serialNumber: "SN-1",
       hostname: "eng-01",
@@ -45,6 +47,7 @@ describe("collectAuditFindings", () => {
   it("flags a missing serial number", () => {
     const laptop: Laptop = {
       id: "lap-2",
+      inventoryNumber: "INV-0002",
       assetTag: "LT-2",
       serialNumber: "",
       hostname: "maint-02",
@@ -71,6 +74,7 @@ describe("collectAuditFindings", () => {
   it("flags an expired warranty", () => {
     const laptop: Laptop = {
       id: "lap-3",
+      inventoryNumber: "INV-0003",
       assetTag: "LT-3",
       serialNumber: "SN-3",
       hostname: "fin-03",
@@ -99,6 +103,7 @@ describe("collectAuditFindings", () => {
   it("flags an expired license as license-expired", () => {
     const license: SoftwareLicense = {
       id: "sw-expired",
+      inventoryNumber: "INV-0099",
       name: "Historian",
       vendor: "AVEVA",
       entitlementId: "AV-OLD",
@@ -123,6 +128,7 @@ describe("collectAuditFindings", () => {
   it("flags a license renewing within 30 days", () => {
     const license: SoftwareLicense = {
       id: "sw-1",
+      inventoryNumber: "INV-0100",
       name: "Historian",
       vendor: "AVEVA",
       entitlementId: "AV-1",
@@ -152,6 +158,7 @@ describe("collectAuditFindings", () => {
             id: "dst-1",
             assetKind: "printer",
             assetId: "",
+            inventoryNumber: "INV-0090",
             assetTag: "PR-9",
             serialNumber: "CN9",
             department: "warehouse",

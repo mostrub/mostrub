@@ -8,6 +8,7 @@ const sample: InventoryState = {
   laptops: [
     {
       id: "lap-1",
+      inventoryNumber: "INV-0001",
       assetTag: "LT-1001",
       serialNumber: "SN-AA11",
       hostname: "ops-lt-01",
@@ -25,6 +26,7 @@ const sample: InventoryState = {
     },
     {
       id: "lap-2",
+      inventoryNumber: "INV-0002",
       assetTag: "LT-1002",
       serialNumber: "",
       hostname: "eng-ws-04",
@@ -44,6 +46,7 @@ const sample: InventoryState = {
   printers: [
     {
       id: "prt-1",
+      inventoryNumber: "INV-2001",
       assetTag: "PR-2001",
       serialNumber: "CN12345",
       make: "HP",
@@ -59,6 +62,7 @@ const sample: InventoryState = {
   software: [
     {
       id: "sw-1",
+      inventoryNumber: "INV-3001",
       name: "AutoCAD",
       vendor: "Autodesk",
       entitlementId: "ADS-9981",
@@ -76,6 +80,7 @@ const sample: InventoryState = {
       id: "dst-1",
       assetKind: "laptop",
       assetId: "old-1",
+      inventoryNumber: "INV-0090",
       assetTag: "LT-0090",
       serialNumber: "SN-OLD",
       department: "it",
@@ -87,6 +92,7 @@ const sample: InventoryState = {
       notes: "",
     },
   ],
+  history: [],
 }
 
 describe("buildAuditWorkbookPlan", () => {
@@ -153,7 +159,7 @@ describe("buildAuditWorkbookPlan", () => {
     })
 
     const licenses = plan.sheets.find((sheet) => sheet.name === "Software licenses")
-    const cost = licenses?.rows[0]?.[8]
+    const cost = licenses?.rows[0]?.[9]
     expect(cost).toBe(12600)
   })
 

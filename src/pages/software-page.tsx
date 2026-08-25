@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -26,6 +27,7 @@ export function SoftwarePage() {
       state.software.filter((item) =>
         matchesQuery(
           [
+            item.inventoryNumber,
             item.name,
             item.vendor,
             item.entitlementId,
@@ -74,6 +76,7 @@ export function SoftwarePage() {
         emptyTitle="No software matches"
         emptyDescription="Add a title or clear the search."
         columns={[
+          { header: "Inventory #", cell: (row) => row.inventoryNumber },
           { header: "Name", cell: (row) => row.name },
           { header: "Vendor", cell: (row) => row.vendor },
           { header: "Type", cell: (row) => LICENSE_TYPE_LABELS[row.licenseType] },
@@ -97,6 +100,14 @@ export function SoftwarePage() {
             className: "text-right",
             cell: (row) => (
               <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
+                  nativeButton={false}
+                >
+                  History
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
                   Edit
                 </Button>

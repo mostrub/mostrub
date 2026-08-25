@@ -75,6 +75,7 @@ export type AssetKind = (typeof ASSET_KINDS)[number]
 
 export type Laptop = {
   id: string
+  inventoryNumber: string
   assetTag: string
   serialNumber: string
   hostname: string
@@ -93,6 +94,7 @@ export type Laptop = {
 
 export type Printer = {
   id: string
+  inventoryNumber: string
   assetTag: string
   serialNumber: string
   make: string
@@ -107,6 +109,7 @@ export type Printer = {
 
 export type SoftwareLicense = {
   id: string
+  inventoryNumber: string
   name: string
   vendor: string
   entitlementId: string
@@ -123,6 +126,7 @@ export type DestructionRecord = {
   id: string
   assetKind: AssetKind
   assetId: string
+  inventoryNumber: string
   assetTag: string
   serialNumber: string
   department: Department
@@ -134,11 +138,41 @@ export type DestructionRecord = {
   notes: string
 }
 
+export const HISTORY_ACTIONS = [
+  "created",
+  "updated",
+  "destroyed",
+  "destruction-removed",
+  "removed",
+] as const
+
+export type HistoryAction = (typeof HISTORY_ACTIONS)[number]
+
+export type HistoryChange = {
+  field: string
+  from: string
+  to: string
+}
+
+export type HistoryEvent = {
+  id: string
+  at: string
+  action: HistoryAction
+  register: "laptop" | "printer" | "software" | "destruction"
+  recordId: string
+  inventoryNumber: string
+  assetTag: string
+  serialNumber: string
+  summary: string
+  changes: HistoryChange[]
+}
+
 export type InventoryState = {
   laptops: Laptop[]
   printers: Printer[]
   software: SoftwareLicense[]
   destructions: DestructionRecord[]
+  history: HistoryEvent[]
 }
 
 export type SaveResult<T> =

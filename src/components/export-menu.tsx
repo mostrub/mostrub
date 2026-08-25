@@ -148,6 +148,16 @@ export function ExportMenu() {
             >
               Audit findings
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Device history"),
+                  "History CSV downloaded",
+                )
+              }}
+            >
+              Device history
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>

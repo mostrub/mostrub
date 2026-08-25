@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,7 @@ export function PrintersPage() {
       state.printers.filter((item) =>
         matchesQuery(
           [
+            item.inventoryNumber,
             item.assetTag,
             item.serialNumber,
             item.make,
@@ -78,6 +80,7 @@ export function PrintersPage() {
         emptyTitle="No printers match"
         emptyDescription="Add a printer or clear the search."
         columns={[
+          { header: "Inventory #", cell: (row) => row.inventoryNumber },
           { header: "Tag", cell: (row) => row.assetTag },
           { header: "Device", cell: (row) => `${row.make} ${row.model}` },
           { header: "Type", cell: (row) => PRINTER_TYPE_LABELS[row.printerType] },
@@ -90,6 +93,14 @@ export function PrintersPage() {
             className: "text-right",
             cell: (row) => (
               <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
+                  nativeButton={false}
+                >
+                  History
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
                   Edit
                 </Button>

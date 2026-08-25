@@ -13,6 +13,7 @@ const NAV = [
   { to: "/printers", label: "Printers" },
   { to: "/software", label: "Software" },
   { to: "/destruction", label: "Destruction" },
+  { to: "/history", label: "History" },
   { to: "/audit", label: "Audit" },
 ]
 

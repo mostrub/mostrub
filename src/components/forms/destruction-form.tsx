@@ -40,6 +40,15 @@ export function DestructionForm({
           items={optionList(ASSET_KINDS, ASSET_KIND_LABELS)}
         />
         <Field>
+          <FieldLabel htmlFor="dst-inv">Inventory #</FieldLabel>
+          <Input
+            id="dst-inv"
+            placeholder="INV-0001 or leave blank"
+            value={value.inventoryNumber}
+            onChange={(event) => set("inventoryNumber", event.target.value)}
+          />
+        </Field>
+        <Field>
           <FieldLabel htmlFor="dst-tag">Asset tag</FieldLabel>
           <Input
             id="dst-tag"

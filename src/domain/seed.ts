@@ -1,9 +1,10 @@
+import { normalizeInventoryState } from "./normalize"
 import type { InventoryState } from "./types"
 
 export const ORG_NAME = "Plant IT"
 
 export function createSeedInventory(): InventoryState {
-  return {
+  const seed = {
     laptops: [
       {
         id: "lap-1001",
@@ -412,6 +413,46 @@ export function createSeedInventory(): InventoryState {
         certificateId: "",
         reason: "Lease return",
         notes: "Need witness sign-off from leasing vendor",
+      },
+    ],
+    history: [],
+  } as InventoryState
+
+  const normalized = normalizeInventoryState(seed)
+  const first = normalized.laptops[0]
+  if (!first) {
+    return normalized
+  }
+
+  return {
+    ...normalized,
+    history: [
+      {
+        id: "hist-seed-1",
+        at: "2024-03-12T12:00:00.000Z",
+        action: "created",
+        register: "laptop",
+        recordId: first.id,
+        inventoryNumber: first.inventoryNumber,
+        assetTag: first.assetTag,
+        serialNumber: first.serialNumber,
+        summary: `Laptop ${first.inventoryNumber} added (${first.assetTag})`,
+        changes: [],
+      },
+      {
+        id: "hist-seed-2",
+        at: "2025-01-08T15:30:00.000Z",
+        action: "updated",
+        register: "laptop",
+        recordId: first.id,
+        inventoryNumber: first.inventoryNumber,
+        assetTag: first.assetTag,
+        serialNumber: first.serialNumber,
+        summary: `Laptop ${first.inventoryNumber}: assignedTo, location changed`,
+        changes: [
+          { field: "assignedTo", from: "", to: first.assignedTo },
+          { field: "location", from: "Receiving", to: first.location },
+        ],
       },
     ],
   }

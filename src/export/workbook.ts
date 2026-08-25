@@ -21,6 +21,7 @@ export const AUDIT_SHEET_NAMES = [
   "License exceptions",
   "Destruction log",
   "Audit findings",
+  "Device history",
 ] as const
 
 export type WorkbookSheet = {
@@ -59,6 +60,7 @@ export function buildAuditWorkbookPlan(input: {
       }
       return laptops.map((item) => [
         label,
+        item.inventoryNumber,
         item.assetTag,
         item.hostname,
         LAPTOP_TYPE_LABELS[item.laptopType],
@@ -124,6 +126,7 @@ export function buildAuditWorkbookPlan(input: {
     {
       name: "Laptops",
       headers: [
+        "Inventory #",
         "Asset tag",
         "Serial",
         "Hostname",
@@ -140,6 +143,7 @@ export function buildAuditWorkbookPlan(input: {
         "Notes",
       ],
       rows: state.laptops.map((item) => [
+        item.inventoryNumber,
         item.assetTag,
         item.serialNumber,
         item.hostname,
@@ -160,6 +164,7 @@ export function buildAuditWorkbookPlan(input: {
       name: "Laptops by department",
       headers: [
         "Department",
+        "Inventory #",
         "Asset tag",
         "Hostname",
         "Type",
@@ -173,6 +178,7 @@ export function buildAuditWorkbookPlan(input: {
     {
       name: "Printers",
       headers: [
+        "Inventory #",
         "Asset tag",
         "Serial",
         "Make",
@@ -185,6 +191,7 @@ export function buildAuditWorkbookPlan(input: {
         "Notes",
       ],
       rows: state.printers.map((item) => [
+        item.inventoryNumber,
         item.assetTag,
         item.serialNumber,
         item.make,
@@ -200,6 +207,7 @@ export function buildAuditWorkbookPlan(input: {
     {
       name: "Software licenses",
       headers: [
+        "Inventory #",
         "Name",
         "Vendor",
         "Entitlement",
@@ -212,6 +220,7 @@ export function buildAuditWorkbookPlan(input: {
         "Notes",
       ],
       rows: state.software.map((item) => [
+        item.inventoryNumber,
         item.name,
         item.vendor,
         item.entitlementId,
@@ -246,6 +255,7 @@ export function buildAuditWorkbookPlan(input: {
     {
       name: "Destruction log",
       headers: [
+        "Inventory #",
         "Asset kind",
         "Asset tag",
         "Serial",
@@ -258,6 +268,7 @@ export function buildAuditWorkbookPlan(input: {
         "Notes",
       ],
       rows: state.destructions.map((item) => [
+        item.inventoryNumber,
         ASSET_KIND_LABELS[item.assetKind],
         item.assetTag,
         item.serialNumber,
@@ -281,6 +292,33 @@ export function buildAuditWorkbookPlan(input: {
         item.department ? DEPARTMENT_LABELS[item.department] : "",
         item.summary,
       ]),
+    },
+    {
+      name: "Device history",
+      headers: [
+        "When",
+        "Action",
+        "Inventory #",
+        "Asset tag",
+        "Serial",
+        "Register",
+        "Summary",
+        "Changes",
+      ],
+      rows: [...state.history]
+        .sort((left, right) => right.at.localeCompare(left.at))
+        .map((item) => [
+          item.at,
+          item.action,
+          item.inventoryNumber,
+          item.assetTag,
+          item.serialNumber,
+          item.register,
+          item.summary,
+          item.changes
+            .map((change) => `${change.field}: ${change.from} → ${change.to}`)
+            .join("; "),
+        ]),
     },
   ]
 

@@ -4,6 +4,7 @@ import type { DestructionRecord, Laptop, Printer, SoftwareLicense } from "./type
 export function blankLaptop(id: string): Laptop {
   return {
     id,
+    inventoryNumber: "",
     assetTag: "",
     serialNumber: "",
     hostname: "",
@@ -24,6 +25,7 @@ export function blankLaptop(id: string): Laptop {
 export function blankPrinter(id: string): Printer {
   return {
     id,
+    inventoryNumber: "",
     assetTag: "",
     serialNumber: "",
     make: "",
@@ -40,6 +42,7 @@ export function blankPrinter(id: string): Printer {
 export function blankSoftware(id: string): SoftwareLicense {
   return {
     id,
+    inventoryNumber: "",
     name: "",
     vendor: "",
     entitlementId: "",
@@ -58,6 +61,7 @@ export function blankDestruction(id: string): DestructionRecord {
     id,
     assetKind: "laptop",
     assetId: "",
+    inventoryNumber: "",
     assetTag: "",
     serialNumber: "",
     department: "it",

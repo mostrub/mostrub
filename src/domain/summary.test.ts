@@ -7,6 +7,7 @@ import type { Laptop } from "./types"
 function laptop(overrides: Partial<Laptop> = {}): Laptop {
   return {
     id: "lap-1",
+    inventoryNumber: "INV-0001",
     assetTag: "LT-1001",
     serialNumber: "SN-AA11",
     hostname: "prod-01",

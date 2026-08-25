@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -66,6 +67,7 @@ export function LaptopsPage() {
         }
         return matchesQuery(
           [
+            item.inventoryNumber,
             item.assetTag,
             item.serialNumber,
             item.hostname,
@@ -109,7 +111,7 @@ export function LaptopsPage() {
       <div className="flex flex-wrap items-center gap-2 border bg-muted/30 px-2 py-2">
         <Input
           className="w-72"
-          placeholder="Search tag, serial, user, department, OS..."
+          placeholder="Search inventory #, tag, serial, user, department, OS..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -168,6 +170,7 @@ export function LaptopsPage() {
         emptyTitle="No laptops match"
         emptyDescription="Add a laptop or clear the search."
         columns={[
+          { header: "Inventory #", cell: (row) => row.inventoryNumber },
           { header: "Tag", cell: (row) => row.assetTag },
           { header: "Hostname", cell: (row) => row.hostname },
           { header: "Type", cell: (row) => LAPTOP_TYPE_LABELS[row.laptopType] },
@@ -180,6 +183,14 @@ export function LaptopsPage() {
             className: "text-right",
             cell: (row) => (
               <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
+                  nativeButton={false}
+                >
+                  History
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
                   Edit
                 </Button>

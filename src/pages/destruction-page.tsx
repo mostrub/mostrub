@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { Link } from "react-router-dom"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -30,6 +31,7 @@ export function DestructionPage() {
       state.destructions.filter((item) =>
         matchesQuery(
           [
+            item.inventoryNumber,
             item.assetTag,
             item.serialNumber,
             item.witnessedBy,
@@ -82,6 +84,7 @@ export function DestructionPage() {
         emptyTitle="No destruction records"
         emptyDescription="Log a wipe or shred when hardware leaves the plant."
         columns={[
+          { header: "Inventory #", cell: (row) => row.inventoryNumber || "—" },
           { header: "Tag", cell: (row) => row.assetTag },
           { header: "Kind", cell: (row) => ASSET_KIND_LABELS[row.assetKind] },
           { header: "Method", cell: (row) => DESTRUCTION_METHOD_LABELS[row.method] },
@@ -94,6 +97,18 @@ export function DestructionPage() {
             className: "text-right",
             cell: (row) => (
               <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  render={
+                    <Link
+                      to={`/history?q=${encodeURIComponent(row.inventoryNumber || row.assetTag)}`}
+                    />
+                  }
+                  nativeButton={false}
+                >
+                  History
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
                   Edit
                 </Button>

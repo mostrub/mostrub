@@ -45,6 +45,7 @@ export function isLaptop(value: unknown): value is Laptop {
     isString(value.id) &&
     value.id.length > 0 &&
     hasStrings(value, [
+      "inventoryNumber",
       "assetTag",
       "serialNumber",
       "hostname",
@@ -71,6 +72,7 @@ export function isPrinter(value: unknown): value is Printer {
     isString(value.id) &&
     value.id.length > 0 &&
     hasStrings(value, [
+      "inventoryNumber",
       "assetTag",
       "serialNumber",
       "make",
@@ -92,7 +94,14 @@ export function isSoftwareLicense(value: unknown): value is SoftwareLicense {
   return (
     isString(value.id) &&
     value.id.length > 0 &&
-    hasStrings(value, ["name", "vendor", "entitlementId", "renewalDate", "notes"]) &&
+    hasStrings(value, [
+      "inventoryNumber",
+      "name",
+      "vendor",
+      "entitlementId",
+      "renewalDate",
+      "notes",
+    ]) &&
     isOneOf(value.licenseType, LICENSE_TYPES) &&
     isOneOf(value.department, DEPARTMENTS) &&
     isFiniteNumber(value.seatsPurchased) &&
@@ -110,6 +119,7 @@ export function isDestructionRecord(value: unknown): value is DestructionRecord 
     value.id.length > 0 &&
     hasStrings(value, [
       "assetId",
+      "inventoryNumber",
       "assetTag",
       "serialNumber",
       "destroyedOn",
@@ -136,6 +146,7 @@ export function isInventoryState(value: unknown): value is InventoryState {
     Array.isArray(value.software) &&
     value.software.every(isSoftwareLicense) &&
     Array.isArray(value.destructions) &&
-    value.destructions.every(isDestructionRecord)
+    value.destructions.every(isDestructionRecord) &&
+    (value.history === undefined || Array.isArray(value.history))
   )
 }

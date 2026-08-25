@@ -20,6 +20,15 @@ export function SoftwareForm({
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
+          <FieldLabel htmlFor="sw-inv">Inventory #</FieldLabel>
+          <Input
+            id="sw-inv"
+            placeholder="Assigned on save if blank"
+            value={value.inventoryNumber}
+            onChange={(event) => set("inventoryNumber", event.target.value)}
+          />
+        </Field>
+        <Field>
           <FieldLabel htmlFor="sw-name">Name</FieldLabel>
           <Input
             id="sw-name"

@@ -5,6 +5,7 @@ import { StorageGate } from "@/components/storage-gate"
 import { AuditPage } from "@/pages/audit-page"
 import { DashboardPage } from "@/pages/dashboard-page"
 import { DestructionPage } from "@/pages/destruction-page"
+import { HistoryPage } from "@/pages/history-page"
 import { LaptopsPage } from "@/pages/laptops-page"
 import { PrintersPage } from "@/pages/printers-page"
 import { SoftwarePage } from "@/pages/software-page"
@@ -20,6 +21,7 @@ export function App() {
             <Route path="printers" element={<PrintersPage />} />
             <Route path="software" element={<SoftwarePage />} />
             <Route path="destruction" element={<DestructionPage />} />
+            <Route path="history" element={<HistoryPage />} />
             <Route path="audit" element={<AuditPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

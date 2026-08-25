@@ -30,6 +30,15 @@ export function PrinterForm({
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
+          <FieldLabel htmlFor="printer-inv">Inventory #</FieldLabel>
+          <Input
+            id="printer-inv"
+            placeholder="Assigned on save if blank"
+            value={value.inventoryNumber}
+            onChange={(event) => set("inventoryNumber", event.target.value)}
+          />
+        </Field>
+        <Field>
           <FieldLabel htmlFor="printer-tag">Asset tag</FieldLabel>
           <Input
             id="printer-tag"

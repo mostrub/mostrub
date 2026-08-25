@@ -14,6 +14,7 @@ import type { DestructionRecord, Laptop, Printer, SoftwareLicense } from "./type
 function laptop(overrides: Partial<Laptop> = {}): Laptop {
   return {
     id: "lap-1",
+    inventoryNumber: "",
     assetTag: "LT-1001",
     serialNumber: "SN-AA11",
     hostname: "ops-lt-01",
@@ -35,6 +36,7 @@ function laptop(overrides: Partial<Laptop> = {}): Laptop {
 function printer(overrides: Partial<Printer> = {}): Printer {
   return {
     id: "prt-1",
+    inventoryNumber: "",
     assetTag: "PR-2001",
     serialNumber: "CN12345",
     make: "HP",
@@ -52,6 +54,7 @@ function printer(overrides: Partial<Printer> = {}): Printer {
 function software(overrides: Partial<SoftwareLicense> = {}): SoftwareLicense {
   return {
     id: "sw-1",
+    inventoryNumber: "",
     name: "AutoCAD",
     vendor: "Autodesk",
     entitlementId: "ADS-9981",
@@ -73,6 +76,7 @@ function destruction(
     id: "dst-1",
     assetKind: "laptop",
     assetId: "lap-1",
+    inventoryNumber: "",
     assetTag: "LT-1001",
     serialNumber: "SN-AA11",
     department: "operations",
@@ -286,5 +290,73 @@ describe("catalog", () => {
     expect(withSoftware.state.printers).toHaveLength(1)
     expect(withSoftware.state.software).toHaveLength(1)
     expect(withSoftware.state.laptops).toHaveLength(0)
+  })
+
+  it("assigns a plant-wide inventory number when one is not provided", () => {
+    const result = upsertLaptop(emptyInventory(), laptop())
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.laptops[0]?.inventoryNumber).toBe("INV-0001")
+      expect(result.state.history[0]?.action).toBe("created")
+    }
+  })
+
+  it("rejects an inventory number already used by a printer", () => {
+    const withPrinter = upsertPrinter(
+      emptyInventory(),
+      printer({ inventoryNumber: "INV-0042" }),
+    )
+    if (!withPrinter.ok) {
+      throw new Error(withPrinter.error)
+    }
+
+    const result = upsertLaptop(
+      withPrinter.state,
+      laptop({ inventoryNumber: "INV-0042" }),
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toMatch(/inventory number/i)
+    }
+  })
+
+  it("records assignment changes in device history", () => {
+    const first = upsertLaptop(emptyInventory(), laptop())
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+    const inventoryNumber = first.state.laptops[0]!.inventoryNumber
+    const second = upsertLaptop(
+      first.state,
+      laptop({ inventoryNumber, assignedTo: "B. Jones" }),
+    )
+    expect(second.ok).toBe(true)
+    if (second.ok) {
+      const update = second.state.history.find((event) => event.action === "updated")
+      expect(update?.changes.some((change) => change.field === "assignedTo")).toBe(
+        true,
+      )
+    }
+  })
+
+  it("links a destruction by inventory number", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const inventoryNumber = withLaptop.state.laptops[0]!.inventoryNumber
+    const result = recordDestruction(
+      withLaptop.state,
+      destruction({
+        assetId: "",
+        assetTag: "",
+        inventoryNumber,
+      }),
+    )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.laptops[0]?.status).toBe("destroyed")
+      expect(result.state.destructions[0]?.inventoryNumber).toBe(inventoryNumber)
+    }
   })
 })

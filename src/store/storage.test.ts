@@ -61,11 +61,45 @@ describe("parseInventoryJson", () => {
     expect(parseInventoryJson(raw).ok).toBe(true)
   })
 
+  it("assigns inventory numbers to older backups that lack them", () => {
+    const raw = JSON.stringify({
+      laptops: [
+        {
+          id: "lap-1",
+          assetTag: "LT-1",
+          serialNumber: "SN",
+          hostname: "h",
+          make: "Dell",
+          model: "X",
+          laptopType: "standard",
+          operatingSystem: "windows-11",
+          department: "it",
+          assignedTo: "",
+          location: "",
+          status: "in-service",
+          purchaseDate: "",
+          warrantyEnd: "",
+          notes: "",
+        },
+      ],
+      printers: [],
+      software: [],
+      destructions: [],
+    })
+    const result = parseInventoryJson(raw)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.laptops[0]?.inventoryNumber).toBe("INV-0001")
+      expect(result.state.history).toEqual([])
+    }
+  })
+
   it("rejects unknown laptop status values", () => {
     const raw = JSON.stringify({
       laptops: [
         {
           id: "lap-1",
+          inventoryNumber: "INV-1",
           assetTag: "LT-1",
           serialNumber: "SN",
           hostname: "h",
