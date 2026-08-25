@@ -10,8 +10,9 @@ Local shopfloor production prototype in [`shopfloor/`](./shopfloor). Browser + D
 
 ```powershell
 cd shopfloor
-npm install
-npm run dev
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
 ```
+
+Or double-click `shopfloor/install-windows.cmd`. Light, Dark, and System are in the header.
 
 ---

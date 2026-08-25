@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { FilterChips } from "@/components/filter-chips"
 import { FilterRail } from "@/components/filter-rail"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { useFloorline } from "@/state/floorline-store"
 
 const VIEW_META: Record<
@@ -64,7 +65,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             )
           })}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ThemeToggle />
           <Badge variant="outline">
             <DatabaseIcon data-icon="inline-start" />
             {ready ? "DuckDB ready" : "starting"}

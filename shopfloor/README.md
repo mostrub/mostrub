@@ -4,7 +4,18 @@ Local-first shopfloor production viewer. It runs in the browser, parses MES XML 
 
 Native DuckDB on Windows is not required. The same engine runs inside the page.
 
-## Run on Windows
+## Run on Windows 11
+
+One script: double-click `install-windows.cmd`, or from PowerShell:
+
+```powershell
+cd shopfloor
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
+```
+
+That installs Node.js LTS with winget if it is missing, runs `npm install`, opens `http://127.0.0.1:5173/`, and starts the Vite server. If winget is unavailable, install Node.js LTS from https://nodejs.org and re-run the script.
+
+Manual equivalent:
 
 ```powershell
 cd shopfloor
@@ -15,6 +26,8 @@ npm run dev
 Open the printed localhost URL. Mapped drives and UNC shares work through the file picker (`Z:\production\xml` or `\\mes-aus-01\production\xml`). Select multiple `.xml` files, or click **Load demo production share**.
 
 `npm run build` then `npm run preview` is the offline bundle.
+
+Light, Dark, and System live in the header. The `d` key still flips light and dark when focus is not in an input.
 
 ## XML shape
 
