@@ -12,15 +12,17 @@ import {
 import { PageHeader } from "@/components/page-header"
 import { collectAuditFindings } from "@/domain/findings"
 import { DEPARTMENT_LABELS, FINDING_LABELS } from "@/domain/labels"
-import { DEPARTMENTS } from "@/domain/types"
+import { countLaptopsByDepartment, summarizeInventory } from "@/domain/summary"
+import { localDateStamp } from "@/lib/dates"
 import { useInventory } from "@/store/inventory-context"
 
 export function DashboardPage() {
   const { state } = useInventory()
   const findings = collectAuditFindings(state, {
-    today: new Date().toISOString().slice(0, 10),
+    today: localDateStamp(),
   })
-  const inService = state.laptops.filter((item) => item.status === "in-service").length
+  const summary = summarizeInventory(state)
+  const departmentCounts = countLaptopsByDepartment(state)
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -29,17 +31,21 @@ export function DashboardPage() {
         description="Laptops by department and type, printers, software seats, and destruction records. Consulting teams can pull a tabbed Excel workbook from Export."
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat title="Laptops" value={state.laptops.length} detail={`${inService} in service`} />
-        <Stat title="Printers" value={state.printers.length} detail="All locations" />
+        <Stat
+          title="Laptops"
+          value={summary.laptops}
+          detail={`${summary.laptopsInService} in service`}
+        />
+        <Stat title="Printers" value={summary.printers} detail="All locations" />
         <Stat
           title="Software titles"
-          value={state.software.length}
-          detail={`${state.software.reduce((sum, item) => sum + item.seatsAssigned, 0)} seats assigned`}
+          value={summary.software}
+          detail={`${summary.seatsAssigned} seats assigned`}
         />
         <Stat
           title="Audit findings"
           value={findings.length}
-          detail={`${state.destructions.length} destruction records`}
+          detail={`${summary.destructions} destruction records`}
         />
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -50,23 +56,15 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ul className="flex flex-col gap-2">
-              {DEPARTMENTS.map((department) => {
-                const count = state.laptops.filter(
-                  (item) => item.department === department,
-                ).length
-                if (count === 0) {
-                  return null
-                }
-                return (
-                  <li
-                    key={department}
-                    className="flex items-center justify-between gap-3 text-sm"
-                  >
-                    <span>{DEPARTMENT_LABELS[department]}</span>
-                    <Badge variant="secondary">{count}</Badge>
-                  </li>
-                )
-              })}
+              {departmentCounts.map((row) => (
+                <li
+                  key={row.department}
+                  className="flex items-center justify-between gap-3 text-sm"
+                >
+                  <span>{DEPARTMENT_LABELS[row.department]}</span>
+                  <Badge variant="secondary">{row.count}</Badge>
+                </li>
+              ))}
             </ul>
           </CardContent>
         </Card>

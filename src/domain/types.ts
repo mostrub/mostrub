@@ -151,6 +151,7 @@ export const FINDING_CODES = [
   "unassigned-in-service",
   "license-over-assigned",
   "license-expiring",
+  "license-expired",
   "destroy-without-witness",
 ] as const
 

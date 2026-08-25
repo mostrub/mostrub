@@ -69,6 +69,11 @@ export function SoftwareForm({
             value={value.seatsAssigned}
             onChange={(event) => set("seatsAssigned", Number(event.target.value))}
           />
+          {value.seatsAssigned > value.seatsPurchased ? (
+            <p className="text-sm text-destructive">
+              Assigned seats exceed purchased seats. This will show as an audit finding.
+            </p>
+          ) : null}
         </Field>
         <EnumSelect
           id="sw-dept"

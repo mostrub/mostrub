@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   emptyInventory,
   recordDestruction,
+  removeDestruction,
   removeLaptop,
   upsertLaptop,
   upsertPrinter,
@@ -134,7 +135,10 @@ describe("catalog", () => {
     }
 
     const next = removeLaptop(first.state, "lap-1")
-    expect(next.laptops).toHaveLength(0)
+    expect(next.ok).toBe(true)
+    if (next.ok) {
+      expect(next.state.laptops).toHaveLength(0)
+    }
   })
 
   it("marks a linked laptop destroyed when a destruction is recorded", () => {
@@ -151,14 +155,121 @@ describe("catalog", () => {
     }
   })
 
-  it("rejects software with more assigned seats than purchased", () => {
+  it("allows software with more assigned seats than purchased so audits can record it", () => {
     const result = upsertSoftware(
       emptyInventory(),
       software({ seatsAssigned: 12, seatsPurchased: 8 }),
     )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.software[0]?.seatsAssigned).toBe(12)
+    }
+  })
+
+  it("links a destruction to a laptop when the tag has spaces or different case", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+
+    const result = recordDestruction(
+      withLaptop.state,
+      destruction({
+        assetId: "",
+        assetTag: "lt-1001 ",
+      }),
+    )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.destructions[0]?.assetId).toBe("lap-1")
+      expect(result.state.laptops[0]?.status).toBe("destroyed")
+    }
+  })
+
+  it("restores the previous status when the last destruction for an asset is removed", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+
+    const withLog = recordDestruction(withLaptop.state, destruction({ assetId: "" }))
+    if (!withLog.ok) {
+      throw new Error(withLog.error)
+    }
+
+    const after = removeDestruction(withLog.state, withLog.state.destructions[0]!.id)
+    expect(after.laptops.find((item) => item.id === "lap-1")?.status).toBe(
+      "in-service",
+    )
+  })
+
+  it("restores the previous asset when a destruction is retargeted", () => {
+    const firstLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!firstLaptop.ok) {
+      throw new Error(firstLaptop.error)
+    }
+    const both = upsertLaptop(
+      firstLaptop.state,
+      laptop({
+        id: "lap-2",
+        assetTag: "LT-1002",
+        serialNumber: "SN-BB22",
+      }),
+    )
+    if (!both.ok) {
+      throw new Error(both.error)
+    }
+
+    const logged = recordDestruction(both.state, destruction({ assetId: "" }))
+    if (!logged.ok) {
+      throw new Error(logged.error)
+    }
+
+    const retargeted = recordDestruction(logged.state, {
+      ...logged.state.destructions[0]!,
+      assetTag: "LT-1002",
+    })
+    expect(retargeted.ok).toBe(true)
+    if (retargeted.ok) {
+      expect(retargeted.state.laptops.find((item) => item.id === "lap-1")?.status).toBe(
+        "in-service",
+      )
+      expect(retargeted.state.laptops.find((item) => item.id === "lap-2")?.status).toBe(
+        "destroyed",
+      )
+    }
+  })
+
+  it("refuses to delete a destroyed laptop while a log still points at it", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const withLog = recordDestruction(withLaptop.state, destruction({ assetId: "" }))
+    if (!withLog.ok) {
+      throw new Error(withLog.error)
+    }
+
+    const result = removeLaptop(withLog.state, "lap-1")
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error).toMatch(/assigned seats/i)
+      expect(result.error).toMatch(/destruction log/i)
+    }
+  })
+
+  it("rejects a duplicate serial on a different laptop", () => {
+    const first = upsertLaptop(emptyInventory(), laptop())
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+
+    const result = upsertLaptop(
+      first.state,
+      laptop({ id: "lap-2", assetTag: "LT-1002" }),
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toMatch(/serial/i)
     }
   })
 

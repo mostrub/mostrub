@@ -5,33 +5,44 @@ import { PageHeader } from "@/components/page-header"
 import { collectAuditFindings } from "@/domain/findings"
 import { DEPARTMENT_LABELS, FINDING_LABELS } from "@/domain/labels"
 import { downloadAuditWorkbook, downloadRegisterCsv } from "@/export/download"
+import { localDateStamp } from "@/lib/dates"
 import { useInventory } from "@/store/inventory-context"
 import { toast } from "sonner"
 
 export function AuditPage() {
   const { state } = useInventory()
   const findings = collectAuditFindings(state, {
-    today: new Date().toISOString().slice(0, 10),
+    today: localDateStamp(),
   }).map((finding) => ({ ...finding, id: `${finding.code}-${finding.recordId}` }))
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <PageHeader
         title="Audit"
-        description="Exceptions consulting teams usually ask for: missing serials, expired warranties, unassigned in-service laptops, renewals inside 30 days, and destruction without a witness."
+        description="Exceptions consulting teams usually ask for: missing serials, expired warranties, unassigned in-service laptops, expired or soon-to-renew licenses, and destruction without a witness."
         actions={
           <>
             <Button
               variant="outline"
-              onClick={() => downloadRegisterCsv(state, "Audit findings")}
+              onClick={() => {
+                try {
+                  downloadRegisterCsv(state, "Audit findings")
+                } catch {
+                  toast.error("Export failed")
+                }
+              }}
             >
               Findings CSV
             </Button>
             <Button
               onClick={() => {
-                void downloadAuditWorkbook(state).then(() => {
-                  toast.success("Excel workbook downloaded")
-                })
+                void downloadAuditWorkbook(state)
+                  .then(() => {
+                    toast.success("Excel workbook downloaded")
+                  })
+                  .catch(() => {
+                    toast.error("Export failed")
+                  })
               }}
             >
               Excel workbook

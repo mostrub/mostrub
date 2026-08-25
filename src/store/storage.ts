@@ -1,6 +1,9 @@
 import { emptyInventory } from "@/domain/catalog"
 import { createSeedInventory } from "@/domain/seed"
 import type { InventoryState } from "@/domain/types"
+import { isInventoryState } from "@/domain/validate"
+
+export { isInventoryState } from "@/domain/validate"
 
 export const STORAGE_KEY = "plant-it-inventory.v1"
 
@@ -13,49 +16,67 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
-function isInventoryState(value: unknown): value is InventoryState {
-  if (!isRecord(value)) {
-    return false
+export type ParseInventoryResult =
+  | { ok: true; state: InventoryState }
+  | { ok: false; reason: string }
+
+export type InventoryLoad =
+  | { status: "ok"; state: InventoryState }
+  | { status: "corrupt"; reason: string }
+
+function toInventoryState(state: InventoryState): InventoryState {
+  return {
+    laptops: state.laptops,
+    printers: state.printers,
+    software: state.software,
+    destructions: state.destructions,
   }
-  return (
-    Array.isArray(value.laptops) &&
-    Array.isArray(value.printers) &&
-    Array.isArray(value.software) &&
-    Array.isArray(value.destructions)
-  )
 }
 
-export function loadInventory(): InventoryState {
+export function parseInventoryValue(value: unknown): ParseInventoryResult {
+  if (isInventoryState(value)) {
+    return { ok: true, state: toInventoryState(value) }
+  }
+  if (isRecord(value) && isInventoryState(value.state)) {
+    return { ok: true, state: toInventoryState(value.state) }
+  }
+  return {
+    ok: false,
+    reason: "That file is not a complete inventory backup",
+  }
+}
+
+export function parseInventoryJson(raw: string): ParseInventoryResult {
+  try {
+    return parseInventoryValue(JSON.parse(raw) as unknown)
+  } catch {
+    return { ok: false, reason: "That file is not valid JSON" }
+  }
+}
+
+export function parseInventoryBackup(value: unknown): InventoryState | null {
+  const parsed = parseInventoryValue(value)
+  return parsed.ok ? parsed.state : null
+}
+
+export function loadInventory(): InventoryLoad {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) {
-    return createSeedInventory()
+    const seed = createSeedInventory()
+    saveInventory(seed)
+    return { status: "ok", state: seed }
   }
 
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    if (isRecord(parsed) && parsed.version === 1 && isInventoryState(parsed.state)) {
-      return parsed.state
-    }
-  } catch {
-    return createSeedInventory()
+  const parsed = parseInventoryJson(raw)
+  if (!parsed.ok) {
+    return { status: "corrupt", reason: parsed.reason }
   }
-
-  return createSeedInventory()
+  return { status: "ok", state: parsed.state }
 }
 
 export function saveInventory(state: InventoryState): void {
   const payload: StoredPayload = { version: 1, state }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
-}
-
-export function parseInventoryBackup(value: unknown): InventoryState | null {
-  if (isInventoryState(value)) {
-    return value
-  }
-  if (isRecord(value) && isInventoryState(value.state)) {
-    return value.state
-  }
-  return null
 }
 
 export function resetInventory(): InventoryState {

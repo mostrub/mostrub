@@ -33,14 +33,6 @@ export type WorkbookPlan = {
   sheets: WorkbookSheet[]
 }
 
-function money(value: number): string {
-  return value.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  })
-}
-
 function countByStatus(items: Array<{ status: string }>, status: string): number {
   return items.filter((item) => item.status === status).length
 }
@@ -59,7 +51,9 @@ export function buildAuditWorkbookPlan(input: {
 
   const departmentRows = Object.entries(DEPARTMENT_LABELS).flatMap(
     ([department, label]) => {
-      const laptops = state.laptops.filter((item) => item.department === department)
+      const laptops = state.laptops.filter(
+        (item) => item.department === department && item.status !== "destroyed",
+      )
       if (laptops.length === 0) {
         return []
       }
@@ -226,7 +220,7 @@ export function buildAuditWorkbookPlan(input: {
         item.seatsAssigned,
         DEPARTMENT_LABELS[item.department],
         item.renewalDate,
-        money(item.annualCost),
+        item.annualCost,
         item.notes,
       ]),
     },

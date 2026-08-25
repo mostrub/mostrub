@@ -53,7 +53,13 @@ export function DestructionPage() {
           <>
             <Button
               variant="outline"
-              onClick={() => downloadRegisterCsv(state, "Destruction log")}
+              onClick={() => {
+                try {
+                  downloadRegisterCsv(state, "Destruction log")
+                } catch {
+                  toast.error("Export failed")
+                }
+              }}
             >
               CSV
             </Button>
@@ -90,6 +96,7 @@ export function DestructionPage() {
                 </Button>
                 <ConfirmDelete
                   label={row.assetTag}
+                  description="This removes the destruction log. If this was the last log for the asset, its status returns to in service."
                   onConfirm={() => deleteDestruction(row.id)}
                 />
               </div>
@@ -115,16 +122,7 @@ export function DestructionPage() {
           if (!draft) {
             return
           }
-          const linked =
-            draft.assetKind === "laptop"
-              ? state.laptops.find((item) => item.assetTag === draft.assetTag)
-              : draft.assetKind === "printer"
-                ? state.printers.find((item) => item.assetTag === draft.assetTag)
-                : undefined
-          const error = saveDestruction({
-            ...draft,
-            assetId: linked?.id ?? draft.assetId,
-          })
+          const error = saveDestruction(draft)
           if (error) {
             toast.error(error)
             return

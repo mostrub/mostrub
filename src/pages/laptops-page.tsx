@@ -15,21 +15,56 @@ import {
   DEPARTMENT_LABELS,
   LAPTOP_TYPE_LABELS,
   OS_LABELS,
+  STATUS_LABELS,
 } from "@/domain/labels"
-import type { Laptop } from "@/domain/types"
+import {
+  DEPARTMENTS,
+  LAPTOP_TYPES,
+  OPERATING_SYSTEMS,
+  ASSET_STATUSES,
+  type AssetStatus,
+  type Department,
+  type Laptop,
+  type LaptopType,
+  type OperatingSystem,
+} from "@/domain/types"
 import { downloadRegisterCsv } from "@/export/download"
 import { matchesQuery } from "@/lib/search"
 import { useInventory } from "@/store/inventory-context"
 
+type DepartmentFilter = Department | "all"
+type TypeFilter = LaptopType | "all"
+type OsFilter = OperatingSystem | "all"
+type StatusFilter = AssetStatus | "all" | "active"
+
 export function LaptopsPage() {
   const { state, saveLaptop, deleteLaptop } = useInventory()
   const [query, setQuery] = useState("")
+  const [department, setDepartment] = useState<DepartmentFilter>("all")
+  const [laptopType, setLaptopType] = useState<TypeFilter>("all")
+  const [operatingSystem, setOperatingSystem] = useState<OsFilter>("all")
+  const [status, setStatus] = useState<StatusFilter>("active")
   const [draft, setDraft] = useState<Laptop | null>(null)
 
   const rows = useMemo(
     () =>
-      state.laptops.filter((item) =>
-        matchesQuery(
+      state.laptops.filter((item) => {
+        if (department !== "all" && item.department !== department) {
+          return false
+        }
+        if (laptopType !== "all" && item.laptopType !== laptopType) {
+          return false
+        }
+        if (operatingSystem !== "all" && item.operatingSystem !== operatingSystem) {
+          return false
+        }
+        if (status === "active" && item.status === "destroyed") {
+          return false
+        }
+        if (status !== "all" && status !== "active" && item.status !== status) {
+          return false
+        }
+        return matchesQuery(
           [
             item.assetTag,
             item.serialNumber,
@@ -43,9 +78,9 @@ export function LaptopsPage() {
             OS_LABELS[item.operatingSystem],
           ],
           query,
-        ),
-      ),
-    [query, state.laptops],
+        )
+      }),
+    [department, laptopType, operatingSystem, query, state.laptops, status],
   )
 
   return (
@@ -57,7 +92,13 @@ export function LaptopsPage() {
           <>
             <Button
               variant="outline"
-              onClick={() => downloadRegisterCsv(state, "Laptops")}
+              onClick={() => {
+                try {
+                  downloadRegisterCsv(state, "Laptops")
+                } catch {
+                  toast.error("Export failed")
+                }
+              }}
             >
               CSV
             </Button>
@@ -65,11 +106,63 @@ export function LaptopsPage() {
           </>
         }
       />
-      <Input
-        placeholder="Search tag, serial, user, department, OS..."
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <Input
+          className="lg:col-span-1"
+          placeholder="Search tag, serial, user, department, OS..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <FilterSelect
+          label="Department"
+          value={department}
+          onChange={setDepartment}
+          items={[
+            { value: "all", label: "All departments" },
+            ...DEPARTMENTS.map((value) => ({
+              value,
+              label: DEPARTMENT_LABELS[value],
+            })),
+          ]}
+        />
+        <FilterSelect
+          label="Type"
+          value={laptopType}
+          onChange={setLaptopType}
+          items={[
+            { value: "all", label: "All types" },
+            ...LAPTOP_TYPES.map((value) => ({
+              value,
+              label: LAPTOP_TYPE_LABELS[value],
+            })),
+          ]}
+        />
+        <FilterSelect
+          label="OS"
+          value={operatingSystem}
+          onChange={setOperatingSystem}
+          items={[
+            { value: "all", label: "All OS" },
+            ...OPERATING_SYSTEMS.map((value) => ({
+              value,
+              label: OS_LABELS[value],
+            })),
+          ]}
+        />
+        <FilterSelect
+          label="Status"
+          value={status}
+          onChange={setStatus}
+          items={[
+            { value: "active", label: "Hide destroyed" },
+            { value: "all", label: "All statuses" },
+            ...ASSET_STATUSES.map((value) => ({
+              value,
+              label: STATUS_LABELS[value],
+            })),
+          ]}
+        />
+      </div>
       <DataTable
         rows={rows}
         emptyTitle="No laptops match"
@@ -92,7 +185,12 @@ export function LaptopsPage() {
                 </Button>
                 <ConfirmDelete
                   label={row.assetTag}
-                  onConfirm={() => deleteLaptop(row.id)}
+                  onConfirm={() => {
+                    const error = deleteLaptop(row.id)
+                    if (error) {
+                      toast.error(error)
+                    }
+                  }}
                 />
               </div>
             ),
@@ -125,5 +223,34 @@ export function LaptopsPage() {
         {draft ? <LaptopForm value={draft} onChange={setDraft} /> : null}
       </RecordSheet>
     </div>
+  )
+}
+
+function FilterSelect<T extends string>({
+  label,
+  value,
+  onChange,
+  items,
+}: {
+  label: string
+  value: T
+  onChange: (value: T) => void
+  items: { value: T; label: string }[]
+}) {
+  return (
+    <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+      {label}
+      <select
+        className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground dark:bg-input/30"
+        value={value}
+        onChange={(event) => onChange(event.target.value as T)}
+      >
+        {items.map((item) => (
+          <option key={item.value} value={item.value}>
+            {item.label}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }

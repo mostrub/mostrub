@@ -117,6 +117,46 @@ describe("buildAuditWorkbookPlan", () => {
     expect(byDept?.rows.some((row) => row.includes("Operations"))).toBe(true)
   })
 
+  it("excludes destroyed laptops from the department tab", () => {
+    const withDestroyed: InventoryState = {
+      ...sample,
+      laptops: [
+        ...sample.laptops,
+        {
+          ...sample.laptops[0]!,
+          id: "lap-dead",
+          assetTag: "LT-DEAD",
+          serialNumber: "SN-DEAD",
+          status: "destroyed",
+        },
+      ],
+    }
+
+    const plan = buildAuditWorkbookPlan({
+      state: withDestroyed,
+      findings: collectAuditFindings(withDestroyed, { today: "2026-08-25" }),
+      exportedAt: "2026-08-25T12:00:00.000Z",
+      orgName: "Plant IT",
+    })
+
+    const byDept = plan.sheets.find((sheet) => sheet.name === "Laptops by department")
+    expect(byDept?.rows.some((row) => row.includes("LT-DEAD"))).toBe(false)
+    expect(byDept?.rows.some((row) => row.includes("LT-1001"))).toBe(true)
+  })
+
+  it("exports annual cost as a number", () => {
+    const plan = buildAuditWorkbookPlan({
+      state: sample,
+      findings: collectAuditFindings(sample, { today: "2026-08-25" }),
+      exportedAt: "2026-08-25T12:00:00.000Z",
+      orgName: "Plant IT",
+    })
+
+    const licenses = plan.sheets.find((sheet) => sheet.name === "Software licenses")
+    const cost = licenses?.rows[0]?.[8]
+    expect(cost).toBe(12600)
+  })
+
   it("writes audit findings onto a dedicated tab", () => {
     const findings = collectAuditFindings(sample, { today: "2026-08-25" })
     const plan = buildAuditWorkbookPlan({

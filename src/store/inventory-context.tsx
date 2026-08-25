@@ -2,6 +2,7 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react"
 
 import {
+  emptyInventory,
   recordDestruction,
   removeDestruction,
   removeLaptop,
@@ -16,21 +17,25 @@ import type {
   InventoryState,
   Laptop,
   Printer,
+  SaveResult,
   SoftwareLicense,
 } from "@/domain/types"
-import { loadInventory, saveInventory } from "./storage"
+import { clearToEmpty, loadInventory, resetInventory, saveInventory } from "./storage"
 
 type InventoryContextValue = {
   state: InventoryState
+  storageError: string | null
   saveLaptop: (laptop: Laptop) => string | null
   savePrinter: (printer: Printer) => string | null
   saveSoftware: (license: SoftwareLicense) => string | null
   saveDestruction: (record: DestructionRecord) => string | null
-  deleteLaptop: (id: string) => void
-  deletePrinter: (id: string) => void
+  deleteLaptop: (id: string) => string | null
+  deletePrinter: (id: string) => string | null
   deleteSoftware: (id: string) => void
   deleteDestruction: (id: string) => void
   replaceState: (next: InventoryState) => void
+  resetToEmpty: () => void
+  loadDemo: () => void
 }
 
 const InventoryContext = createContext<InventoryContextValue | undefined>(undefined)
@@ -40,50 +45,44 @@ function persist(next: InventoryState): InventoryState {
   return next
 }
 
+function applyResult(
+  setState: (updater: (current: InventoryState) => InventoryState) => void,
+  mutator: (current: InventoryState) => SaveResult<InventoryState>,
+): string | null {
+  let error: string | null = null
+  setState((current) => {
+    const result = mutator(current)
+    if (!result.ok) {
+      error = result.error
+      return current
+    }
+    return persist(result.state)
+  })
+  return error
+}
+
 export function InventoryProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<InventoryState>(() => loadInventory())
+  const [boot] = useState(loadInventory)
+  const [state, setState] = useState<InventoryState>(() =>
+    boot.status === "ok" ? boot.state : emptyInventory(),
+  )
+  const [storageError, setStorageError] = useState<string | null>(
+    boot.status === "corrupt" ? boot.reason : null,
+  )
 
   const value = useMemo<InventoryContextValue>(() => {
     return {
       state,
-      saveLaptop: (laptop) => {
-        const result = upsertLaptop(state, laptop)
-        if (!result.ok) {
-          return result.error
-        }
-        setState(persist(result.state))
-        return null
-      },
-      savePrinter: (printer) => {
-        const result = upsertPrinter(state, printer)
-        if (!result.ok) {
-          return result.error
-        }
-        setState(persist(result.state))
-        return null
-      },
-      saveSoftware: (license) => {
-        const result = upsertSoftware(state, license)
-        if (!result.ok) {
-          return result.error
-        }
-        setState(persist(result.state))
-        return null
-      },
-      saveDestruction: (record) => {
-        const result = recordDestruction(state, record)
-        if (!result.ok) {
-          return result.error
-        }
-        setState(persist(result.state))
-        return null
-      },
-      deleteLaptop: (id) => {
-        setState((current) => persist(removeLaptop(current, id)))
-      },
-      deletePrinter: (id) => {
-        setState((current) => persist(removePrinter(current, id)))
-      },
+      storageError,
+      saveLaptop: (laptop) => applyResult(setState, (current) => upsertLaptop(current, laptop)),
+      savePrinter: (printer) =>
+        applyResult(setState, (current) => upsertPrinter(current, printer)),
+      saveSoftware: (license) =>
+        applyResult(setState, (current) => upsertSoftware(current, license)),
+      saveDestruction: (record) =>
+        applyResult(setState, (current) => recordDestruction(current, record)),
+      deleteLaptop: (id) => applyResult(setState, (current) => removeLaptop(current, id)),
+      deletePrinter: (id) => applyResult(setState, (current) => removePrinter(current, id)),
       deleteSoftware: (id) => {
         setState((current) => persist(removeSoftware(current, id)))
       },
@@ -91,10 +90,19 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         setState((current) => persist(removeDestruction(current, id)))
       },
       replaceState: (next) => {
+        setStorageError(null)
         setState(persist(next))
       },
+      resetToEmpty: () => {
+        setStorageError(null)
+        setState(clearToEmpty())
+      },
+      loadDemo: () => {
+        setStorageError(null)
+        setState(resetInventory())
+      },
     }
-  }, [state])
+  }, [state, storageError])
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>
 }

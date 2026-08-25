@@ -86,6 +86,7 @@ export const FINDING_LABELS = {
   "unassigned-in-service": "Unassigned in-service asset",
   "license-over-assigned": "License over-assigned",
   "license-expiring": "License renewing soon",
+  "license-expired": "License expired",
   "destroy-without-witness": "Destruction without witness",
 } as const satisfies Record<FindingCode, string>
 

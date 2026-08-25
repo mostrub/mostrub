@@ -95,7 +95,17 @@ export function collectAuditFindings(
     }
 
     const remaining = daysUntil(license.renewalDate, options.today)
-    if (remaining !== null && remaining >= 0 && remaining <= 30) {
+    if (remaining !== null && remaining < 0) {
+      findings.push({
+        code: "license-expired",
+        severity: "high",
+        register: "software",
+        recordId: license.id,
+        assetTag: license.entitlementId || license.name,
+        department: license.department,
+        summary: `${license.name} expired on ${license.renewalDate}`,
+      })
+    } else if (remaining !== null && remaining <= 30) {
       findings.push({
         code: "license-expiring",
         severity: "medium",

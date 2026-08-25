@@ -51,7 +51,13 @@ export function PrintersPage() {
           <>
             <Button
               variant="outline"
-              onClick={() => downloadRegisterCsv(state, "Printers")}
+              onClick={() => {
+                try {
+                  downloadRegisterCsv(state, "Printers")
+                } catch {
+                  toast.error("Export failed")
+                }
+              }}
             >
               CSV
             </Button>
@@ -86,7 +92,12 @@ export function PrintersPage() {
                 </Button>
                 <ConfirmDelete
                   label={row.assetTag}
-                  onConfirm={() => deletePrinter(row.id)}
+                  onConfirm={() => {
+                    const error = deletePrinter(row.id)
+                    if (error) {
+                      toast.error(error)
+                    }
+                  }}
                 />
               </div>
             ),

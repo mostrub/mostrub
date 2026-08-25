@@ -16,8 +16,8 @@ Data lives in the browser (`localStorage`) and ships with a plant-floor sample s
 
 - **Laptops.** Asset tag, serial, hostname, make/model, type (standard, engineering, rugged, loaner, kiosk), operating system, department, assignee, location, warranty.
 - **Printers.** MFPs, lasers, labelers, plotters with IP and location.
-- **Software.** Entitlements, seat counts, renewals, annual cost. Assigned seats cannot exceed purchased.
-- **Destruction.** Wipe/recycle, shred, degauss, or vendor return with witness and certificate ID. Matching laptop or printer tags are marked destroyed.
+- **Software.** Entitlements, seat counts, renewals, annual cost. Over-assigned seats are saved and listed as audit findings.
+- **Destruction.** Wipe/recycle, shred, degauss, or vendor return with witness and certificate ID. Matching laptop or printer tags (trim and case ignored) are marked destroyed.
 
 ## Consulting export
 
@@ -33,7 +33,7 @@ Data lives in the browser (`localStorage`) and ships with a plant-floor sample s
 8. Destruction log
 9. Audit findings
 
-CSV is available per tab or as a full pack. JSON backup import/export is in the same menu.
+CSV is available per tab or as one zip. JSON backup import asks before replacing the current register. Invalid backups are rejected and a failed browser load is not overwritten with the demo plant.
 
 ## Run
 

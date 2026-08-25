@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest"
 
-import { rowsToCsv } from "./csv"
+import { csvEscape, rowsToCsv } from "./csv"
+
+describe("csvEscape", () => {
+  it("prefixes a leading equals sign so spreadsheets do not execute formulas", () => {
+    expect(csvEscape("=1+1")).toBe("'=1+1")
+  })
+
+  it("prefixes plus, minus, at, tab, and carriage return", () => {
+    expect(csvEscape("+cmd")).toBe("'+cmd")
+    expect(csvEscape("-1")).toBe("'-1")
+    expect(csvEscape("@sum")).toBe("'@sum")
+    expect(csvEscape("\tcmd")).toBe("'\tcmd")
+    expect(csvEscape("\rcmd")).toBe("'\rcmd")
+  })
+})
 
 describe("rowsToCsv", () => {
   it("quotes commas and doubles embedded quotes", () => {

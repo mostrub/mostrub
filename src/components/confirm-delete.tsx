@@ -14,9 +14,11 @@ import {
 export function ConfirmDelete({
   label,
   onConfirm,
+  description = "This removes the record from the register. Destruction history is kept separately if you already logged it.",
 }: {
   label: string
   onConfirm: () => void
+  description?: string
 }) {
   return (
     <AlertDialog>
@@ -26,10 +28,7 @@ export function ConfirmDelete({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This removes the record from the register. Destruction history is kept
-            separately if you already logged it.
-          </AlertDialogDescription>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>

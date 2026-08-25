@@ -11,18 +11,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  downloadAllCsv,
   downloadAuditWorkbook,
   downloadBackup,
+  downloadCsvPack,
   downloadRegisterCsv,
 } from "@/export/download"
-import { parseInventoryBackup } from "@/store/storage"
+import { parseInventoryJson } from "@/store/storage"
 import { useInventory } from "@/store/inventory-context"
 import { DownloadIcon } from "lucide-react"
 import { toast } from "sonner"
 
+async function runExport(task: () => void | Promise<void>, success: string) {
+  try {
+    await task()
+    toast.success(success)
+  } catch {
+    toast.error("Export failed")
+  }
+}
+
 export function ExportMenu() {
-  const { state, replaceState } = useInventory()
+  const { state, replaceState, resetToEmpty, loadDemo } = useInventory()
   const fileRef = useRef<HTMLInputElement>(null)
 
   return (
@@ -38,19 +47,16 @@ export function ExportMenu() {
           if (!file) {
             return
           }
-          const text = await file.text()
-          try {
-            const parsed: unknown = JSON.parse(text)
-            const next = parseInventoryBackup(parsed)
-            if (!next) {
-              toast.error("That file is not an inventory backup")
-              return
-            }
-            replaceState(next)
-            toast.success("Backup imported")
-          } catch {
-            toast.error("Could not read that JSON file")
+          const parsed = parseInventoryJson(await file.text())
+          if (!parsed.ok) {
+            toast.error(parsed.reason)
+            return
           }
+          if (!window.confirm("Replace the current inventory with this backup?")) {
+            return
+          }
+          replaceState(parsed.state)
+          toast.success("Backup imported")
         }}
       />
       <DropdownMenu>
@@ -63,43 +69,82 @@ export function ExportMenu() {
             <DropdownMenuLabel>Consulting audit</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => {
-                void downloadAuditWorkbook(state).then(() => {
-                  toast.success("Excel workbook downloaded")
-                })
+                void runExport(
+                  () => downloadAuditWorkbook(state),
+                  "Excel workbook downloaded",
+                )
               }}
             >
               Excel workbook (all tabs)
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => downloadAllCsv(state)}>
-              CSV pack (every tab)
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(() => downloadCsvPack(state), "CSV pack downloaded")
+              }}
+            >
+              CSV pack (zip)
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuLabel>Single CSV</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => downloadRegisterCsv(state, "Laptops")}>
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Laptops"),
+                  "Laptops CSV downloaded",
+                )
+              }}
+            >
               Laptops
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => downloadRegisterCsv(state, "Laptops by department")}
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Laptops by department"),
+                  "Department CSV downloaded",
+                )
+              }}
             >
               Laptops by department
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => downloadRegisterCsv(state, "Printers")}>
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Printers"),
+                  "Printers CSV downloaded",
+                )
+              }}
+            >
               Printers
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => downloadRegisterCsv(state, "Software licenses")}
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Software licenses"),
+                  "Software CSV downloaded",
+                )
+              }}
             >
               Software
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => downloadRegisterCsv(state, "Destruction log")}
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Destruction log"),
+                  "Destruction CSV downloaded",
+                )
+              }}
             >
               Destruction log
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => downloadRegisterCsv(state, "Audit findings")}
+              onClick={() => {
+                void runExport(
+                  () => downloadRegisterCsv(state, "Audit findings"),
+                  "Findings CSV downloaded",
+                )
+              }}
             >
               Audit findings
             </DropdownMenuItem>
@@ -107,11 +152,37 @@ export function ExportMenu() {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuLabel>Backup</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => downloadBackup(state)}>
+            <DropdownMenuItem
+              onClick={() => {
+                void runExport(() => downloadBackup(state), "JSON backup downloaded")
+              }}
+            >
               Download JSON backup
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => fileRef.current?.click()}>
               Import JSON backup
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (!window.confirm("Clear the current inventory and start empty?")) {
+                  return
+                }
+                resetToEmpty()
+                toast.success("Inventory cleared")
+              }}
+            >
+              Reset to empty
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                if (!window.confirm("Replace the current inventory with the plant demo?")) {
+                  return
+                }
+                loadDemo()
+                toast.success("Plant demo loaded")
+              }}
+            >
+              Reload plant demo
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

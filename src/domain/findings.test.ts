@@ -96,6 +96,30 @@ describe("collectAuditFindings", () => {
     )
   })
 
+  it("flags an expired license as license-expired", () => {
+    const license: SoftwareLicense = {
+      id: "sw-expired",
+      name: "Historian",
+      vendor: "AVEVA",
+      entitlementId: "AV-OLD",
+      licenseType: "subscription",
+      seatsPurchased: 2,
+      seatsAssigned: 1,
+      department: "ot-controls",
+      renewalDate: "2020-01-01",
+      annualCost: 18000,
+      notes: "",
+    }
+
+    const findings = collectAuditFindings(inventory({ software: [license] }), {
+      today: "2026-08-25",
+    })
+
+    expect(findings.some((finding) => finding.code === "license-expired")).toBe(
+      true,
+    )
+  })
+
   it("flags a license renewing within 30 days", () => {
     const license: SoftwareLicense = {
       id: "sw-1",

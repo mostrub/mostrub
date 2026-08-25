@@ -42,12 +42,18 @@ export function SoftwarePage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <PageHeader
         title="Software"
-        description="Seat counts, renewals, and entitlement IDs. Over-assigned titles are blocked on save and listed on the audit tab."
+        description="Seat counts, renewals, and entitlement IDs. Over-assigned titles are saved and listed on the audit tab."
         actions={
           <>
             <Button
               variant="outline"
-              onClick={() => downloadRegisterCsv(state, "Software licenses")}
+              onClick={() => {
+                try {
+                  downloadRegisterCsv(state, "Software licenses")
+                } catch {
+                  toast.error("Export failed")
+                }
+              }}
             >
               CSV
             </Button>
@@ -108,7 +114,7 @@ export function SoftwarePage() {
           }
         }}
         title={draft && state.software.some((item) => item.id === draft.id) ? "Edit software" : "Add software"}
-        description="Assigned seats cannot exceed purchased seats."
+        description="Assigned seats above purchased seats are saved and listed as findings."
         submitLabel="Save software"
         onSubmit={() => {
           if (!draft) {

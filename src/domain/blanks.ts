@@ -1,3 +1,4 @@
+import { localDateStamp } from "@/lib/dates"
 import type { DestructionRecord, Laptop, Printer, SoftwareLicense } from "./types"
 
 export function blankLaptop(id: string): Laptop {
@@ -61,7 +62,7 @@ export function blankDestruction(id: string): DestructionRecord {
     serialNumber: "",
     department: "it",
     method: "secure-wipe-recycle",
-    destroyedOn: new Date().toISOString().slice(0, 10),
+    destroyedOn: localDateStamp(),
     witnessedBy: "",
     certificateId: "",
     reason: "",
