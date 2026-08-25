@@ -72,7 +72,7 @@ camelCase- und snake_case-Attribute werden beide gelesen.
 ## Ansichten
 
 - Import. XML-Ordner oder Freigabe, CSV/Parquet-Rundlauf, DuckDB-Stand (`.floorline`) auf die Freigabe oder als Datei
-- Übersicht. OEE (V/L/Q), Stück, FPY, Takthistogramm, Schicht × Linie, Marge, abhängige Linien
+- Übersicht. Andon-Linienstatus, OEE-Ringe, gestapelter Durchsatzmix, Stillstand-Pareto mit kumuliert %, Takt gegen Soll, Stunde×Linie-Heatmap, Marge, abhängige Linien
 - Drill und Triage. Werk → Linie → Station → Maschine → Steuerung
 - OLAP. DuckDB-Würfel über den aktuellen Filter
 - Preise. Katalog, Schichtlohn, Stückkosten, Marge

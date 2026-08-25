@@ -25,6 +25,7 @@ export function hourlyThroughputSql(filters: ProductionFilters): string {
     SELECT strftime(CAST(started_at AS TIMESTAMP), '%m-%d %H:00') AS bucket,
            COUNT(*) AS cycles,
            SUM(good_qty) AS good_units,
+           SUM(rework_qty) AS rework_units,
            SUM(scrap_qty) AS scrap_units
     FROM ${sqlFrom("cycles", filters)}
     GROUP BY 1
@@ -215,6 +216,20 @@ export function cycleHistogramSql(filters: ProductionFilters): string {
     FROM ${sqlFrom("cycles", filters)}
     GROUP BY 1
     ORDER BY 1
+  `
+}
+
+export function lineHourHeatSql(filters: ProductionFilters): string {
+  return `
+    SELECT line,
+           strftime(CAST(started_at AS TIMESTAMP), '%H') AS hour,
+           COUNT(*) AS cycles,
+           CASE WHEN SUM(good_qty + scrap_qty + rework_qty) = 0 THEN 0
+                ELSE 100.0 * SUM(good_qty) / SUM(good_qty + scrap_qty + rework_qty)
+           END AS fpy_pct
+    FROM ${sqlFrom("cycles", filters)}
+    GROUP BY 1, 2
+    ORDER BY 1, 2
   `
 }
 

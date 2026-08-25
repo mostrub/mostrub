@@ -1,5 +1,15 @@
-import { useEffect, useState, type KeyboardEvent } from "react"
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react"
+import {
+  Area,
+  AreaChart,
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 import {
   dependentLineDicePatch,
@@ -18,9 +28,11 @@ import {
   fpyByLineSql,
   hourlyThroughputSql,
   kpiSql,
+  lineHourHeatSql,
   oeeSql,
   shiftCompareSql,
 } from "@/lib/queries"
+import { paretoWithCumulative, type HeatCell } from "@/lib/shopfloor-charts"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
   Card,
@@ -29,23 +41,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { AndonBoard } from "@/components/andon-board"
 import { EmptyProduction } from "@/components/empty-production"
+import { HeatGrid } from "@/components/heat-grid"
+import { OeeRings } from "@/components/oee-rings"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DataTable } from "@/components/data-table"
 import { useFloorline } from "@/state/floorline-store"
 
 const throughputConfig = {
   good_units: { label: "Gutteile", color: "var(--chart-2)" },
+  rework_units: { label: "Nacharbeit", color: "var(--chart-3)" },
   scrap_units: { label: "Ausschuss", color: "var(--chart-5)" },
-} satisfies ChartConfig
-
-const fpyConfig = {
-  fpy_pct: { label: "FPY %", color: "var(--chart-3)" },
 } satisfies ChartConfig
 
 const dtConfig = {
   minutes: { label: "Minuten", color: "var(--chart-4)" },
+  cumulative_pct: { label: "Kumuliert %", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
 const histConfig = {
@@ -63,6 +76,7 @@ export function DashboardPage() {
   const [compare, setCompare] = useState<QueryRow[]>([])
   const [priced, setPriced] = useState<QueryRow[]>([])
   const [deps, setDeps] = useState<QueryRow[]>([])
+  const [heat, setHeat] = useState<HeatCell[]>([])
   const [oee, setOee] = useState(computeOee({
     windowMs: 0,
     unplannedDowntimeMs: 0,
@@ -91,6 +105,7 @@ export function DashboardPage() {
       queryRows(shiftCompareSql(filters)),
       queryRows(pricingSql(filters)),
       queryRows(dependentLineSql(filters)),
+      queryRows(lineHourHeatSql(filters)),
     ])
       .then(([
         kpiRows,
@@ -103,6 +118,7 @@ export function DashboardPage() {
         compareRows,
         priceRows,
         depRows,
+        heatRows,
       ]) => {
         if (cancelled) {
           return
@@ -116,6 +132,14 @@ export function DashboardPage() {
         setCompare(compareRows)
         setPriced(priceRows)
         setDeps(depRows)
+        setHeat(
+          heatRows.map((row) => ({
+            line: String(row.line ?? ""),
+            hour: String(row.hour ?? "").padStart(2, "0"),
+            cycles: Number(row.cycles ?? 0),
+            fpy_pct: Number(row.fpy_pct ?? 0),
+          }))
+        )
         const oeeRow = oeeRows[0]
         setOee(
           computeOee({
@@ -151,6 +175,24 @@ export function DashboardPage() {
       />
     )
   }
+
+  const pickLine = (line: string) => {
+    patchFilters({ lines: [line] })
+    setView("triage")
+  }
+  const paretoPoints = useMemo(
+    () =>
+      paretoWithCumulative(
+        pareto.map((row) => ({
+          reason_code: String(row.reason_code ?? ""),
+          minutes: Number(row.minutes ?? 0),
+          events: Number(row.events ?? 0),
+          category: String(row.category ?? ""),
+        }))
+      ),
+    [pareto]
+  )
+  const targetBucketMs = Math.round(Number(kpis?.avg_target_ms ?? 0) / 1000) * 1000
 
   const units = Number(kpis?.units ?? 0)
   const good = Number(kpis?.good_units ?? 0)
@@ -211,57 +253,140 @@ export function DashboardPage() {
         />
       </div>
       )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Andon · Linienstatus</CardTitle>
+          <CardDescription>
+            Grün läuft, Gelb Grenzbereich, Rot FPY unter 90 % oder Takt über
+            Soll. Klick öffnet Drill.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AndonBoard rows={lines} onPick={pickLine} />
+        </CardContent>
+      </Card>
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Durchsatz</CardTitle>
-            <CardDescription>Gutteile und Ausschuss je Stunde</CardDescription>
+            <CardTitle>OEE-Zerlegung</CardTitle>
+            <CardDescription>
+              Ringe für Verfügbarkeit, Leistung und Qualität. Mitte ist OEE.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={throughputConfig} className="h-56 w-full">
-              <BarChart data={hourly}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="bucket" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="good_units" fill="var(--color-good_units)" radius={3} />
-                <Bar dataKey="scrap_units" fill="var(--color-scrap_units)" radius={3} />
-              </BarChart>
-            </ChartContainer>
+            <OeeRings oee={oee} />
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>FPY je Linie</CardTitle>
-            <CardDescription>Niedrigste Ausbeute zuerst</CardDescription>
+            <CardTitle>Durchsatzmix</CardTitle>
+            <CardDescription>Gutteile, Nacharbeit und Ausschuss je Stunde</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={fpyConfig} className="h-56 w-full">
-              <LineChart data={lines}>
+            <ChartContainer config={throughputConfig} className="h-56 w-full">
+              <AreaChart data={hourly}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="line" tickLine={false} axisLine={false} />
+                <XAxis dataKey="bucket" tickLine={false} axisLine={false} />
                 <YAxis tickLine={false} axisLine={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line dataKey="fpy_pct" stroke="var(--color-fpy_pct)" dot />
-              </LineChart>
+                <ChartLegend content={<ChartLegendContent />} />
+                <Area
+                  type="monotone"
+                  dataKey="good_units"
+                  stackId="mix"
+                  stroke="var(--color-good_units)"
+                  fill="var(--color-good_units)"
+                  fillOpacity={0.85}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="rework_units"
+                  stackId="mix"
+                  stroke="var(--color-rework_units)"
+                  fill="var(--color-rework_units)"
+                  fillOpacity={0.85}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="scrap_units"
+                  stackId="mix"
+                  stroke="var(--color-scrap_units)"
+                  fill="var(--color-scrap_units)"
+                  fillOpacity={0.85}
+                />
+              </AreaChart>
             </ChartContainer>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
             <CardTitle>Stillstand-Pareto</CardTitle>
-            <CardDescription>Minuten nach Ursache</CardDescription>
+            <CardDescription>Minuten nach Ursache, Linie ist kumuliert %</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={dtConfig} className="h-56 w-full">
-              <BarChart data={pareto}>
+              <ComposedChart data={paretoPoints}>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="reason_code" tickLine={false} axisLine={false} />
                 <YAxis tickLine={false} axisLine={false} />
+                <YAxis
+                  yAxisId="cum"
+                  orientation="right"
+                  tickLine={false}
+                  axisLine={false}
+                  domain={[0, 100]}
+                />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="minutes" fill="var(--color-minutes)" radius={3} />
-              </BarChart>
+                <Line
+                  yAxisId="cum"
+                  type="monotone"
+                  dataKey="cumulative_pct"
+                  stroke="var(--color-cumulative_pct)"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </ComposedChart>
             </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Takt gegen Soll</CardTitle>
+            <CardDescription>
+              Anzahl je 1-s-Bucket. Senkrechte Linie ist der mittlere Soll-Takt.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={histConfig} className="h-56 w-full">
+              <ComposedChart data={hist}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="bucket_ms" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="cycles" fill="var(--color-cycles)" radius={3} />
+                {targetBucketMs > 0 ? (
+                  <ReferenceLine
+                    x={targetBucketMs}
+                    stroke="var(--chart-3)"
+                    strokeDasharray="4 3"
+                    label={{ value: "Soll", fill: "var(--chart-3)", fontSize: 11 }}
+                  />
+                ) : null}
+              </ComposedChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>Stunde × Linie</CardTitle>
+            <CardDescription>
+              Andon-Heatmap der FPY. Grün ab 95 %, Gelb ab 90 %, Rot darunter.
+              Klick filtert die Linie.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <HeatGrid rows={heat} onPickLine={pickLine} />
           </CardContent>
         </Card>
         <Card>
@@ -285,23 +410,6 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Taktzeit</CardTitle>
-            <CardDescription>Anzahl je 1-s-Bucket</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={histConfig} className="h-56 w-full">
-              <BarChart data={hist}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="bucket_ms" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="cycles" fill="var(--color-cycles)" radius={3} />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
             <CardTitle>Schicht × Linie</CardTitle>
             <CardDescription>FPY und Tempo der Schichten vergleichen</CardDescription>
           </CardHeader>
@@ -309,7 +417,7 @@ export function DashboardPage() {
             <DataTable rows={compare} />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Abhängige Linien</CardTitle>
             <CardDescription>

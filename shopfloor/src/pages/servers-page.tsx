@@ -164,19 +164,19 @@ export function ServersPage() {
                   dataKey="cpu_pct"
                   stroke="var(--color-cpu_pct)"
                   fill="var(--color-cpu_pct)"
-                  fillOpacity={0.15}
+                  fillOpacity={0.45}
                 />
                 <Area
                   dataKey="plc_scan_ms"
                   stroke="var(--color-plc_scan_ms)"
                   fill="var(--color-plc_scan_ms)"
-                  fillOpacity={0.1}
+                  fillOpacity={0.35}
                 />
                 <Area
                   dataKey="queue_depth"
                   stroke="var(--color-queue_depth)"
                   fill="var(--color-queue_depth)"
-                  fillOpacity={0.1}
+                  fillOpacity={0.35}
                 />
               </AreaChart>
             </ChartContainer>
