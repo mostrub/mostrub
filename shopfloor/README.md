@@ -72,10 +72,10 @@ camelCase- und snake_case-Attribute werden beide gelesen.
 ## Ansichten
 
 - Import. XML-Ordner oder Freigabe, CSV/Parquet-Rundlauf, DuckDB-Stand (`.floorline`) auf die Freigabe oder als Datei
-- Übersicht. Andon-Linienstatus, OEE-Ringe, gestapelter Durchsatzmix, Stillstand-Pareto mit kumuliert %, Takt gegen Soll, Stunde×Linie-Heatmap, Marge, abhängige Linien
+- Übersicht. Andon-Linienstatus, OEE-Ringe, gestapelter Durchsatzmix, Stillstand-Pareto mit kumuliert %, Takt gegen Soll, Stunde×Linie-Heatmap, STARVE, abhängige Linien
 - Drill und Triage. Werk → Linie → Station → Maschine → Steuerung
 - OLAP. DuckDB-Würfel über den aktuellen Filter
-- Preise. Katalog, Schichtlohn, Stückkosten, Marge
+- Verluste. OEE-Verlustminuten, Stationsengpass, Fehler-Pareto, Zulauf und STARVE
 - Server. MES/HMI/Gateway/Historie und PLC-Steuerungen
 - Tabellen. Tabellenscan plus schreibgeschützte SQL-Konsole
 - Berichte. Automatische Schicht-, Verlust- und Serverberichte, Druck

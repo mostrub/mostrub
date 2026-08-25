@@ -15,6 +15,7 @@ export function kpiSql(filters: ProductionFilters): string {
       (SELECT COALESCE(AVG(cycle_ms), 0) FROM ${cycles}) AS avg_cycle_ms,
       (SELECT COALESCE(AVG(target_cycle_ms), 0) FROM ${cycles}) AS avg_target_ms,
       (SELECT COALESCE(SUM(duration_ms), 0) FROM ${downtime}) AS downtime_ms,
+      (SELECT COALESCE(SUM(duration_ms), 0) FROM ${downtime} WHERE reason_code = 'STARVE') AS starve_ms,
       (SELECT COUNT(*) FROM ${alarms} WHERE severity = 'CRITICAL') AS critical_alarms,
       (SELECT COUNT(*) FROM ${alarms} WHERE ack_state = 'OPEN') AS open_alarms
   `
@@ -216,6 +217,33 @@ export function cycleHistogramSql(filters: ProductionFilters): string {
     FROM ${sqlFrom("cycles", filters)}
     GROUP BY 1
     ORDER BY 1
+  `
+}
+
+export function stationBottleneckSql(filters: ProductionFilters): string {
+  return `
+    SELECT plant, line, station,
+           COUNT(*) AS cycles,
+           AVG(cycle_ms) AS avg_cycle_ms,
+           AVG(target_cycle_ms) AS target_cycle_ms,
+           AVG(cycle_ms) - AVG(target_cycle_ms) AS over_takt_ms,
+           SUM(CASE WHEN result <> 'PASS' THEN 1 ELSE 0 END) AS defects,
+           SUM(scrap_qty) AS scrap_units
+    FROM ${sqlFrom("cycles", filters)}
+    GROUP BY 1, 2, 3
+    ORDER BY over_takt_ms DESC, defects DESC
+    LIMIT 15
+  `
+}
+
+export function downtimeByStationSql(filters: ProductionFilters): string {
+  return `
+    SELECT plant, line, station, category,
+           SUM(duration_ms) / 60000.0 AS minutes
+    FROM ${sqlFrom("downtime", filters)}
+    GROUP BY 1, 2, 3, 4
+    ORDER BY minutes DESC
+    LIMIT 15
   `
 }
 

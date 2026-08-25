@@ -38,7 +38,7 @@ export const APP_VIEWS = [
   "dashboard",
   "triage",
   "olap",
-  "pricing",
+  "losses",
   "servers",
   "explorer",
   "reports",
@@ -255,4 +255,14 @@ export function isTableName(value: string): value is TableName {
 
 export function isAppView(value: string): value is AppView {
   return (APP_VIEWS as readonly string[]).includes(value)
+}
+
+export function resolveAppView(value: string): AppView | null {
+  if (value === "pricing") {
+    return "losses"
+  }
+  if (isAppView(value)) {
+    return value
+  }
+  return null
 }

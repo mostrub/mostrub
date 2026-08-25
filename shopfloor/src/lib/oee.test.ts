@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { computeOee } from "./oee"
+import { computeOee, oeeLossMinutes } from "./oee"
 
 describe("computeOee", () => {
   it("returns the product of availability, performance, and quality", () => {
@@ -63,5 +63,24 @@ describe("computeOee", () => {
     expect(fromAverage.performance).toBeCloseTo((100 * avgTargetMs * units) / windowMs)
     expect(fromIdeal.performance).toBeCloseTo((100 * weightedIdealMs) / windowMs)
     expect(fromIdeal.performance).not.toBeCloseTo(fromAverage.performance)
+  })
+})
+
+describe("oeeLossMinutes", () => {
+  it("splits window time into availability, speed, and scrap losses", () => {
+    const losses = oeeLossMinutes({
+      windowMs: 100 * 60_000,
+      unplannedDowntimeMs: 20 * 60_000,
+      idealMs: 50 * 60_000,
+      quality: 80,
+    })
+    expect(losses.map((row) => row.key)).toEqual([
+      "availability",
+      "performance",
+      "quality",
+    ])
+    expect(losses[0]?.minutes).toBeCloseTo(20)
+    expect(losses[1]?.minutes).toBeCloseTo(30)
+    expect(losses[2]?.minutes).toBeCloseTo(10)
   })
 })

@@ -14,8 +14,6 @@ import {
 import {
   dependentLineDicePatch,
   dependentLineSql,
-  pricingSql,
-  weightedMarginPct,
 } from "@/lib/battery"
 import type { QueryRow } from "@/lib/duckdb/engine"
 import { queryRows } from "@/lib/duckdb/engine"
@@ -74,7 +72,6 @@ export function DashboardPage() {
   const [fails, setFails] = useState<QueryRow[]>([])
   const [hist, setHist] = useState<QueryRow[]>([])
   const [compare, setCompare] = useState<QueryRow[]>([])
-  const [priced, setPriced] = useState<QueryRow[]>([])
   const [deps, setDeps] = useState<QueryRow[]>([])
   const [heat, setHeat] = useState<HeatCell[]>([])
   const [oee, setOee] = useState(computeOee({
@@ -103,7 +100,6 @@ export function DashboardPage() {
       queryRows(oeeSql(filters)),
       queryRows(cycleHistogramSql(filters)),
       queryRows(shiftCompareSql(filters)),
-      queryRows(pricingSql(filters)),
       queryRows(dependentLineSql(filters)),
       queryRows(lineHourHeatSql(filters)),
     ])
@@ -116,7 +112,6 @@ export function DashboardPage() {
         oeeRows,
         histRows,
         compareRows,
-        priceRows,
         depRows,
         heatRows,
       ]) => {
@@ -130,7 +125,6 @@ export function DashboardPage() {
         setFails(failRows)
         setHist(histRows)
         setCompare(compareRows)
-        setPriced(priceRows)
         setDeps(depRows)
         setHeat(
           heatRows.map((row) => ({
@@ -197,7 +191,6 @@ export function DashboardPage() {
   const units = Number(kpis?.units ?? 0)
   const good = Number(kpis?.good_units ?? 0)
   const fpy = units === 0 ? 0 : (100 * good) / units
-  const marginPct = weightedMarginPct(priced)
 
   return (
     <div className="flex flex-col gap-4">
@@ -245,11 +238,11 @@ export function DashboardPage() {
           onClick={() => setView("triage")}
         />
         <Kpi
-          label="Marge %"
-          value={formatPct(marginPct)}
+          label="STARVE"
+          value={formatMinutes(Number(kpis?.starve_ms ?? 0))}
           busy={busy}
-          tone={marginPct < 35 ? "bad" : "ok"}
-          onClick={() => setView("pricing")}
+          tone={Number(kpis?.starve_ms ?? 0) > 0 ? "bad" : "ok"}
+          onClick={() => setView("losses")}
         />
       </div>
       )}
@@ -422,7 +415,7 @@ export function DashboardPage() {
             <CardTitle>Abhängige Linien</CardTitle>
             <CardDescription>
               Ungeplanter Stillstand vorne und STARVE-Minuten auf der nächsten
-              Linie. Klick öffnet Preise.
+              Linie. Klick öffnet Verluste.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -434,7 +427,7 @@ export function DashboardPage() {
                 if (Object.keys(patch).length > 0) {
                   patchFilters(patch)
                 }
-                setView("pricing")
+                setView("losses")
               }}
             />
           </CardContent>

@@ -55,7 +55,7 @@ import { FACET_SQL } from "@/lib/queries"
 import { buildAutoReports } from "@/lib/reports"
 import {
   APP_VIEWS,
-  isAppView,
+  resolveAppView,
   type AppView,
   type AutoReport,
   type FilterFacet,
@@ -134,7 +134,7 @@ const FloorlineContext = createContext<FloorlineState | null>(null)
 function parseHash(): { view: AppView; filters: ProductionFilters } {
   const raw = window.location.hash.replace(/^#/, "")
   const [path, query = ""] = raw.split("?")
-  const view = isAppView(path) ? path : "ingest"
+  const view = resolveAppView(path) ?? "ingest"
   const params = new URLSearchParams(query)
   const encoded = params.get("f")
   const filters = encoded ? decodeFilters(encoded) : null

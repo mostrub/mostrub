@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest"
 
 import { EMPTY_FILTERS } from "./filters"
-import { hourlyThroughputSql, lineHourHeatSql, oeeSql, triageTreeSql } from "./queries"
+import {
+  hourlyThroughputSql,
+  kpiSql,
+  lineHourHeatSql,
+  oeeSql,
+  stationBottleneckSql,
+  triageTreeSql,
+} from "./queries"
 
 describe("triageTreeSql", () => {
   it("aggregates one hierarchy level at a time", () => {
@@ -19,6 +26,22 @@ describe("hourlyThroughputSql", () => {
     const sql = hourlyThroughputSql(EMPTY_FILTERS)
     expect(sql).toContain("SUM(rework_qty) AS rework_units")
     expect(sql).toContain("SUM(scrap_qty) AS scrap_units")
+  })
+})
+
+describe("kpiSql", () => {
+  it("includes STARVE minutes for the losses view", () => {
+    expect(kpiSql(EMPTY_FILTERS)).toContain("reason_code = 'STARVE'")
+    expect(kpiSql(EMPTY_FILTERS)).toContain("AS starve_ms")
+  })
+})
+
+describe("stationBottleneckSql", () => {
+  it("ranks stations by takt over target", () => {
+    const sql = stationBottleneckSql(EMPTY_FILTERS)
+    expect(sql).toContain("AS over_takt_ms")
+    expect(sql).toContain("AS defects")
+    expect(sql).toContain("ORDER BY over_takt_ms DESC")
   })
 })
 
