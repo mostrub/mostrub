@@ -24,7 +24,7 @@ function openDb(): Promise<IDBDatabase> {
       tx?.objectStore(STORE).clear()
     }
     req.onsuccess = () => resolve(req.result)
-    req.onerror = () => reject(req.error ?? new Error("IndexedDB open failed"))
+    req.onerror = () => reject(req.error ?? new Error("IndexedDB-Öffnen fehlgeschlagen"))
   })
 }
 
@@ -41,10 +41,10 @@ async function withStore<T>(
       req.onsuccess = () => {
         result = req.result
       }
-      req.onerror = () => reject(req.error ?? new Error("IndexedDB request failed"))
+      req.onerror = () => reject(req.error ?? new Error("IndexedDB-Anfrage fehlgeschlagen"))
       tx.oncomplete = () => resolve(result)
-      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB transaction failed"))
-      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted"))
+      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB-Transaktion fehlgeschlagen"))
+      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB-Transaktion abgebrochen"))
     })
   } finally {
     db.close()
@@ -99,7 +99,7 @@ export async function clearPersisted(): Promise<void> {
       store.clear()
       store.put(PERSIST_SCHEMA_VERSION, VERSION_KEY)
       tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(tx.error ?? new Error("clear failed"))
+      tx.onerror = () => reject(tx.error ?? new Error("Leeren fehlgeschlagen"))
     })
   } finally {
     db.close()

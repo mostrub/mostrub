@@ -81,26 +81,26 @@ const PLANTS = {
 } as const
 
 const FAIL_CODES = [
-  { code: "E12", reason: "tab weld porosity" },
-  { code: "E18", reason: "formation voltage low" },
-  { code: "E22", reason: "electrolyte leak" },
-  { code: "E31", reason: "stack force high" },
+  { code: "E12", reason: "Fahnennaht porös" },
+  { code: "E18", reason: "Formationsspannung zu niedrig" },
+  { code: "E22", reason: "Elektrolytundicht" },
+  { code: "E31", reason: "Stapelkraft zu hoch" },
 ] as const
 
 const DT_REASONS = [
-  { code: "E-STOP", text: "operator e-stop", category: "UNPLANNED" },
-  { code: "JAM", text: "conveyor jam", category: "UNPLANNED" },
-  { code: "TOOL", text: "tool change", category: "PLANNED" },
-  { code: "CO", text: "sku changeover", category: "CHANGEOVER" },
-  { code: "STARVE", text: "upstream line starved this station", category: "UNPLANNED" },
+  { code: "E-STOP", text: "Not-Halt vom Bediener", category: "UNPLANNED" },
+  { code: "JAM", text: "Förderstau", category: "UNPLANNED" },
+  { code: "TOOL", text: "Werkzeugwechsel", category: "PLANNED" },
+  { code: "CO", text: "SKU-Wechsel", category: "CHANGEOVER" },
+  { code: "STARVE", text: "vorgelagerte Linie hat diese Station ausgehungert", category: "UNPLANNED" },
 ] as const
 
 const ALARM_BANK = [
-  { severity: "CRITICAL", code: "E401", message: "e-stop circuit open" },
-  { severity: "WARN", code: "W210", message: "scan time drifting" },
-  { severity: "WARN", code: "W088", message: "air pressure low" },
-  { severity: "INFO", code: "I012", message: "batch complete" },
-  { severity: "CRITICAL", code: "E512", message: "gateway heartbeat lost" },
+  { severity: "CRITICAL", code: "E401", message: "Not-Halt-Kreis offen" },
+  { severity: "WARN", code: "W210", message: "Scanzeit driftet" },
+  { severity: "WARN", code: "W088", message: "Luftdruck niedrig" },
+  { severity: "INFO", code: "I012", message: "Charge fertig" },
+  { severity: "CRITICAL", code: "E512", message: "Gateway-Heartbeat verloren" },
 ] as const
 
 function attrs(record: Record<string, string | number>): string {

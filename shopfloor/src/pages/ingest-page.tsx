@@ -23,16 +23,16 @@ export function IngestPage() {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">Load production files</h2>
+        <h2 className="font-heading text-lg font-medium">Produktionsdateien laden</h2>
         <p className="text-sm text-muted-foreground">
-          Drop XML from the share, a folder, or CSV/Parquet exported from this
-          app. A refresh keeps the last load on this PC. Start and stop with
-          the Desktop Floorline icons.
+          XML aus der Freigabe, einem Ordner oder CSV/Parquet aus dieser App
+          ablegen. Ein Refresh behält den letzten Stand auf diesem Rechner.
+          Start und Stopp über die Desktop-Symbole.
         </p>
       </div>
       {error ? (
         <Alert variant="destructive">
-          <AlertTitle>Ingest error</AlertTitle>
+          <AlertTitle>Importfehler</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
@@ -53,16 +53,16 @@ export function IngestPage() {
         }}
       >
         <CardHeader>
-          <CardTitle>Drop files here</CardTitle>
+          <CardTitle>Dateien hier ablegen</CardTitle>
           <CardDescription>
-            On Windows, browse to a mapped drive such as Z:\production\xml.
+            Unter Windows zum gemappten Laufwerk, etwa Z:\produktion\xml.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-10 text-center">
             <FolderUpIcon className="size-8 text-muted-foreground" />
             <span className="text-sm font-medium">
-              Choose XML files
+              XML-Dateien wählen
             </span>
             <input
               type="file"
@@ -78,7 +78,7 @@ export function IngestPage() {
             />
           </label>
           <label className="flex cursor-pointer items-center justify-center rounded-lg border px-3 py-2 text-sm">
-            Choose a share folder
+            Freigabeordner wählen
             <input
               type="file"
               multiple
@@ -98,7 +98,7 @@ export function IngestPage() {
               disabled={!ready || loading}
             >
               <HardDriveIcon data-icon="inline-start" />
-              Load demo production
+              Demo-Produktion laden
             </Button>
             <Button
               variant="outline"
@@ -114,14 +114,14 @@ export function IngestPage() {
                 }
               }}
             >
-              Download sample XML pack
+              Demo-XML herunterladen
             </Button>
             <Button
               variant="destructive"
               onClick={() => {
                 if (
                   window.confirm(
-                    "This removes the local snapshot on this PC. Continue?"
+                    "Das löscht den lokalen Stand auf diesem Rechner. Weiter?"
                   )
                 ) {
                   void clearData()
@@ -130,21 +130,21 @@ export function IngestPage() {
               disabled={files.length === 0 || loading}
             >
               <Trash2Icon data-icon="inline-start" />
-              Clear loaded data
+              Geladene Daten löschen
             </Button>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Ingested files</CardTitle>
+          <CardTitle>Geladene Dateien</CardTitle>
           <CardDescription>
-            Each file becomes production, downtime, alarm, and server rows.
+            Jede Datei wird zu Produktion, Stillstand, Alarmen und Serverzeilen.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
-            emptyLabel="No files loaded yet."
+            emptyLabel="Noch keine Dateien geladen."
             rows={files.map((file) => ({
               file_name: file.file_name,
               plant: file.plant,

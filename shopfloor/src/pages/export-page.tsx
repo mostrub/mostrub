@@ -21,18 +21,19 @@ export function ExportPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">Export and share</h2>
+        <h2 className="font-heading text-lg font-medium">Export und Freigabe</h2>
         <p className="text-sm text-muted-foreground">
-          DuckDB writes the current filter as CSV or Parquet. Share a URL that
-          restores the same controllers and filters.
+          DuckDB schreibt den aktuellen Filter als CSV oder Parquet. Eine URL
+          stellt dieselben Steuerungen und Filter wieder her.
         </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Share snapshot</CardTitle>
+          <CardTitle>Freigabe-Schnappschuss</CardTitle>
           <CardDescription>
-            Hash includes the view and encoded filters. Data stays on this
-            machine unless you also send a Parquet pack.
+            Der Hash enthält die Ansicht und die kodierten Filter. Die Daten
+            bleiben auf diesem Rechner, außer Sie schicken zusätzlich ein
+            Parquet-Paket.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -43,26 +44,26 @@ export function ExportPage() {
             <Button
               onClick={() => {
                 void copyToClipboard(url).then(() =>
-                  toast.success("Share URL copied")
+                  toast.success("Freigabe-URL kopiert")
                 )
               }}
             >
-              Copy share URL
+              Freigabe-URL kopieren
             </Button>
             <Button
               variant="outline"
               onClick={() => downloadShareCard({ url, filters })}
             >
-              Download filter card
+              Filterkarte herunterladen
             </Button>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Filtered tables</CardTitle>
+          <CardTitle>Gefilterte Tabellen</CardTitle>
           <CardDescription>
-            COPY through DuckDB. Parquet is the default pack for historians.
+            COPY über DuckDB. Parquet ist das Standardpaket für Historien.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -78,10 +79,10 @@ export function ExportPage() {
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>XML share template</CardTitle>
+          <CardTitle>XML-Freigabevorlage</CardTitle>
           <CardDescription>
-            Schema used by the demo pack. Point a Windows share drop at this
-            shape, or keep camelCase / snake_case attributes.
+            Schema des Demopakets. Windows-Freigabe auf diese Form legen oder
+            camelCase- und snake_case-Attribute belassen.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -109,10 +110,10 @@ export function ExportPage() {
               }
             }}
           >
-            Download demo XML files
+            Demo-XML herunterladen
           </Button>
           <p className="text-xs text-muted-foreground">
-            {files.length} files currently loaded. SQL example:{" "}
+            {files.length} Dateien geladen. SQL-Beispiel:{" "}
             <code>SELECT * FROM {sqlFrom("cycles", filters)}</code>
           </p>
         </CardContent>
@@ -130,7 +131,7 @@ function ExportRow(args: {
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
       <div>
         <p className="font-mono text-sm">{args.table}</p>
-        <p className="text-xs text-muted-foreground">{args.count} rows</p>
+        <p className="text-xs text-muted-foreground">{args.count} Zeilen</p>
       </div>
       <div className="flex gap-2">
         <Button

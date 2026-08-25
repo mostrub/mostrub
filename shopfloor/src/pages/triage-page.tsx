@@ -69,7 +69,7 @@ export function TriagePage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Triage query failed")
+          setLoadError(err instanceof Error ? err.message : "Triage-Abfrage fehlgeschlagen")
         }
       })
     return () => {
@@ -115,8 +115,8 @@ export function TriagePage() {
   if (rowCounts.cycles === 0) {
     return (
       <EmptyProduction
-        title="No cycles to drill"
-        description="Load production files, then click a plant to go one level deeper."
+        title="Keine Takte zum Drill"
+        description="Produktionsdateien laden, dann ein Werk anklicken, um eine Ebene tiefer zu gehen."
       />
     )
   }
@@ -128,14 +128,14 @@ export function TriagePage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-heading text-lg font-medium">Drill and triage</h2>
+          <h2 className="font-heading text-lg font-medium">Drill und Triage</h2>
           <p className="text-sm text-muted-foreground">
-            Click a row to go one level deeper. Losses and alarms follow the
-            same filter.
+            Klick auf eine Zeile geht eine Ebene tiefer. Verluste und Alarme
+            folgen demselben Filter.
           </p>
           {loadError ? (
             <Alert variant="destructive" className="mt-3">
-              <AlertTitle>Could not load triage</AlertTitle>
+              <AlertTitle>Triage konnte nicht geladen werden</AlertTitle>
               <AlertDescription>{loadError}</AlertDescription>
             </Alert>
           ) : null}
@@ -144,7 +144,7 @@ export function TriagePage() {
           <BreadcrumbList>
             <BreadcrumbItem>
               {crumbs.length === 0 ? (
-                <BreadcrumbPage>All plants</BreadcrumbPage>
+                <BreadcrumbPage>Alle Werke</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink
                   render={
@@ -155,7 +155,7 @@ export function TriagePage() {
                     />
                   }
                 >
-                  All plants
+                  Alle Werke
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>
@@ -186,17 +186,17 @@ export function TriagePage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Hierarchy</CardTitle>
+          <CardTitle>Hierarchie</CardTitle>
           <CardDescription>
-            Defects first. One click pins the next plant, line, station,
-            machine, or controller.
+            Fehler zuerst. Ein Klick pinnt das nächste Werk, die Linie,
+            Station, Maschine oder Steuerung.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
             rows={tree}
             maxHeight="22rem"
-            emptyLabel="No rows in this slice."
+            emptyLabel="Keine Zeilen in diesem Schnitt."
             selectedKey={selectedKey}
             rowKey={(row) => String(row[nextColumn] ?? "")}
             onRowClick={(row) => patchFilters(nextDrillPatch(filters, row))}
@@ -206,15 +206,15 @@ export function TriagePage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Longest downtime</CardTitle>
+            <CardTitle>Längster Stillstand</CardTitle>
             <CardDescription>
-              <Badge variant="outline">click reason to filter search</Badge>
+              <Badge variant="outline">Ursache klicken filtert die Suche</Badge>
             </CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable
               rows={downtime}
-              emptyLabel="No downtime in this slice."
+              emptyLabel="Kein Stillstand in diesem Schnitt."
               selectedKey={filters.search || undefined}
               rowKey={(row) => String(row.reason_code ?? "")}
               onRowClick={(row) =>
@@ -225,13 +225,13 @@ export function TriagePage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Alarms</CardTitle>
-            <CardDescription>Critical first, then open</CardDescription>
+            <CardTitle>Alarme</CardTitle>
+            <CardDescription>Kritisch zuerst, dann offen</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable
               rows={alarms}
-              emptyLabel="No alarms in this slice."
+              emptyLabel="Keine Alarme in diesem Schnitt."
               selectedKey={filters.search || undefined}
               rowKey={(row) => String(row.code ?? "")}
               onRowClick={(row) =>
@@ -248,13 +248,13 @@ export function TriagePage() {
         </Card>
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Fail codes</CardTitle>
-            <CardDescription>Quality losses in the current drill</CardDescription>
+            <CardTitle>Fehlercodes</CardTitle>
+            <CardDescription>Qualitätsverluste im aktuellen Drill</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable
               rows={fails}
-              emptyLabel="No fail codes in this slice."
+              emptyLabel="Keine Fehlercodes in diesem Schnitt."
               selectedKey={filters.search || undefined}
               rowKey={(row) => String(row.fail_code ?? "")}
               onRowClick={(row) =>

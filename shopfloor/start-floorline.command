@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starts Floorline for shopfloor users: background server + full-screen browser.
+# Startet Floorline für die Shopfloor: Hintergrundserver + Vollbildbrowser.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
@@ -23,14 +23,14 @@ EOF
 }
 
 if [[ ! -f "$ROOT/package.json" ]]; then
-  fail "This icon is broken. Double-click install-macos.command once."
+  fail "Dieses Symbol ist defekt. install-macos.command einmal doppelklicken."
 fi
 
 PORT=5173
 LOCAL_URL="http://127.0.0.1:${PORT}/"
 
 if ! command -v node >/dev/null 2>&1; then
-  fail "Floorline is not installed yet. Double-click install-macos.command once."
+  fail "Floorline ist noch nicht installiert. install-macos.command einmal doppelklicken."
 fi
 if [[ ! -d "$ROOT/node_modules" ]]; then
   npm install
@@ -50,7 +50,7 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 if [[ "$ready" -ne 1 ]]; then
-  fail "Floorline did not start. Double-click install-macos.command once."
+  fail "Floorline ist nicht gestartet. install-macos.command einmal doppelklicken."
 fi
 
 open_app() {
@@ -68,4 +68,4 @@ if ! open_app "Microsoft Edge"; then
   fi
 fi
 
-notify "Floorline is open in full screen. Double-click Stop Floorline when you are done."
+notify "Floorline ist im Vollbild offen. Floorline beenden doppelklicken, wenn Sie fertig sind."

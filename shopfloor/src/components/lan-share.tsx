@@ -39,7 +39,7 @@ export function LanShare() {
 
   const hostOs = info
     ? hostOperatingSystemLabel(info.platform, info.os)
-    : "this computer"
+    : "dieser Rechner"
   const systems = info ? uniqueOperatingSystems(info.peers) : []
 
   return (
@@ -52,32 +52,32 @@ export function LanShare() {
     >
       <PopoverTrigger
         render={
-          <Button size="sm" variant="outline" aria-label="Share on the network" />
+          <Button size="sm" variant="outline" aria-label="Im Netzwerk freigeben" />
         }
       >
         <Share2Icon data-icon="inline-start" />
-        Share
+        Freigabe
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80">
         <PopoverHeader>
-          <PopoverTitle>Share this instance</PopoverTitle>
+          <PopoverTitle>Diese Instanz teilen</PopoverTitle>
           <PopoverDescription>
-            Opens the same page and filters on this LAN. Data still stays on
-            this PC.
+            Öffnet dieselbe Seite und dieselben Filter im LAN. Die Daten
+            bleiben auf diesem Rechner.
           </PopoverDescription>
         </PopoverHeader>
         {loading && !info ? (
-          <p className="text-muted-foreground text-xs">Looking up LAN addresses…</p>
+          <p className="text-muted-foreground text-xs">LAN-Adressen werden gesucht…</p>
         ) : null}
         {info ? (
           <div className="flex flex-col gap-2">
             <p className="text-xs">
-              Host <span className="font-medium">{info.hostname}</span> is{" "}
-              {hostOs}. This browser is {info.visitorOs}.
+              Host <span className="font-medium">{info.hostname}</span> ist{" "}
+              {hostOs}. Dieser Browser ist {info.visitorOs}.
             </p>
             {systems.length > 0 ? (
               <p className="text-xs">
-                Operating systems on this instance:{" "}
+                Betriebssysteme auf dieser Instanz:{" "}
                 <span className="font-medium">{systems.join(", ")}</span>
               </p>
             ) : null}
@@ -90,7 +90,7 @@ export function LanShare() {
                     className="h-auto w-full justify-start whitespace-normal px-2 py-1 text-left text-xs"
                     onClick={() => {
                       void copyToClipboard(attachShareHash(url, shareUrl())).then(
-                        () => toast.success("LAN URL copied")
+                        () => toast.success("LAN-URL kopiert")
                       )
                     }}
                   >
@@ -120,15 +120,16 @@ export function LanShare() {
                     ),
                   })
                 ).then(() =>
-                  toast.success("Join message copied")
+                  toast.success("Beitrittstext kopiert")
                 )
               }}
             >
-              Copy join message
+              Beitrittstext kopieren
             </Button>
             <p className="text-muted-foreground text-xs">
-              If another PC cannot connect, start Floorline from the desktop
-              shortcut so it listens on the network, then try the address again.
+              Wenn ein anderer Rechner nicht verbindet, Floorline über das
+              Desktop-Symbol starten, damit es im Netz lauscht, und die
+              Adresse erneut versuchen.
             </p>
           </div>
         ) : null}

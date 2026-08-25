@@ -6,10 +6,10 @@
 
 ### Floorline
 
-Local shopfloor production prototype in [`shopfloor/`](./shopfloor). Browser + DuckDB-WASM. Ingests MES XML from a Windows share, drills production and server profiles, exports Parquet/CSV.
+Lokaler Fertigungsprototyp in [`shopfloor/`](./shopfloor). Browser + DuckDB-WASM. Liest MES-XML aus einer Windows-Freigabe, drillt Produktion und Serverprofile, exportiert Parquet/CSV.
 
-Windows 11: double-click `shopfloor/install-windows.cmd`. macOS: double-click `shopfloor/install-macos.command`. That puts **Floorline** and **Stop Floorline** on the Desktop (plus a short how-to). Daily use is those two icons. The app opens full screen.
+Windows 11: `shopfloor/install-windows.cmd` doppelklicken. macOS: `shopfloor/install-macos.command` doppelklicken. Das legt **Floorline** und **Floorline beenden** auf den Desktop, plus eine kurze Anleitung. Der Alltag sind diese zwei Symbole. Die App öffnet sich im Vollbild.
 
-Light, Dark, and System are in the header. **Share** copies LAN URLs so other Windows, Mac, and Linux PCs on the same network can join the running instance.
+Hell, Dunkel und System stehen im Kopf. **Freigabe** kopiert LAN-URLs, damit andere Windows-, Mac- und Linux-Rechner im selben Netz der laufenden Instanz beitreten.
 
 ---

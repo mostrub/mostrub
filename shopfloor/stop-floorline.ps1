@@ -1,4 +1,4 @@
-# Stops the local Floorline server started by the Desktop shortcut.
+# Beendet den lokalen Floorline-Server vom Desktop-Symbol.
 
 $ErrorActionPreference = "SilentlyContinue"
 $Port = 5173
@@ -32,11 +32,11 @@ try {
 
 $pids = $pids | Where-Object { $_ -and $_ -ne 0 } | Select-Object -Unique
 if (-not $pids) {
-  Show-FloorlineMessage "Floorline is already closed."
+  Show-FloorlineMessage "Floorline ist bereits beendet."
   exit 0
 }
 
 foreach ($processId in $pids) {
   Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
 }
-Show-FloorlineMessage "Floorline is closed. You can use this PC for something else."
+Show-FloorlineMessage "Floorline ist beendet. Sie können diesen Rechner anders nutzen."

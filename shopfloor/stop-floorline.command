@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stops the local Floorline server started by the Desktop shortcut.
+# Beendet den lokalen Floorline-Server vom Desktop-Symbol.
 set -euo pipefail
 PORT=5173
 
@@ -26,7 +26,7 @@ pids="$(lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null || true)"
 if [[ -n "${pids:-}" ]]; then
   # shellcheck disable=SC2086
   kill $pids 2>/dev/null || true
-  tell "Floorline is closed. You can use this Mac for something else."
+  tell "Floorline ist beendet. Sie können diesen Mac anders nutzen."
 else
-  tell "Floorline is already closed."
+  tell "Floorline ist bereits beendet."
 fi

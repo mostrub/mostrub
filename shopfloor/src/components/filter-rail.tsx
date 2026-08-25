@@ -44,7 +44,7 @@ function OptionList(args: {
         ))}
         {hidden > 0 ? (
           <p className="text-xs text-muted-foreground">
-            {hidden} more. Use search for the rest.
+            {hidden} weitere. Suche für den Rest.
           </p>
         ) : null}
       </FieldGroup>
@@ -70,24 +70,24 @@ export function FilterRail() {
     <aside className="flex w-72 shrink-0 flex-col border-r bg-sidebar">
       <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
         <div>
-          <p className="text-sm font-medium">Triage filters</p>
-          <p className="text-xs text-muted-foreground">{filterCount} active</p>
+          <p className="text-sm font-medium">Triage-Filter</p>
+          <p className="text-xs text-muted-foreground">{filterCount} aktiv</p>
         </div>
         <Button size="sm" variant="ghost" onClick={clearFilters}>
-          Clear
+          Leeren
         </Button>
       </div>
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-3">
           <FieldSet>
-            <FieldLegend variant="label">Presets</FieldLegend>
+            <FieldLegend variant="label">Vorlagen</FieldLegend>
             <FieldGroup className="gap-2">
               <Field>
-                <FieldLabel htmlFor="preset-name">Save current</FieldLabel>
+                <FieldLabel htmlFor="preset-name">Aktuell speichern</FieldLabel>
                 <Input
                   id="preset-name"
                   value={presetName}
-                  placeholder="CELL-1 night"
+                  placeholder="CELL-1 Nacht"
                   onChange={(event) => setPresetName(event.target.value)}
                 />
               </Field>
@@ -100,7 +100,7 @@ export function FilterRail() {
                   setPresetName("")
                 }}
               >
-                Save preset
+                Vorlage speichern
               </Button>
               {presets.map((preset) => (
                 <div key={preset.id} className="flex items-center gap-1">
@@ -124,16 +124,16 @@ export function FilterRail() {
             </FieldGroup>
           </FieldSet>
           <Field>
-            <FieldLabel htmlFor="search">Search</FieldLabel>
+            <FieldLabel htmlFor="search">Suche</FieldLabel>
             <Input
               id="search"
               value={filters.search}
-              placeholder="WO, serial, fault, IP…"
+              placeholder="AO, Serie, Fehler, IP…"
               onChange={(event) => patchFilters({ search: event.target.value })}
             />
           </Field>
           <Field orientation="horizontal" className="items-center justify-between">
-            <FieldLabel htmlFor="anomalies">Anomalies only</FieldLabel>
+            <FieldLabel htmlFor="anomalies">Nur Anomalien</FieldLabel>
             <Switch
               id="anomalies"
               checked={filters.onlyAnomalies}
@@ -143,7 +143,7 @@ export function FilterRail() {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="from">From</FieldLabel>
+            <FieldLabel htmlFor="from">Von</FieldLabel>
             <Input
               id="from"
               type="datetime-local"
@@ -154,7 +154,7 @@ export function FilterRail() {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="to">To</FieldLabel>
+            <FieldLabel htmlFor="to">Bis</FieldLabel>
             <Input
               id="to"
               type="datetime-local"
@@ -165,7 +165,7 @@ export function FilterRail() {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="min-cycle">Min cycle ms</FieldLabel>
+            <FieldLabel htmlFor="min-cycle">Min. Takt ms</FieldLabel>
             <Input
               id="min-cycle"
               type="number"
@@ -181,7 +181,7 @@ export function FilterRail() {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="max-cycle">Max cycle ms</FieldLabel>
+            <FieldLabel htmlFor="max-cycle">Max. Takt ms</FieldLabel>
             <Input
               id="max-cycle"
               type="number"
@@ -197,7 +197,7 @@ export function FilterRail() {
             />
           </Field>
           <OptionList
-            legend="Plant"
+            legend="Werk"
             options={facets.plants}
             selected={filters.plants}
             onToggle={(value) =>
@@ -205,7 +205,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="Line"
+            legend="Linie"
             options={facets.lines}
             selected={filters.lines}
             onToggle={(value) =>
@@ -221,7 +221,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="Machine"
+            legend="Maschine"
             options={facets.machines}
             selected={filters.machines}
             onToggle={(value) =>
@@ -229,7 +229,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="Controller"
+            legend="Steuerung"
             options={facets.controllers}
             selected={filters.controllers}
             onToggle={(value) =>
@@ -247,7 +247,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="Shift"
+            legend="Schicht"
             options={facets.shifts}
             selected={filters.shifts}
             onToggle={(value) =>
@@ -263,7 +263,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="Work order"
+            legend="Auftrag"
             options={facets.workOrders}
             selected={filters.workOrders}
             limit={8}
@@ -274,7 +274,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="Result"
+            legend="Ergebnis"
             options={[...CYCLE_RESULTS]}
             selected={filters.results}
             onToggle={(value) => {
@@ -284,7 +284,7 @@ export function FilterRail() {
             }}
           />
           <OptionList
-            legend="Alarm severity"
+            legend="Alarmstufe"
             options={[...ALARM_SEVERITIES]}
             selected={filters.severities}
             onToggle={(value) => {
@@ -296,7 +296,7 @@ export function FilterRail() {
             }}
           />
           <OptionList
-            legend="Downtime"
+            legend="Stillstand"
             options={[...DOWNTIME_CATEGORIES]}
             selected={filters.downtimeCategories}
             onToggle={(value) => {

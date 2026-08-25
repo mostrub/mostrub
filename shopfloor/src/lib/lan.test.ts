@@ -26,8 +26,8 @@ describe("buildJoinMessage", () => {
       visitorOs: "Windows",
     }
     const message = buildJoinMessage(info)
-    expect(message).toContain("Floorline on AUS-LINE-PC (Windows)")
+    expect(message).toContain("Floorline auf AUS-LINE-PC (Windows)")
     expect(message).toContain("http://192.168.1.20:5173/")
-    expect(message).toContain("Operating systems on this instance: Windows, macOS.")
+    expect(message).toContain("Betriebssysteme auf dieser Instanz: Windows, macOS.")
   })
 })

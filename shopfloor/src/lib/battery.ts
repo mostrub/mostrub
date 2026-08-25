@@ -18,25 +18,25 @@ export type LineEdge = {
 export const BATTERY_SKUS: BatterySku[] = [
   {
     sku: "CELL-2170",
-    name: "2170 NMC cell",
+    name: "2170-NMC-Zelle",
     listPrice: 4.85,
     materialCost: 2.1,
   },
   {
     sku: "CELL-4680",
-    name: "4680 NMC cell",
+    name: "4680-NMC-Zelle",
     listPrice: 8.4,
     materialCost: 3.75,
   },
   {
     sku: "MOD-12S",
-    name: "12s module",
+    name: "12s-Modul",
     listPrice: 72,
     materialCost: 34,
   },
   {
     sku: "PACK-400V",
-    name: "400V pack",
+    name: "400-V-Pack",
     listPrice: 890,
     materialCost: 420,
   },

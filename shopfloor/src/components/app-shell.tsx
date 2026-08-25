@@ -29,14 +29,14 @@ const VIEW_META: Record<
   AppView,
   { label: string; short: string; icon: typeof UploadIcon }
 > = {
-  ingest: { label: "Ingest", short: "Ingest", icon: UploadIcon },
-  dashboard: { label: "Dashboard", short: "Dash", icon: LayoutDashboardIcon },
-  triage: { label: "Drill & triage", short: "Drill", icon: FilterIcon },
+  ingest: { label: "Import", short: "Import", icon: UploadIcon },
+  dashboard: { label: "Übersicht", short: "Übers", icon: LayoutDashboardIcon },
+  triage: { label: "Drill & Triage", short: "Drill", icon: FilterIcon },
   olap: { label: "OLAP", short: "OLAP", icon: LayersIcon },
-  pricing: { label: "Pricing", short: "Price", icon: DollarSignIcon },
-  servers: { label: "Servers", short: "Servers", icon: ServerIcon },
-  explorer: { label: "Tables", short: "Tables", icon: TableIcon },
-  reports: { label: "Reports", short: "Reports", icon: ActivityIcon },
+  pricing: { label: "Preise", short: "Preis", icon: DollarSignIcon },
+  servers: { label: "Server", short: "Server", icon: ServerIcon },
+  explorer: { label: "Tabellen", short: "Tab.", icon: TableIcon },
+  reports: { label: "Berichte", short: "Ber.", icon: ActivityIcon },
   export: { label: "Export", short: "Export", icon: FileDownIcon },
 }
 
@@ -91,36 +91,38 @@ export function AppShell({ children }: { children: ReactNode }) {
           <FullscreenToggle />
           <Badge variant="outline" className="hidden lg:inline-flex">
             <DatabaseIcon data-icon="inline-start" />
-            {ready ? "Ready" : "starting"}
+            {ready ? "Bereit" : "startet"}
           </Badge>
           <Badge variant="secondary">
-            {files.length} files · {rowCounts.cycles} cycles
+            {files.length} Dateien · {rowCounts.cycles} Takte
           </Badge>
           {filterCount > 0 ? (
-            <Badge variant="outline">{filterCount} filters</Badge>
+            <Badge variant="outline">{filterCount} Filter</Badge>
           ) : null}
-          {loading ? <Badge>working</Badge> : null}
+          {loading ? <Badge>arbeitet</Badge> : null}
         </div>
       </header>
       {error ? (
         <Alert variant="destructive" className="mx-3 mt-2 print:hidden">
-          <AlertTitle>Could not start Floorline</AlertTitle>
+          <AlertTitle>Floorline konnte nicht starten</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
       {restoreFailed.length > 0 ? (
         <Alert variant="destructive" className="mx-3 mt-2 print:hidden">
-          <AlertTitle>Could not restore {restoreFailed.join(", ")}</AlertTitle>
+          <AlertTitle>
+            Wiederherstellen fehlgeschlagen: {restoreFailed.join(", ")}
+          </AlertTitle>
           <AlertDescription className="flex flex-wrap items-center gap-2">
-            Load the last XML drop or the demo pack.
+            Letzten XML-Wurf oder das Demopaket laden.
             <Button size="sm" onClick={() => void ingestDemo()}>
-              Load demo
+              Demo laden
             </Button>
             <Button size="sm" variant="outline" onClick={() => setView("ingest")}>
-              Go to Ingest
+              Zum Import
             </Button>
             <Button size="sm" variant="ghost" onClick={dismissRestoreFailed}>
-              Dismiss
+              Schließen
             </Button>
           </AlertDescription>
         </Alert>

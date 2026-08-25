@@ -31,25 +31,25 @@ import { EmptyProduction } from "@/components/empty-production"
 import { useFloorline } from "@/state/floorline-store"
 
 const DIM_LABEL: Record<OlapDimensionId, string> = {
-  plant: "Plant",
-  line: "Line",
+  plant: "Werk",
+  line: "Linie",
   station: "Station",
-  machine: "Machine",
-  shift: "Shift",
+  machine: "Maschine",
+  shift: "Schicht",
   sku: "SKU",
-  result: "Result",
-  hour: "Hour",
+  result: "Ergebnis",
+  hour: "Stunde",
 }
 
 const MEASURE_LABEL: Record<OlapMeasureId, string> = {
-  cycles: "Cycles",
-  units: "Units",
-  good_units: "Good",
-  scrap_units: "Scrap",
+  cycles: "Takte",
+  units: "Stück",
+  good_units: "Gutteile",
+  scrap_units: "Ausschuss",
   fpy_pct: "FPY %",
-  avg_cycle_ms: "Avg cycle",
-  downtime_min: "Downtime min",
-  open_alarms: "Open alarms",
+  avg_cycle_ms: "Mittl. Takt",
+  downtime_min: "Stillstand Min",
+  open_alarms: "Offene Alarme",
 }
 
 export function OlapPage() {
@@ -96,7 +96,7 @@ export function OlapPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "OLAP query failed")
+          setLoadError(err instanceof Error ? err.message : "OLAP-Abfrage fehlgeschlagen")
         }
       })
     return () => {
@@ -107,8 +107,8 @@ export function OlapPage() {
   if (rowCounts.cycles === 0) {
     return (
       <EmptyProduction
-        title="No cube to aggregate"
-        description="Load production files, then slice by plant, line, shift, or hour."
+        title="Kein Würfel zum Aggregieren"
+        description="Produktionsdateien laden, dann nach Werk, Linie, Schicht oder Stunde schneiden."
       />
     )
   }
@@ -116,30 +116,31 @@ export function OlapPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">OLAP cube</h2>
+        <h2 className="font-heading text-lg font-medium">OLAP-Würfel</h2>
         <p className="text-sm text-muted-foreground">
-          DuckDB groups the current filter (the slice). Add dimensions to
-          drill. Click a row to dice those values into the filter.
+          DuckDB gruppiert den aktuellen Filter, den Schnitt. Dimensionen
+          ergänzen den Drill. Klick auf eine Zeile würfelt die Werte in den
+          Filter.
         </p>
       </div>
       {loadError ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not build the cube</AlertTitle>
+          <AlertTitle>Würfel konnte nicht gebaut werden</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : null}
       <Card>
         <CardHeader>
-          <CardTitle>Grain</CardTitle>
+          <CardTitle>Körnung</CardTitle>
           <CardDescription>
             {dimensions.length === 0
-              ? "No dimensions — one total row for the slice."
-              : `Grouped by ${dimensions.map((id) => DIM_LABEL[id]).join(" → ")}`}
+              ? "Keine Dimensionen, eine Summe für den Schnitt."
+              : `Gruppiert nach ${dimensions.map((id) => DIM_LABEL[id]).join(" → ")}`}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Field>
-            <FieldLabel>Dimensions</FieldLabel>
+            <FieldLabel>Dimensionen</FieldLabel>
             <ToggleGroup
               multiple
               value={dimensions}
@@ -155,7 +156,7 @@ export function OlapPage() {
             </ToggleGroup>
           </Field>
           <Field>
-            <FieldLabel>Measures</FieldLabel>
+            <FieldLabel>Kennzahlen</FieldLabel>
             <ToggleGroup
               multiple
               value={measures}
@@ -172,25 +173,25 @@ export function OlapPage() {
           </Field>
           {dropped.length > 0 ? (
             <p className="text-sm text-muted-foreground">
-              Hidden at this grain:{" "}
-              {dropped.map((id) => MEASURE_LABEL[id]).join(", ")}. SKU and
-              result live on cycles only.
+              Auf dieser Körnung ausgeblendet:{" "}
+              {dropped.map((id) => MEASURE_LABEL[id]).join(", ")}. SKU und
+              Ergebnis leben nur auf Takten.
             </p>
           ) : null}
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Cells</CardTitle>
+          <CardTitle>Zellen</CardTitle>
           <CardDescription>
-            {rows.length} rows · click to dice · rail stays the slice
+            {rows.length} Zeilen · Klick würfelt · Leiste bleibt der Schnitt
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <DataTable
             rows={rows}
             maxHeight="28rem"
-            emptyLabel="No cells for this slice."
+            emptyLabel="Keine Zellen für diesen Schnitt."
             onRowClick={(row) => {
               const patch = olapDicePatch(row)
               if (Object.keys(patch).length === 0) {
@@ -205,11 +206,11 @@ export function OlapPage() {
               size="sm"
               onClick={() => {
                 void copyToClipboard(sql.trim()).then(() =>
-                  toast.success("Cube SQL copied")
+                  toast.success("Würfel-SQL kopiert")
                 )
               }}
             >
-              Copy SQL
+              SQL kopieren
             </Button>
             <Button
               variant="ghost"
@@ -219,7 +220,7 @@ export function OlapPage() {
                 setDimensions(dimensions.slice(0, dimensions.length - 1))
               }
             >
-              Roll up last
+              Letzte Dimension hochrollen
             </Button>
           </div>
           <pre className="overflow-auto rounded-lg bg-muted p-3 text-xs">

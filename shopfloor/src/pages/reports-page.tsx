@@ -20,10 +20,10 @@ export function ReportsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-heading text-lg font-medium">Auto reporting</h2>
+          <h2 className="font-heading text-lg font-medium">Autoberichte</h2>
           <p className="text-sm text-muted-foreground">
-            Rebuilds from DuckDB whenever data or filters change. Print this
-            page or export a text pack.
+            Baut sich aus DuckDB neu, wenn Daten oder Filter wechseln. Diese
+            Seite drucken oder als Textpaket exportieren.
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
@@ -39,17 +39,17 @@ export function ReportsPage() {
               })
             }}
           >
-            Export report pack
+            Berichtspaket exportieren
           </Button>
           <Button variant="outline" onClick={() => window.print()}>
-            Print
+            Drucken
           </Button>
         </div>
       </div>
       {files.length === 0 ? (
         <EmptyProduction
-          title="No reports yet"
-          description="Load production files to build shift, triage, and server reports."
+          title="Noch keine Berichte"
+          description="Produktionsdateien laden, um Schicht-, Triage- und Serverberichte zu bauen."
         />
       ) : null}
       <div className="grid gap-4 xl:grid-cols-3 print:grid-cols-1">
@@ -109,7 +109,7 @@ export function ReportsPage() {
             </CardContent>
             <CardFooter>
               <p className="text-xs text-muted-foreground">
-                Generated {report.generatedAt}
+                Erzeugt {report.generatedAt}
               </p>
             </CardFooter>
           </Card>

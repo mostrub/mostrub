@@ -24,22 +24,22 @@ export function FilterChips() {
   }
   return (
     <div className="flex flex-wrap items-center gap-1 border-b px-4 py-1 print:hidden">
-      {chip("Plant", filters.plants, () => patchFilters({ plants: [] }))}
-      {chip("Line", filters.lines, () => patchFilters({ lines: [] }))}
+      {chip("Werk", filters.plants, () => patchFilters({ plants: [] }))}
+      {chip("Linie", filters.lines, () => patchFilters({ lines: [] }))}
       {chip("Station", filters.stations, () => patchFilters({ stations: [] }))}
-      {chip("Machine", filters.machines, () => patchFilters({ machines: [] }))}
-      {chip("Controller", filters.controllers, () =>
+      {chip("Maschine", filters.machines, () => patchFilters({ machines: [] }))}
+      {chip("Steuerung", filters.controllers, () =>
         patchFilters({ controllers: [] })
       )}
       {chip("Server", filters.servers, () => patchFilters({ servers: [] }))}
-      {chip("Shift", filters.shifts, () => patchFilters({ shifts: [] }))}
+      {chip("Schicht", filters.shifts, () => patchFilters({ shifts: [] }))}
       {chip("SKU", filters.skus, () => patchFilters({ skus: [] }))}
-      {chip("WO", filters.workOrders, () => patchFilters({ workOrders: [] }))}
-      {chip("Result", filters.results, () => patchFilters({ results: [] }))}
-      {chip("Severity", filters.severities, () =>
+      {chip("AO", filters.workOrders, () => patchFilters({ workOrders: [] }))}
+      {chip("Ergebnis", filters.results, () => patchFilters({ results: [] }))}
+      {chip("Stufe", filters.severities, () =>
         patchFilters({ severities: [] })
       )}
-      {chip("Downtime", filters.downtimeCategories, () =>
+      {chip("Stillstand", filters.downtimeCategories, () =>
         patchFilters({ downtimeCategories: [] })
       )}
       {filters.from ? (
@@ -48,7 +48,7 @@ export function FilterChips() {
           variant="secondary"
           onClick={() => patchFilters({ from: null })}
         >
-          From {filters.from.slice(0, 16).replace("T", " ")}
+          Von {filters.from.slice(0, 16).replace("T", " ")}
         </Button>
       ) : null}
       {filters.to ? (
@@ -57,7 +57,7 @@ export function FilterChips() {
           variant="secondary"
           onClick={() => patchFilters({ to: null })}
         >
-          To {filters.to.slice(0, 16).replace("T", " ")}
+          Bis {filters.to.slice(0, 16).replace("T", " ")}
         </Button>
       ) : null}
       {filters.minCycleMs !== null ? (
@@ -66,7 +66,7 @@ export function FilterChips() {
           variant="secondary"
           onClick={() => patchFilters({ minCycleMs: null })}
         >
-          Min cycle {filters.minCycleMs} ms
+          Min. Takt {filters.minCycleMs} ms
         </Button>
       ) : null}
       {filters.maxCycleMs !== null ? (
@@ -75,7 +75,7 @@ export function FilterChips() {
           variant="secondary"
           onClick={() => patchFilters({ maxCycleMs: null })}
         >
-          Max cycle {filters.maxCycleMs} ms
+          Max. Takt {filters.maxCycleMs} ms
         </Button>
       ) : null}
       {filters.search ? (
@@ -84,7 +84,7 @@ export function FilterChips() {
           variant="secondary"
           onClick={() => patchFilters({ search: "" })}
         >
-          Search: {filters.search}
+          Suche: {filters.search}
         </Button>
       ) : null}
       {filters.onlyAnomalies ? (
@@ -93,11 +93,11 @@ export function FilterChips() {
           variant="secondary"
           onClick={() => patchFilters({ onlyAnomalies: false })}
         >
-          Anomalies
+          Anomalien
         </Button>
       ) : null}
       <Button size="xs" variant="ghost" onClick={clearFilters}>
-        Clear all
+        Alles leeren
       </Button>
     </div>
   )

@@ -54,7 +54,7 @@ export function PricingPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Pricing query failed")
+          setLoadError(err instanceof Error ? err.message : "Preisabfrage fehlgeschlagen")
         }
       })
     return () => {
@@ -65,8 +65,8 @@ export function PricingPage() {
   if (rowCounts.cycles === 0) {
     return (
       <EmptyProduction
-        title="No cycles to price"
-        description="Load battery production files, then slice by plant, line, shift, or SKU."
+        title="Keine Takte zum Kalkulieren"
+        description="Batterieproduktion laden, dann nach Werk, Linie, Schicht oder SKU schneiden."
       />
     )
   }
@@ -74,23 +74,23 @@ export function PricingPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">Battery pricing</h2>
+        <h2 className="font-heading text-lg font-medium">Batteriepreise</h2>
         <p className="text-sm text-muted-foreground">
-          Catalog list price minus material, shift labor, scrap spread, and
-          allocated downtime. Night shift B is a labor premium. Click a row to
-          dice. The rail stays the slice.
+          Listenpreis minus Material, Schichtlohn, Ausschussumlage und
+          zugeteiltem Stillstand. Nachtschicht B hat einen Lohnaufschlag. Klick
+          auf eine Zeile würfelt. Die Leiste bleibt der Schnitt.
         </p>
       </div>
       {loadError ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not price this slice</AlertTitle>
+          <AlertTitle>Dieser Schnitt ließ sich nicht kalkulieren</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : null}
       <div className="grid gap-3 sm:grid-cols-3">
         <Card size="sm">
           <CardHeader>
-            <CardDescription>Weighted margin</CardDescription>
+            <CardDescription>Gewichtete Marge</CardDescription>
             <CardTitle className="font-mono text-xl">
               {formatPct(marginPct)}
             </CardTitle>
@@ -98,13 +98,13 @@ export function PricingPage() {
         </Card>
         <Card size="sm">
           <CardHeader>
-            <CardDescription>Priced grains</CardDescription>
+            <CardDescription>Preiszeilen</CardDescription>
             <CardTitle className="font-mono text-xl">{priced.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card size="sm">
           <CardHeader>
-            <CardDescription>Shift labor</CardDescription>
+            <CardDescription>Schichtlohn</CardDescription>
             <CardTitle className="font-mono text-xl">
               A {formatMoney(SHIFT_LABOR_RATE.A)} / B{" "}
               {formatMoney(SHIFT_LABOR_RATE.B)}
@@ -114,16 +114,16 @@ export function PricingPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Unit cost by SKU × shift × line</CardTitle>
+          <CardTitle>Stückkosten nach SKU × Schicht × Linie</CardTitle>
           <CardDescription>
-            Lowest margin first · click to dice · rail stays the slice
+            Niedrigste Marge zuerst · Klick würfelt · Leiste bleibt der Schnitt
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <DataTable
             rows={priced}
             maxHeight="28rem"
-            emptyLabel="No catalog SKUs in this slice."
+            emptyLabel="Keine Katalog-SKUs in diesem Schnitt."
             onRowClick={(row) => {
               const patch = pricingDicePatch(row)
               if (Object.keys(patch).length === 0) {
@@ -138,26 +138,26 @@ export function PricingPage() {
             className="self-start"
             onClick={() => {
               void copyToClipboard(priceSql.trim()).then(() =>
-                toast.success("Pricing SQL copied")
+                toast.success("Preis-SQL kopiert")
               )
             }}
           >
-            Copy SQL
+            SQL kopieren
           </Button>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>Dependent lines</CardTitle>
+          <CardTitle>Abhängige Linien</CardTitle>
           <CardDescription>
-            CELL-1 feeds MOD-1 feeds PACK-1. Upstream unplanned downtime
-            starves the next line.
+            CELL-1 speist MOD-1 speist PACK-1. Ungeplanter Stillstand vorne
+            hungert die nächste Linie aus.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
             rows={deps}
-            emptyLabel="No line edges for this slice."
+            emptyLabel="Keine Linienkanten in diesem Schnitt."
             onRowClick={(row) => {
               const patch = dependentLineDicePatch(row)
               if (Object.keys(patch).length === 0) {
@@ -171,8 +171,8 @@ export function PricingPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Catalog</CardTitle>
-            <CardDescription>List price and material cost</CardDescription>
+            <CardTitle>Katalog</CardTitle>
+            <CardDescription>Listenpreis und Materialkosten</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable
@@ -187,8 +187,8 @@ export function PricingPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Line graph</CardTitle>
-            <CardDescription>Feeder → dependent</CardDescription>
+            <CardTitle>Liniengraph</CardTitle>
+            <CardDescription>Zulauf → Abnahme</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable

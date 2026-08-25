@@ -2,6 +2,7 @@ import type { KeyboardEvent } from "react"
 
 import type { QueryRow } from "@/lib/duckdb/engine"
 import { cellText } from "@/lib/format"
+import { columnLabel } from "@/lib/labels"
 import {
   Table,
   TableBody,
@@ -32,7 +33,7 @@ export function DataTable({
   if (columns.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        {emptyLabel ?? "No rows for this filter."}
+        {emptyLabel ?? "Keine Zeilen für diesen Filter."}
       </p>
     )
   }
@@ -57,7 +58,7 @@ export function DataTable({
         <TableHeader>
           <TableRow>
             {columns.map((column) => (
-              <TableHead key={column}>{column}</TableHead>
+              <TableHead key={column}>{columnLabel(column)}</TableHead>
             ))}
           </TableRow>
         </TableHeader>

@@ -21,7 +21,7 @@ describe("assertReadOnlySelect", () => {
     )
     expect(() =>
       assertReadOnlySelect("SELECT * FROM cycles; DROP TABLE cycles")
-    ).toThrow(/One statement/)
+    ).toThrow(/eine Anweisung/)
     expect(() =>
       assertReadOnlySelect("SELECT * FROM cycles WHERE result = 'PASS' ; COPY x")
     ).toThrow()

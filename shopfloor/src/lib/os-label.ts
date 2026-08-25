@@ -20,7 +20,7 @@ export function visitorOperatingSystem(userAgent: string): string {
   if (userAgent.includes("Linux")) {
     return "Linux"
   }
-  return "this device"
+  return "dieses Gerät"
 }
 
 export function hostOperatingSystemLabel(platform: string, os: string): string {
@@ -35,7 +35,7 @@ export function hostOperatingSystemLabel(platform: string, os: string): string {
       if (os.length > 0) {
         return os
       }
-      return "this computer"
+      return "dieser Rechner"
     }
   }
 }
@@ -60,7 +60,7 @@ export function formatPeerLabel(peer: NetworkPeer): string {
     return `${peer.os} · host`
   }
   if (peer.ip === "127.0.0.1" || peer.ip === "::1") {
-    return `${peer.os} · this machine`
+    return `${peer.os} · dieser Rechner`
   }
   return `${peer.os} · ${peer.ip}`
 }

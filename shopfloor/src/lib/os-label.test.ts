@@ -47,7 +47,7 @@ describe("peer labels", () => {
       "Windows · host"
     )
     expect(formatPeerLabel({ os: "macOS", ip: "127.0.0.1", role: "client" })).toBe(
-      "macOS · this machine"
+      "macOS · dieser Rechner"
     )
     expect(formatPeerLabel({ os: "Linux", ip: "192.168.1.20", role: "client" })).toBe(
       "Linux · 192.168.1.20"

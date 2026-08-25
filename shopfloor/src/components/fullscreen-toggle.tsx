@@ -22,7 +22,7 @@ export function FullscreenToggle() {
       size="sm"
       variant="outline"
       aria-pressed={active}
-      aria-label={active ? "Exit full screen" : "Full screen"}
+      aria-label={active ? "Vollbild beenden" : "Vollbild"}
       onClick={() => {
         if (document.fullscreenElement) {
           void document.exitFullscreen()
@@ -36,7 +36,7 @@ export function FullscreenToggle() {
       ) : (
         <MaximizeIcon data-icon="inline-start" />
       )}
-      {active ? "Exit" : "Full screen"}
+      {active ? "Ende" : "Vollbild"}
     </Button>
   )
 }

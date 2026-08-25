@@ -1,21 +1,21 @@
 # Floorline
 
-Local-first shopfloor production viewer. It runs in the browser, parses MES XML from a Windows share drop, and uses DuckDB-WASM for filtering, charts, reports, and Parquet/CSV export.
+Lokaler Fertigungsviewer für die Shopfloor. Läuft im Browser, liest MES-XML aus einer Windows-Freigabe und nutzt DuckDB-WASM für Filter, Diagramme, Berichte und Parquet/CSV-Export.
 
-Native DuckDB on Windows is not required. The same engine runs inside the page.
+Native DuckDB unter Windows ist nicht nötig. Dieselbe Engine läuft in der Seite.
 
-## One-time install
+## Einmalige Installation
 
-**Windows 11:** double-click `install-windows.cmd`, or:
+**Windows 11:** `install-windows.cmd` doppelklicken, oder:
 
 ```powershell
 cd shopfloor
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
 ```
 
-That installs Node.js LTS with winget if it is missing, runs `npm install`, puts **Floorline** and **Stop Floorline** on the Desktop, and opens the app full screen. If winget is unavailable, install Node.js LTS from https://nodejs.org and re-run the script.
+Das installiert Node.js LTS mit winget, falls es fehlt, führt `npm install` aus, legt **Floorline** und **Floorline beenden** auf den Desktop und öffnet die App im Vollbild. Ohne winget Node.js LTS von https://nodejs.org installieren und das Skript erneut starten.
 
-**macOS:** double-click `install-macos.command`, or:
+**macOS:** `install-macos.command` doppelklicken, oder:
 
 ```bash
 cd shopfloor
@@ -23,22 +23,22 @@ chmod +x install-macos.sh
 ./install-macos.sh
 ```
 
-That installs Homebrew and Node.js if they are missing, runs `npm install`, and puts **Floorline** and **Stop Floorline** on the Desktop (including localized Desktop folders). If macOS blocks a `.command` file: right-click → Open.
+Das installiert Homebrew und Node.js, falls sie fehlen, führt `npm install` aus und legt **Floorline** und **Floorline beenden** auf den Desktop, auch in lokalisierten Desktop-Ordnern. Wenn macOS eine `.command`-Datei blockiert: Rechtsklick, Öffnen.
 
-After that, people on the floor only need two Desktop icons (and a **How to use Floorline** note):
+Danach brauchen die Leute an der Linie nur zwei Desktop-Symbole und die Notiz **Floorline – Kurzanleitung**:
 
-- **Floorline** — starts the app in full screen. No black window.
-- **Stop Floorline** — closes it and says so in a short message.
+- **Floorline** startet die App im Vollbild. Kein schwarzes Fenster.
+- **Floorline beenden** schließt sie und sagt das in einer kurzen Meldung.
 
-The header also has **Full screen** if someone leaves the windowed view.
+Im Kopf gibt es zusätzlich **Vollbild**, falls jemand die Fensteransicht verlässt.
 
-Light, Dark, and System live in the header. The `d` key still flips light and dark when focus is not in an input.
+Hell, Dunkel und System stehen im Kopf. Die Taste `d` wechselt Hell und Dunkel, wenn der Fokus nicht in einem Eingabefeld liegt.
 
-## Share on the shopfloor LAN
+## Im Shopfloor-LAN teilen
 
-The installer and Desktop launcher bind all network interfaces. **Share** in the header lists LAN URLs, the host operating system, and every Windows / macOS / Linux browser that has opened this instance. Copy the join message and send it to the other PCs. Production data stays on the host PC.
+Installer und Desktop-Starter binden alle Netzwerkschnittstellen. **Freigabe** im Kopf listet LAN-URLs, das Host-Betriebssystem und jeden Windows-, Mac- und Linux-Browser, der diese Instanz geöffnet hat. Die Beitrittsnachricht kopieren und an die anderen Rechner schicken. Die Produktionsdaten bleiben auf dem Host-Rechner.
 
-Manual equivalent (this PC only, or LAN if you keep the default Vite host):
+Manuelles Äquivalent, nur dieser Rechner, oder LAN wenn der Vite-Host so bleibt:
 
 ```powershell
 cd shopfloor
@@ -46,42 +46,44 @@ npm install
 npm run dev
 ```
 
-Mapped drives and UNC shares work through the file picker (`Z:\production\xml` or `\\mes-aus-01\production\xml`). Select multiple `.xml` files, or click **Load demo production share**.
+Gemappte Laufwerke und UNC-Freigaben funktionieren über den Dateidialog (`Z:\produktion\xml` oder `\\mes-aus-01\production\xml`). Mehrere `.xml`-Dateien wählen oder **Demo-Produktion laden** klicken.
 
-`npm run build` then `npm run preview` is the offline bundle.
+`npm run build` und danach `npm run preview` ist das Offline-Paket.
 
-## XML shape
+## XML-Form
 
 ```xml
 <ShopfloorExport plant="AUSTIN" sourceShare="\\mes-aus-01\production\xml" shift="A" shiftDate="2026-08-25">
-  <Cycle id="CYC-1" line="ASM-1" station="ST-04" machine="WELD-04"
-    controller="PLC-WELD-04" workOrder="WO-1" sku="BRK-440" serial="SN-1"
+  <Cycle id="CYC-1" line="CELL-1" station="ST-04" machine="CELL-1-ST-04"
+    controller="PLC-CELL-1-ST-04" workOrder="WO-1" sku="CELL-2170" serial="SN-1"
     operator="OP-17" startedAt="2026-08-25T06:01:00Z" endedAt="2026-08-25T06:01:12Z"
     cycleMs="12000" targetCycleMs="11000" result="PASS" goodQty="1" scrapQty="0" reworkQty="0"/>
-  <Downtime id="DT-1" line="ASM-1" durationMs="480000" reasonCode="E-STOP" category="UNPLANNED"/>
-  <Alarm id="AL-1" severity="CRITICAL" code="E401" message="estop circuit open"/>
-  <ServerSample serverId="SRV-AUS-ASM-1-MES" role="MES" cpuPct="42" plcScanMs="9.1"/>
-  <Controller id="PLC-WELD-04" vendor="Siemens" scanMsP95="14.1" runMode="RUN"/>
+  <Downtime id="DT-1" line="CELL-1" durationMs="480000" reasonCode="STARVE" category="UNPLANNED"/>
+  <Alarm id="AL-1" severity="CRITICAL" code="E401" message="Not-Halt-Kreis offen"/>
+  <ServerSample serverId="SRV-AUS-CELL-1-MES" role="MES" cpuPct="42" plcScanMs="9.1"/>
+  <Controller id="PLC-CELL-1-ST-04" vendor="Siemens" scanMsP95="14.1" runMode="RUN"/>
 </ShopfloorExport>
 ```
 
-camelCase and snake_case attributes both parse.
+camelCase- und snake_case-Attribute werden beide gelesen.
 
-## Views
+## Ansichten
 
-- Ingest — XML folder/share drop, plus CSV/Parquet round-trip
-- Dashboard — OEE (A/P/Q), units, FPY, cycle histogram, shift × line
-- Drill and triage — plant → line → station → machine → controller
-- Servers — MES/HMI/gateway/historian profiles and PLC controllers
-- Explorer — table scan plus a read-only SQL console
-- Reports — auto shift / loss / server reports, print
-- Export — CSV, Parquet, share URL, filter card
-- Local snapshot — IndexedDB parquet so a refresh keeps the last ingest
-- Filter presets and chips — save ASM-2 night, pin/clear from the header
+- Import. XML-Ordner oder Freigabe, plus CSV/Parquet-Rundlauf
+- Übersicht. OEE (V/L/Q), Stück, FPY, Takthistogramm, Schicht × Linie, Marge, abhängige Linien
+- Drill und Triage. Werk → Linie → Station → Maschine → Steuerung
+- OLAP. DuckDB-Würfel über den aktuellen Filter
+- Preise. Katalog, Schichtlohn, Stückkosten, Marge
+- Server. MES/HMI/Gateway/Historie und PLC-Steuerungen
+- Tabellen. Tabellenscan plus schreibgeschützte SQL-Konsole
+- Berichte. Automatische Schicht-, Verlust- und Serverberichte, Druck
+- Export. CSV, Parquet, Freigabe-URL, Filterkarte
+- Lokaler Stand. IndexedDB-Parquet, damit ein Refresh den letzten Import behält
+- Filtervorlagen und Chips. CELL-1 Nacht speichern, aus dem Kopf pinnen oder leeren
 
-Filters live in the left rail and in the URL hash so a view can be sent to someone else on the same machine.
+Filter leben in der linken Leiste und im URL-Hash, damit eine Ansicht an jemand anderen auf demselben Rechner geht.
 
-## Scripts
+## Skripte
 
 ```powershell
 npm test

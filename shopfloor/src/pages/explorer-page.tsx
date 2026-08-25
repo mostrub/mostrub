@@ -94,7 +94,7 @@ export function ExplorerPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setTableError(err instanceof Error ? err.message : "Explorer query failed")
+          setTableError(err instanceof Error ? err.message : "Tabellenabfrage fehlgeschlagen")
         }
       })
     return () => {
@@ -109,8 +109,8 @@ export function ExplorerPage() {
   if (ready && !hasData) {
     return (
       <EmptyProduction
-        title="No tables loaded"
-        description="Load production files to browse cycles, downtime, alarms, and servers."
+        title="Keine Tabellen geladen"
+        description="Produktionsdateien laden, um Takte, Stillstand, Alarme und Server zu sehen."
       />
     )
   }
@@ -118,23 +118,23 @@ export function ExplorerPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">Tables</h2>
+        <h2 className="font-heading text-lg font-medium">Tabellen</h2>
         <p className="text-sm text-muted-foreground">
-          Filtered table scan with sort and paging. Search hits text columns
-          via ILIKE.
+          Gefilterter Tabellenscan mit Sortierung und Seiten. Die Suche trifft
+          Textspalten über ILIKE.
         </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Table</CardTitle>
+          <CardTitle>Tabelle</CardTitle>
           <CardDescription>
-            {total} rows after filters · page {page + 1} / {pages}
+            {total} Zeilen nach Filter · Seite {page + 1} / {pages}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <div className="flex flex-wrap items-end gap-3">
             <Field className="w-52">
-              <FieldLabel>Source</FieldLabel>
+              <FieldLabel>Quelle</FieldLabel>
               <Select
                 value={table}
                 onValueChange={(value) => {
@@ -159,7 +159,7 @@ export function ExplorerPage() {
               </Select>
             </Field>
             <Field className="w-52">
-              <FieldLabel>Sort</FieldLabel>
+              <FieldLabel>Sortierung</FieldLabel>
               <Select
                 value={sortColumn}
                 onValueChange={(value) => {
@@ -195,11 +195,11 @@ export function ExplorerPage() {
               <ToggleGroupItem value="DESC">DESC</ToggleGroupItem>
             </ToggleGroup>
             <Field className="min-w-56 flex-1">
-              <FieldLabel htmlFor="rail-search">Quick search</FieldLabel>
+              <FieldLabel htmlFor="rail-search">Schnellsuche</FieldLabel>
               <Input
                 id="rail-search"
                 value={filters.search}
-                placeholder="Applies the same search filter as the rail"
+                placeholder="Dieselbe Suche wie in der Leiste"
                 onChange={(event) => patchFilters({ search: event.target.value })}
               />
             </Field>
@@ -209,7 +209,7 @@ export function ExplorerPage() {
           ) : null}
           <DataTable
             rows={rows}
-            emptyLabel="No rows in this table for the current filter."
+            emptyLabel="Keine Zeilen in dieser Tabelle für den aktuellen Filter."
             maxHeight="32rem"
             onRowClick={(row) => {
               const serial = row.serial
@@ -230,7 +230,7 @@ export function ExplorerPage() {
               disabled={page === 0}
               onClick={() => setPage((current) => Math.max(0, current - 1))}
             >
-              Previous
+              Zurück
             </Button>
             <Button
               variant="outline"
@@ -238,21 +238,21 @@ export function ExplorerPage() {
               disabled={page + 1 >= pages}
               onClick={() => setPage((current) => current + 1)}
             >
-              Next
+              Weiter
             </Button>
           </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardTitle>SQL console</CardTitle>
+          <CardTitle>SQL-Konsole</CardTitle>
           <CardDescription>
-            Read-only SELECT / WITH against the same DuckDB tables.
+            Nur SELECT / WITH auf denselben DuckDB-Tabellen.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <Field>
-            <FieldLabel htmlFor="sql">Query</FieldLabel>
+            <FieldLabel htmlFor="sql">Abfrage</FieldLabel>
             <textarea
               id="sql"
               value={sqlText}
@@ -261,7 +261,7 @@ export function ExplorerPage() {
               className="min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 font-mono text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
             <FieldDescription>
-              Writes, COPY, and multiple statements are blocked.
+              Schreiben, COPY und mehrere Anweisungen sind gesperrt.
             </FieldDescription>
           </Field>
           {sqlError ? (
@@ -274,11 +274,11 @@ export function ExplorerPage() {
                 .then((rows) => setSqlRows(rows))
                 .catch((err: unknown) => {
                   setSqlRows([])
-                  setSqlError(err instanceof Error ? err.message : "Query failed")
+                  setSqlError(err instanceof Error ? err.message : "Abfrage fehlgeschlagen")
                 })
             }}
           >
-            Run
+            Ausführen
           </Button>
           <DataTable rows={sqlRows} maxHeight="20rem" />
         </CardContent>

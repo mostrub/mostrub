@@ -19,7 +19,7 @@ export function EmptyProduction(args: {
         <EmptyTitle>{args.title}</EmptyTitle>
         <EmptyDescription>
           {args.description ??
-            "Load the demo pack or drop XML from the share."}
+            "Demopaket laden oder XML aus der Freigabe ablegen."}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
@@ -28,10 +28,10 @@ export function EmptyProduction(args: {
             onClick={() => void ingestDemo()}
             disabled={!ready || loading}
           >
-            Load demo production
+            Demo-Produktion laden
           </Button>
           <Button variant="outline" onClick={() => setView("ingest")}>
-            Go to Ingest
+            Zum Import
           </Button>
         </div>
       </EmptyContent>

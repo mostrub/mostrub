@@ -1,6 +1,6 @@
-# Floorline one-script install for Windows 11.
-# Double-click install-windows.cmd.
-# Creates Desktop icons: Floorline (start, full screen) and Stop Floorline.
+# Floorline-Ein-Skript-Installation für Windows 11.
+# install-windows.cmd doppelklicken.
+# Desktop-Symbole: Floorline (Start, Vollbild) und Floorline beenden.
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -16,21 +16,21 @@ function Ensure-Node {
   Refresh-Path
   $node = Get-Command node -ErrorAction SilentlyContinue
   if ($node) {
-    Write-Host "Node.js $($node.Source) already on PATH."
+    Write-Host "Node.js $($node.Source) ist schon im PATH."
     return
   }
 
   $winget = Get-Command winget -ErrorAction SilentlyContinue
   if (-not $winget) {
-    throw "Node.js is not installed and winget was not found. Install Node.js LTS from https://nodejs.org then re-run this script."
+    throw "Node.js ist nicht installiert und winget fehlt. Node.js LTS von https://nodejs.org installieren und dieses Skript erneut starten."
   }
 
-  Write-Host "Installing Node.js LTS with winget..."
+  Write-Host "Installiere Node.js LTS mit winget..."
   winget install --id OpenJS.NodeJS.LTS --source winget --accept-package-agreements --accept-source-agreements --silent
   Refresh-Path
   $node = Get-Command node -ErrorAction SilentlyContinue
   if (-not $node) {
-    throw "Node.js installed but is not on PATH yet. Close this window, open a new PowerShell, and re-run this script."
+    throw "Node.js ist installiert, aber noch nicht im PATH. Dieses Fenster schließen, eine neue PowerShell öffnen und das Skript erneut starten."
   }
 }
 
@@ -81,25 +81,25 @@ function Install-DesktopShortcuts {
   $startIcon = Get-StartIcon
   $stopIcon = "$env:SystemRoot\System32\shell32.dll,27"
 
-  New-FloorlineShortcut -Path (Join-Path $desktop "Floorline.lnk") -TargetPath $startVbs -Description "Start Floorline full screen" -IconLocation $startIcon
-  New-FloorlineShortcut -Path (Join-Path $desktop "Stop Floorline.lnk") -TargetPath $stopVbs -Description "Stop Floorline" -IconLocation $stopIcon
-  New-FloorlineShortcut -Path (Join-Path $pack "Start Floorline.lnk") -TargetPath $startVbs -Description "Start Floorline full screen" -IconLocation $startIcon
-  New-FloorlineShortcut -Path (Join-Path $pack "Stop Floorline.lnk") -TargetPath $stopVbs -Description "Stop Floorline" -IconLocation $stopIcon
-  Copy-Item -Path (Join-Path $Root "HOW-TO-USE.txt") -Destination (Join-Path $pack "How to use Floorline.txt") -Force
-  Copy-Item -Path (Join-Path $Root "HOW-TO-USE.txt") -Destination (Join-Path $desktop "How to use Floorline.txt") -Force
-  Write-Host "Desktop icons: Floorline and Stop Floorline"
+  New-FloorlineShortcut -Path (Join-Path $desktop "Floorline.lnk") -TargetPath $startVbs -Description "Floorline im Vollbild starten" -IconLocation $startIcon
+  New-FloorlineShortcut -Path (Join-Path $desktop "Floorline beenden.lnk") -TargetPath $stopVbs -Description "Floorline beenden" -IconLocation $stopIcon
+  New-FloorlineShortcut -Path (Join-Path $pack "Floorline starten.lnk") -TargetPath $startVbs -Description "Floorline im Vollbild starten" -IconLocation $startIcon
+  New-FloorlineShortcut -Path (Join-Path $pack "Floorline beenden.lnk") -TargetPath $stopVbs -Description "Floorline beenden" -IconLocation $stopIcon
+  Copy-Item -Path (Join-Path $Root "HOW-TO-USE.txt") -Destination (Join-Path $pack "Floorline - Kurzanleitung.txt") -Force
+  Copy-Item -Path (Join-Path $Root "HOW-TO-USE.txt") -Destination (Join-Path $desktop "Floorline - Kurzanleitung.txt") -Force
+  Write-Host "Desktop-Symbole: Floorline und Floorline beenden"
 }
 
 Ensure-Node
 Write-Host "node $(node -v)  npm $(npm -v)"
-Write-Host "Installing npm packages in $Root ..."
+Write-Host "Installiere npm-Pakete in $Root ..."
 npm install
 Install-DesktopShortcuts
 
 Write-Host ""
-Write-Host "Install finished. People on the floor only need the Desktop icons:"
-Write-Host "  Floorline — starts the app full screen"
-Write-Host "  Stop Floorline — closes it"
+Write-Host "Installation fertig. An der Linie reichen die Desktop-Symbole:"
+Write-Host "  Floorline startet die App im Vollbild"
+Write-Host "  Floorline beenden schließt sie"
 Write-Host ""
 
 & (Join-Path $Root "start-floorline.ps1")

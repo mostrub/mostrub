@@ -20,7 +20,7 @@ function pct(value: number): string {
 }
 
 function minutes(ms: number): string {
-  return `${(ms / 60000).toFixed(1)} min`
+  return `${(ms / 60000).toFixed(1)} Min`
 }
 
 export async function buildAutoReports(
@@ -68,9 +68,9 @@ async function buildShiftReport(
 
   const findings: string[] = []
   if (fpy < 95) {
-    findings.push(`First-pass yield is ${pct(fpy)}, below the 95% shop target.`)
+    findings.push(`Erstausbeute liegt bei ${pct(fpy)}, unter dem 95-%-Ziel.`)
   } else {
-    findings.push(`First-pass yield is ${pct(fpy)}.`)
+    findings.push(`Erstausbeute liegt bei ${pct(fpy)}.`)
   }
   const oeeRow = (await queryRows(oeeSql(filters)))[0]
   const oee = computeOee({
@@ -82,28 +82,28 @@ async function buildShiftReport(
     idealMs: num(oeeRow?.ideal_ms ?? 0),
   })
   findings.push(
-    `OEE is ${pct(oee.oee)} (A ${pct(oee.availability)} · P ${pct(oee.performance)} · Q ${pct(oee.quality)}).`
+    `OEE liegt bei ${pct(oee.oee)} (V ${pct(oee.availability)} · L ${pct(oee.performance)} · Q ${pct(oee.quality)}).`
   )
   const worst = lines[0]
   if (worst) {
     findings.push(
-      `${str(worst.plant)} ${str(worst.line)} is the weakest line at ${pct(num(worst.fpy_pct))}.`
+      `${str(worst.plant)} ${str(worst.line)} ist die schwächste Linie mit ${pct(num(worst.fpy_pct))}.`
     )
   }
   if (pace < 90) {
-    findings.push(`Average cycle time is ${pct(100 - pace)} slower than target.`)
+    findings.push(`Mittlere Taktzeit ist ${pct(100 - pace)} langsamer als das Ziel.`)
   }
 
   return {
     id: "shift-production",
-    title: "Shift production",
+    title: "Schichtproduktion",
     generatedAt,
-    summary: `${units.toFixed(0)} units across the current filter, ${scrap.toFixed(0)} scrap.`,
+    summary: `${units.toFixed(0)} Stück im aktuellen Filter, ${scrap.toFixed(0)} Ausschuss.`,
     kpis: [
-      { label: "Units", value: units.toFixed(0), tone: "ok" },
+      { label: "Stück", value: units.toFixed(0), tone: "ok" },
       { label: "FPY", value: pct(fpy), tone: fpy < 95 ? "bad" : fpy < 98 ? "warn" : "ok" },
-      { label: "Pace vs target", value: pct(pace), tone: pace < 90 ? "warn" : "ok" },
-      { label: "Scrap", value: scrap.toFixed(0), tone: scrap > 0 ? "warn" : "ok" },
+      { label: "Tempo vs Ziel", value: pct(pace), tone: pace < 90 ? "warn" : "ok" },
+      { label: "Ausschuss", value: scrap.toFixed(0), tone: scrap > 0 ? "warn" : "ok" },
       {
         label: "OEE",
         value: pct(oee.oee),
@@ -113,8 +113,8 @@ async function buildShiftReport(
     findings,
     tables: [
       {
-        title: "Yield by line",
-        columns: ["Plant", "Line", "Good", "FPY"],
+        title: "Ausbeute je Linie",
+        columns: ["Werk", "Linie", "Gutteile", "FPY"],
         rows: lines.map((row) => [
           str(row.plant),
           str(row.line),
@@ -152,32 +152,32 @@ async function buildTriageReport(
   const top = dt[0]
   if (top) {
     findings.push(
-      `${str(top.reason_code)} is the top loss at ${minutes(num(top.duration_ms))} (${str(top.events)} events).`
+      `${str(top.reason_code)} ist der größte Verlust mit ${minutes(num(top.duration_ms))} (${str(top.events)} Ereignisse).`
     )
   }
-  findings.push(`${str(open[0]?.n ?? 0)} alarms are still OPEN.`)
+  findings.push(`${str(open[0]?.n ?? 0)} Alarme sind noch OPEN.`)
   if (critical) {
-    findings.push(`${str(critical.n)} critical alarms in the current window.`)
+    findings.push(`${str(critical.n)} kritische Alarme im aktuellen Fenster.`)
   }
 
   return {
     id: "loss-triage",
-    title: "Loss triage",
+    title: "Verlust-Triage",
     generatedAt,
-    summary: `${minutes(totalDt)} of recorded downtime in scope.`,
+    summary: `${minutes(totalDt)} erfasster Stillstand im Ausschnitt.`,
     kpis: [
       {
-        label: "Downtime",
+        label: "Stillstand",
         value: minutes(totalDt),
         tone: totalDt > 3600_000 ? "bad" : "warn",
       },
       {
-        label: "Open alarms",
+        label: "Offene Alarme",
         value: str(open[0]?.n ?? 0),
         tone: num(open[0]?.n ?? 0) > 0 ? "bad" : "ok",
       },
       {
-        label: "Critical alarms",
+        label: "Kritische Alarme",
         value: str(critical?.n ?? 0),
         tone: num(critical?.n ?? 0) > 0 ? "bad" : "ok",
       },
@@ -185,8 +185,8 @@ async function buildTriageReport(
     findings,
     tables: [
       {
-        title: "Downtime Pareto",
-        columns: ["Code", "Category", "Events", "Minutes"],
+        title: "Stillstand-Pareto",
+        columns: ["Code", "Kategorie", "Ereignisse", "Minuten"],
         rows: dt.map((row) => [
           str(row.reason_code),
           str(row.category),
@@ -223,35 +223,35 @@ async function buildServerReport(
   const worst = hot[0]
   if (worst) {
     findings.push(
-      `${str(worst.server_id)} averages ${num(worst.cpu_pct).toFixed(1)}% CPU with ${str(worst.missed)} missed heartbeats.`
+      `${str(worst.server_id)} liegt im Schnitt bei ${num(worst.cpu_pct).toFixed(1)} % CPU mit ${str(worst.missed)} verpassten Heartbeats.`
     )
   }
   if (faulted.length > 0) {
     findings.push(
-      `${faulted.length} controllers are faulted or showing I/O faults.`
+      `${faulted.length} Steuerungen sind gestört oder zeigen I/O-Fehler.`
     )
   } else {
-    findings.push("No controllers are currently in FAULT.")
+    findings.push("Keine Steuerung steht gerade auf FAULT.")
   }
 
   return {
     id: "server-health",
-    title: "Server and controller health",
+    title: "Server- und Steuerungszustand",
     generatedAt,
-    summary: "Profiling snapshot for MES, HMI, gateway, and PLC controllers.",
+    summary: "Profilschnappschuss für MES, HMI, Gateway und PLC-Steuerungen.",
     kpis: [
       {
-        label: "Hottest server CPU",
-        value: worst ? `${num(worst.cpu_pct).toFixed(1)}%` : "n/a",
+        label: "Heißeste Server-CPU",
+        value: worst ? `${num(worst.cpu_pct).toFixed(1)} %` : "k. A.",
         tone: num(worst?.cpu_pct ?? 0) >= 85 ? "bad" : "ok",
       },
       {
-        label: "Controllers in trouble",
+        label: "Steuerungen in Störung",
         value: String(faulted.length),
         tone: faulted.length > 0 ? "bad" : "ok",
       },
       {
-        label: "Missed heartbeats (top)",
+        label: "Verpasste Heartbeats (oben)",
         value: str(worst?.missed ?? 0),
         tone: num(worst?.missed ?? 0) > 0 ? "warn" : "ok",
       },
@@ -259,8 +259,8 @@ async function buildServerReport(
     findings,
     tables: [
       {
-        title: "Servers",
-        columns: ["Server", "Role", "Line", "CPU", "Scan ms", "Missed", "Queue"],
+        title: "Server",
+        columns: ["Server", "Rolle", "Linie", "CPU", "Scan ms", "Verpasst", "Queue"],
         rows: hot.map((row) => [
           str(row.server_id),
           str(row.server_role),
@@ -272,8 +272,8 @@ async function buildServerReport(
         ]),
       },
       {
-        title: "Controllers",
-        columns: ["Controller", "Line", "Mode", "I/O faults", "P95 scan", "Last fault"],
+        title: "Steuerungen",
+        columns: ["Steuerung", "Linie", "Modus", "I/O-Fehler", "P95-Scan", "Letzter Fehler"],
         rows: faulted.map((row) => [
           str(row.controller_id),
           str(row.line),
@@ -295,7 +295,7 @@ export function reportToText(report: AutoReport): string {
     "",
     ...report.kpis.map((kpi) => `${kpi.label}: ${kpi.value}`),
     "",
-    "Findings",
+    "Befunde",
     ...report.findings.map((finding) => `- ${finding}`),
   ]
   for (const table of report.tables) {

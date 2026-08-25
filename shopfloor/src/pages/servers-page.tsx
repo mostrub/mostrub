@@ -31,7 +31,7 @@ import { useFloorline } from "@/state/floorline-store"
 const seriesConfig = {
   cpu_pct: { label: "CPU %", color: "var(--chart-2)" },
   plc_scan_ms: { label: "PLC scan ms", color: "var(--chart-4)" },
-  queue_depth: { label: "Queue", color: "var(--chart-5)" },
+  queue_depth: { label: "Warteschlange", color: "var(--chart-5)" },
 } satisfies ChartConfig
 
 export function ServersPage() {
@@ -64,7 +64,7 @@ export function ServersPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Server query failed")
+          setLoadError(err instanceof Error ? err.message : "Serverabfrage fehlgeschlagen")
         }
       })
     return () => {
@@ -86,7 +86,7 @@ export function ServersPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Server series query failed")
+          setLoadError(err instanceof Error ? err.message : "Serverzeitreihe fehlgeschlagen")
         }
       })
     return () => {
@@ -97,8 +97,8 @@ export function ServersPage() {
   if (ready && !hasServerData) {
     return (
       <EmptyProduction
-        title="No servers or controllers yet"
-        description="Load production XML that includes ServerSample or Controller rows."
+        title="Noch keine Server oder Steuerungen"
+        description="Produktions-XML laden, das ServerSample- oder Controller-Zeilen enthält."
       />
     )
   }
@@ -107,16 +107,17 @@ export function ServersPage() {
     <div className="flex flex-col gap-4">
       <div>
         <h2 className="font-heading text-lg font-medium">
-          Server profiling and controllers
+          Serverprofile und Steuerungen
         </h2>
         <p className="text-sm text-muted-foreground">
-          Latest MES / HMI / gateway / historian samples plus PLC scan, I/O
-          faults, and run mode. Click a server to pin it and plot the series.
+          Neueste MES-, HMI-, Gateway- und Historienproben plus PLC-Scan,
+          I/O-Fehler und Betriebsart. Server anklicken, um ihn zu pinnen und
+          die Reihe zu zeichnen.
         </p>
       </div>
       {loadError ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not load servers</AlertTitle>
+          <AlertTitle>Server konnten nicht geladen werden</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : null}
@@ -125,16 +126,16 @@ export function ServersPage() {
           <CardTitle>Servers</CardTitle>
           <CardDescription>
             {selected ? (
-              <Badge>selected {selected}</Badge>
+              <Badge>gewählt {selected}</Badge>
             ) : (
-              "No server pinned"
+              "Kein Server gepinnt"
             )}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
             rows={latest}
-            emptyLabel="No server samples in this filter."
+            emptyLabel="Keine Serverproben in diesem Filter."
             selectedKey={selected || undefined}
             rowKey={(row) => String(row.server_id ?? "")}
             onRowClick={(row) =>
@@ -149,8 +150,8 @@ export function ServersPage() {
       {selected ? (
         <Card>
           <CardHeader>
-            <CardTitle>Profile {selected}</CardTitle>
-            <CardDescription>CPU, PLC scan, and queue depth</CardDescription>
+            <CardTitle>Profil {selected}</CardTitle>
+            <CardDescription>CPU, PLC-Scan und Warteschlange</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={seriesConfig} className="h-64 w-full">
@@ -184,15 +185,15 @@ export function ServersPage() {
       ) : null}
       <Card>
         <CardHeader>
-          <CardTitle>Controllers</CardTitle>
+          <CardTitle>Steuerungen</CardTitle>
           <CardDescription>
-            Vendor, firmware, rack/slot, scan P95, I/O faults, last fault
+            Hersteller, Firmware, Rack/Slot, Scan P95, I/O-Fehler, letzter Fehler
           </CardDescription>
         </CardHeader>
         <CardContent>
           <DataTable
             rows={controllers}
-            emptyLabel="No controllers in this filter."
+            emptyLabel="Keine Steuerungen in diesem Filter."
             selectedKey={filters.controllers[0] || undefined}
             rowKey={(row) => String(row.controller_id ?? "")}
             onRowClick={(row) =>

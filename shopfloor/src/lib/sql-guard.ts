@@ -3,17 +3,17 @@ const BLOCKED = /\b(insert|update|delete|drop|alter|copy|attach|detach|pragma|ca
 export function assertReadOnlySelect(sql: string): string {
   const trimmed = sql.trim().replace(/;+\s*$/, "")
   if (trimmed === "") {
-    throw new Error("SQL is empty")
+    throw new Error("SQL ist leer")
   }
   if (!/^(select|with)\b/i.test(trimmed)) {
-    throw new Error("Only SELECT / WITH queries are allowed")
+    throw new Error("Nur SELECT- und WITH-Abfragen sind erlaubt")
   }
   const withoutStrings = trimmed.replace(/'[^']*'/g, "''")
   if (withoutStrings.includes(";")) {
-    throw new Error("One statement only")
+    throw new Error("Nur eine Anweisung")
   }
   if (BLOCKED.test(withoutStrings)) {
-    throw new Error("Write or admin SQL is blocked")
+    throw new Error("Schreib- oder Admin-SQL ist gesperrt")
   }
   return trimmed
 }

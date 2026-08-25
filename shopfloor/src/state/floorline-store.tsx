@@ -231,7 +231,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "DuckDB failed to start")
+          setError(err instanceof Error ? err.message : "DuckDB konnte nicht starten")
         }
       })
     return () => {
@@ -279,7 +279,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         if (!cancelled) {
           setReports([])
           toast.error(
-            err instanceof Error ? err.message : "Could not build reports"
+            err instanceof Error ? err.message : "Berichte konnten nicht gebaut werden"
           )
         }
       })
@@ -318,7 +318,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       try {
         const accepted = pickIngestFiles(fileList)
         if (accepted.length === 0) {
-          throw new Error("No .xml, .csv, or .parquet files in that drop")
+          throw new Error("Keine .xml-, .csv- oder .parquet-Dateien in diesem Wurf")
         }
         const xmlFiles = accepted.filter(
           (file) => classifyIngestName(file.name) === "xml"
@@ -354,10 +354,10 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
             : null,
         ].filter((part) => part !== null)
         setRestoreFailed([])
-        toast.success(`Loaded ${parts.join(" + ")}`)
+        toast.success(`Geladen: ${parts.join(" + ")}`)
         setViewState("dashboard")
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Ingest failed"
+        const message = err instanceof Error ? err.message : "Import fehlgeschlagen"
         setError(message)
         toast.error(message)
       } finally {
@@ -375,10 +375,10 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       await ingestBatches(parseShareSamples())
       await refreshMeta()
       setRestoreFailed([])
-      toast.success("Loaded demo production share (3 XML files)")
+      toast.success("Demo-Produktionsfreigabe geladen (3 XML-Dateien)")
       setViewState("dashboard")
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Demo load failed"
+      const message = err instanceof Error ? err.message : "Demo-Laden fehlgeschlagen"
       setError(message)
       toast.error(message)
     } finally {
@@ -395,7 +395,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       setReports([])
       setRowCounts(EMPTY_COUNTS)
       setRestoreFailed([])
-      toast.success("Cleared loaded data")
+      toast.success("Geladene Daten gelöscht")
     } finally {
       setLoading(false)
     }
@@ -413,7 +413,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
             ? "application/vnd.apache.parquet"
             : "text/csv",
       })
-      toast.success(`Exported ${args.table}.${args.format}`)
+      toast.success(`Exportiert ${args.table}.${args.format}`)
     },
     [filters]
   )
@@ -428,7 +428,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       const next = upsertPreset(presets, name, filters)
       setPresets(next)
       savePresets(next)
-      toast.success(`Saved preset ${name.trim()}`)
+      toast.success(`Vorlage gespeichert: ${name.trim()}`)
     },
     [filters, presets]
   )
@@ -440,7 +440,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         return
       }
       setFiltersState(preset.filters)
-      toast.success(`Applied ${preset.name}`)
+      toast.success(`Angewendet: ${preset.name}`)
     },
     [presets]
   )

@@ -61,7 +61,7 @@ async function startEngine(): Promise<EngineInitResult> {
   const bundle = await duckdb.selectBundle(BUNDLES)
   const workerUrl = bundle.mainWorker
   if (!workerUrl) {
-    throw new Error("DuckDB worker bundle is missing")
+    throw new Error("DuckDB-Worker-Paket fehlt")
   }
   const worker = new Worker(workerUrl)
   const instance = new duckdb.AsyncDuckDB(new duckdb.ConsoleLogger(), worker)
@@ -83,7 +83,7 @@ function requireConn(): {
   conn: duckdb.AsyncDuckDBConnection
 } {
   if (!db || !conn) {
-    throw new Error("DuckDB is not ready")
+    throw new Error("DuckDB ist nicht bereit")
   }
   return { db, conn }
 }
@@ -193,7 +193,7 @@ export async function ingestTabularFile(file: File): Promise<TableName> {
   const table = guessTable(columns)
   if (!table) {
     throw new Error(
-      `${file.name} does not match a Floorline table. Export CSV/Parquet from this app, or use ShopfloorExport XML.`
+      `${file.name} passt zu keiner Floorline-Tabelle. CSV/Parquet aus dieser App exportieren oder ShopfloorExport-XML nutzen.`
     )
   }
   const pk = TABLE_PRIMARY_KEY[table]

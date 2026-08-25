@@ -36,8 +36,8 @@ import { DataTable } from "@/components/data-table"
 import { useFloorline } from "@/state/floorline-store"
 
 const throughputConfig = {
-  good_units: { label: "Good", color: "var(--chart-2)" },
-  scrap_units: { label: "Scrap", color: "var(--chart-5)" },
+  good_units: { label: "Gutteile", color: "var(--chart-2)" },
+  scrap_units: { label: "Ausschuss", color: "var(--chart-5)" },
 } satisfies ChartConfig
 
 const fpyConfig = {
@@ -45,11 +45,11 @@ const fpyConfig = {
 } satisfies ChartConfig
 
 const dtConfig = {
-  minutes: { label: "Minutes", color: "var(--chart-4)" },
+  minutes: { label: "Minuten", color: "var(--chart-4)" },
 } satisfies ChartConfig
 
 const histConfig = {
-  cycles: { label: "Cycles", color: "var(--chart-1)" },
+  cycles: { label: "Takte", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
 export function DashboardPage() {
@@ -130,7 +130,7 @@ export function DashboardPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Dashboard query failed")
+          setLoadError(err instanceof Error ? err.message : "Übersichtsabfrage fehlgeschlagen")
         }
       })
       .finally(() => {
@@ -146,8 +146,8 @@ export function DashboardPage() {
   if (rowCounts.cycles === 0) {
     return (
       <EmptyProduction
-        title="No production data yet"
-        description="Load the demo pack or drop XML from the share."
+        title="Noch keine Produktionsdaten"
+        description="Demopaket laden oder XML aus der Freigabe ablegen."
       />
     )
   }
@@ -160,19 +160,19 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">Production dashboard</h2>
+        <h2 className="font-heading text-lg font-medium">Produktionsübersicht</h2>
         <p className="text-sm text-muted-foreground">
-          Live DuckDB aggregates for the current filter set.
+          Live-DuckDB-Kennzahlen für den aktuellen Filter.
         </p>
       </div>
       {loadError ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not load the dashboard</AlertTitle>
+          <AlertTitle>Übersicht konnte nicht geladen werden</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : (
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Kpi label="Units" value={formatNumber(units)} busy={busy} />
+        <Kpi label="Stück" value={formatNumber(units)} busy={busy} />
         <Kpi
           label="OEE"
           value={formatPct(oee.oee)}
@@ -181,29 +181,29 @@ export function DashboardPage() {
           onClick={() => setView("triage")}
         />
         <Kpi
-          label="Downtime"
+          label="Stillstand"
           value={formatMinutes(Number(kpis?.downtime_ms ?? 0))}
           busy={busy}
           onClick={() => setView("triage")}
         />
         <Kpi
-          label="Open alarms"
+          label="Offene Alarme"
           value={formatNumber(Number(kpis?.open_alarms ?? 0))}
           busy={busy}
           tone={Number(kpis?.open_alarms ?? 0) > 0 ? "bad" : "ok"}
           onClick={() => setView("triage")}
         />
-        <Kpi label="Availability" value={formatPct(oee.availability)} busy={busy} />
-        <Kpi label="Performance" value={formatPct(oee.performance)} busy={busy} />
+        <Kpi label="Verfügbarkeit" value={formatPct(oee.availability)} busy={busy} />
+        <Kpi label="Leistung" value={formatPct(oee.performance)} busy={busy} />
         <Kpi
-          label="Quality"
+          label="Qualität"
           value={formatPct(oee.quality)}
           busy={busy}
           tone={fpy < 95 ? "bad" : "ok"}
           onClick={() => setView("triage")}
         />
         <Kpi
-          label="Margin %"
+          label="Marge %"
           value={formatPct(marginPct)}
           busy={busy}
           tone={marginPct < 35 ? "bad" : "ok"}
@@ -214,8 +214,8 @@ export function DashboardPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Throughput</CardTitle>
-            <CardDescription>Good vs scrap by hour</CardDescription>
+            <CardTitle>Durchsatz</CardTitle>
+            <CardDescription>Gutteile und Ausschuss je Stunde</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={throughputConfig} className="h-56 w-full">
@@ -232,8 +232,8 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>FPY by line</CardTitle>
-            <CardDescription>Lowest yield first</CardDescription>
+            <CardTitle>FPY je Linie</CardTitle>
+            <CardDescription>Niedrigste Ausbeute zuerst</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={fpyConfig} className="h-56 w-full">
@@ -249,8 +249,8 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Downtime Pareto</CardTitle>
-            <CardDescription>Minutes by reason code</CardDescription>
+            <CardTitle>Stillstand-Pareto</CardTitle>
+            <CardDescription>Minuten nach Ursache</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={dtConfig} className="h-56 w-full">
@@ -266,13 +266,13 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Fail codes</CardTitle>
-            <CardDescription>Click a fail code to open Drill</CardDescription>
+            <CardTitle>Fehlercodes</CardTitle>
+            <CardDescription>Klick öffnet Drill</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable
               rows={fails}
-              emptyLabel="No fail codes in this filter."
+              emptyLabel="Keine Fehlercodes in diesem Filter."
               onRowClick={(row) => {
                 patchFilters({
                   search: String(row.fail_code ?? ""),
@@ -285,8 +285,8 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Cycle time</CardTitle>
-            <CardDescription>Counts by 1s bucket</CardDescription>
+            <CardTitle>Taktzeit</CardTitle>
+            <CardDescription>Anzahl je 1-s-Bucket</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={histConfig} className="h-56 w-full">
@@ -302,8 +302,8 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Shift × line</CardTitle>
-            <CardDescription>Compare FPY and pace across crews</CardDescription>
+            <CardTitle>Schicht × Linie</CardTitle>
+            <CardDescription>FPY und Tempo der Schichten vergleichen</CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable rows={compare} />
@@ -311,16 +311,16 @@ export function DashboardPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Dependent lines</CardTitle>
+            <CardTitle>Abhängige Linien</CardTitle>
             <CardDescription>
-              Upstream unplanned downtime and STARVE minutes on the next line.
-              Click a row to open Pricing.
+              Ungeplanter Stillstand vorne und STARVE-Minuten auf der nächsten
+              Linie. Klick öffnet Preise.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable
               rows={deps}
-              emptyLabel="No feeder edges in this filter."
+              emptyLabel="Keine Zulaufkanten in diesem Filter."
               onRowClick={(row) => {
                 const patch = dependentLineDicePatch(row)
                 if (Object.keys(patch).length > 0) {

@@ -130,13 +130,13 @@ export function buildJoinMessage(info: LanShareInfo): string {
   const systems = uniqueOperatingSystems(info.peers)
   const systemLine =
     systems.length > 0
-      ? `Operating systems on this instance: ${systems.join(", ")}.`
-      : "Open from Windows, macOS, or Linux on this LAN."
+      ? `Betriebssysteme auf dieser Instanz: ${systems.join(", ")}.`
+      : "Von Windows, macOS oder Linux in diesem LAN öffnen."
   return [
-    `Floorline on ${info.hostname} (${hostOs})`,
+    `Floorline auf ${info.hostname} (${hostOs})`,
     ...info.urls,
     "",
     systemLine,
-    "Data stays on the host PC.",
+    "Die Daten bleiben auf dem Host-Rechner.",
   ].join("\n")
 }

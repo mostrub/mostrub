@@ -1,4 +1,4 @@
-# Starts Floorline for shopfloor users: background server + full-screen browser.
+# Startet Floorline für die Shopfloor: Hintergrundserver + Vollbildbrowser.
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -38,7 +38,7 @@ function Test-PortOpen {
 try {
   Refresh-Path
   if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-    throw "Node.js is missing. Double-click install-windows.cmd once, then use Floorline again."
+    throw "Node.js fehlt. install-windows.cmd einmal doppelklicken, dann Floorline erneut starten."
   }
   if (-not (Test-Path (Join-Path $Root "node_modules"))) {
     npm install
@@ -57,7 +57,7 @@ try {
     Start-Sleep -Seconds 1
   }
   if (-not $ready) {
-    throw "Floorline did not start. Double-click install-windows.cmd once and try again."
+    throw "Floorline ist nicht gestartet. install-windows.cmd einmal doppelklicken und erneut versuchen."
   }
 
   $edgeCandidates = @(
