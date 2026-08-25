@@ -27,10 +27,12 @@ export function IngestPage() {
         <h2 className="font-heading text-lg font-medium">Produktionsdateien laden</h2>
         <p className="text-sm text-muted-foreground">
           XML aus der Freigabe, einem Ordner oder CSV/Parquet aus dieser App
-          ablegen. Ein Refresh behält den letzten Stand auf diesem Rechner.
-          DuckDB-Stände als <code>.floorline</code> auf die Freigabe legen und
-          bei mehreren Dateien eine davon laden. Start und Stopp über die
-          Desktop-Symbole.
+          ablegen. Floorline liest <code>ShopfloorExport</code> mit Cycle,
+          Downtime, Alarm, ServerSample und Controller — Attribute oder
+          Kindknoten, auch mit Namespace. Ein SAP-Export in derselben Form
+          einfach ablegen. Passt die Datei nicht, bleibt sie hier mit einer
+          Fehlermeldung. DuckDB-Stände als <code>.floorline</code> auf die
+          Freigabe legen. Start und Stopp über die Desktop-Symbole.
         </p>
       </div>
       {error ? (
@@ -160,6 +162,7 @@ export function IngestPage() {
               servers: file.server_sample_count,
               controllers: file.controller_count,
               status: file.status,
+              error_message: file.error_message,
             }))}
           />
         </CardContent>

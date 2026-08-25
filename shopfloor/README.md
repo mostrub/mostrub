@@ -67,7 +67,12 @@ DuckDB-Stände liegen als portable `.floorline`-Datei (Parquet-Pack) auf derselb
 </ShopfloorExport>
 ```
 
-camelCase- und snake_case-Attribute werden beide gelesen.
+camelCase- und snake_case-Attribute werden beide gelesen. Namespace-Präfixe
+(`n0:Cycle`) und dieselben Felder als Kindknoten gehen auch. Fehlen
+`cycleMs` oder `durationMs`, nimmt Floorline die Differenz aus Start und Ende.
+Eine XML ohne diese Knoten bleibt auf Import mit einer Fehlermeldung — kein
+still leerer Stand. SAP-Exporte in genau dieser Form ablegen; andere IDoc-
+Formen erst, wenn eine echte Datei da ist.
 
 ## Ansichten
 

@@ -17,8 +17,10 @@ import {
   attrFloat,
   attrInt,
   collectElements,
+  elapsedMs,
   fnv1a,
   parseRootAttributes,
+  stripXmlBom,
 } from "@/lib/xml/attrs"
 
 export function productionFileId(args: {
@@ -115,17 +117,22 @@ function normalizeMode(value: string): ControllerRow["run_mode"] {
   return "RUN"
 }
 
+const EMPTY_XML = "Datei ist leer."
+const NO_SHOPFLOOR_NODES =
+  "Keine Shopfloor-Knoten (Cycle, Downtime, Alarm, ServerSample, Controller). Floorline erwartet ShopfloorExport."
+
 export function parseProductionXml(args: ParseArgs): ProductionBatch {
   const ingestedAt = args.ingestedAt ?? nowIso()
+  const xml = stripXmlBom(args.xml)
 
-  if (args.xml.trim() === "") {
+  if (xml.trim() === "") {
     return {
       file: emptyFile({
         fileId: productionFileId({ fileName: args.fileName }),
         fileName: args.fileName,
         byteSize: args.byteSize,
         ingestedAt,
-        error: "File is empty",
+        error: EMPTY_XML,
       }),
       cycles: [],
       downtime: [],
@@ -135,7 +142,7 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
     }
   }
 
-  const root = parseRootAttributes(args.xml)
+  const root = parseRootAttributes(xml)
   const plant = attr(root, "plant", "Plant", "site")
   const shift = attr(root, "shift", "Shift")
   const shiftDate = attr(root, "shiftDate", "shift_date", "date")
@@ -153,7 +160,7 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
     "path"
   )
 
-  const cycles = collectElements(args.xml, "Cycle").map((row, index) =>
+  const cycles = collectElements(xml, "Cycle").map((row, index) =>
     toCycle({
       attrs: row,
       fileId,
@@ -162,7 +169,7 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
       index,
     })
   )
-  const downtime = collectElements(args.xml, "Downtime").map((row, index) =>
+  const downtime = collectElements(xml, "Downtime").map((row, index) =>
     toDowntime({
       attrs: row,
       fileId,
@@ -171,7 +178,7 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
       index,
     })
   )
-  const alarms = collectElements(args.xml, "Alarm").map((row, index) =>
+  const alarms = collectElements(xml, "Alarm").map((row, index) =>
     toAlarm({
       attrs: row,
       fileId,
@@ -179,7 +186,7 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
       index,
     })
   )
-  const server_samples = collectElements(args.xml, "ServerSample").map(
+  const server_samples = collectElements(xml, "ServerSample").map(
     (row, index) =>
       toServerSample({
         attrs: row,
@@ -188,7 +195,7 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
         index,
       })
   )
-  const controllers = collectElements(args.xml, "Controller").map(
+  const controllers = collectElements(xml, "Controller").map(
     (row, index) =>
       toController({
         attrs: row,
@@ -214,6 +221,23 @@ export function parseProductionXml(args: ParseArgs): ProductionBatch {
     controller_count: controllers.length,
     status: "ok",
     error_message: "",
+  }
+
+  const recordCount =
+    cycles.length +
+    downtime.length +
+    alarms.length +
+    server_samples.length +
+    controllers.length
+  if (recordCount === 0) {
+    return {
+      file: { ...file, status: "error", error_message: NO_SHOPFLOOR_NODES },
+      cycles,
+      downtime,
+      alarms,
+      server_samples,
+      controllers,
+    }
   }
 
   return { file, cycles, downtime, alarms, server_samples, controllers }
@@ -269,7 +293,12 @@ function toCycle(args: {
     operator_id: attr(attrs, "operator", "operator_id", "operatorId"),
     started_at: attr(attrs, "startedAt", "started_at"),
     ended_at: attr(attrs, "endedAt", "ended_at"),
-    cycle_ms: attrInt(attrs, 0, "cycleMs", "cycle_ms"),
+    cycle_ms:
+      attrInt(attrs, 0, "cycleMs", "cycle_ms") ||
+      elapsedMs(
+        attr(attrs, "startedAt", "started_at"),
+        attr(attrs, "endedAt", "ended_at")
+      ),
     target_cycle_ms: attrInt(attrs, 0, "targetCycleMs", "target_cycle_ms"),
     result: normalizeResult(attr(attrs, "result")),
     good_qty: attrInt(attrs, 0, "goodQty", "good_qty"),
@@ -299,7 +328,12 @@ function toDowntime(args: {
     controller_id: attr(attrs, "controller", "controller_id", "controllerId"),
     started_at: attr(attrs, "startedAt", "started_at"),
     ended_at: attr(attrs, "endedAt", "ended_at"),
-    duration_ms: attrInt(attrs, 0, "durationMs", "duration_ms"),
+    duration_ms:
+      attrInt(attrs, 0, "durationMs", "duration_ms") ||
+      elapsedMs(
+        attr(attrs, "startedAt", "started_at"),
+        attr(attrs, "endedAt", "ended_at")
+      ),
     reason_code: attr(attrs, "reasonCode", "reason_code"),
     reason_text: attr(attrs, "reasonText", "reason_text"),
     category: normalizeCategory(attr(attrs, "category")),

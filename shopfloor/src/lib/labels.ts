@@ -33,6 +33,7 @@ const COLUMN_LABEL: Record<string, string> = {
   servers: "Server",
   controllers: "Steuerungen",
   status: "Status",
+  error_message: "Fehler",
   reason_code: "Ursache",
   minutes: "Minuten",
   bucket: "Bucket",

@@ -434,18 +434,18 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
           const kind = classifyIngestName(file.name)
           return kind === "csv" || kind === "parquet"
         })
-        if (xmlFiles.length > 0) {
-          const batches = await Promise.all(
-            xmlFiles.map(async (file) => {
-              const xml = await file.text()
-              return parseProductionXml({
-                fileName: file.name,
-                xml,
-                byteSize: file.size,
-              })
+        const xmlBatches = await Promise.all(
+          xmlFiles.map(async (file) => {
+            const xml = await file.text()
+            return parseProductionXml({
+              fileName: file.name,
+              xml,
+              byteSize: file.size,
             })
-          )
-          await ingestBatches(batches)
+          })
+        )
+        if (xmlBatches.length > 0) {
+          await ingestBatches(xmlBatches)
         }
         const tables: string[] = []
         for (const file of tabular) {
@@ -453,12 +453,31 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         }
         await forgetActiveStand()
         await refreshMeta()
+        const xmlOk = xmlBatches.filter((batch) => batch.file.status === "ok")
+        const xmlErr = xmlBatches.length - xmlOk.length
+        setRestoreFailed([])
+        if (xmlFiles.length > 0 && xmlOk.length === 0 && tables.length === 0) {
+          const message =
+            xmlBatches[0]?.file.error_message ||
+            "Keine Shopfloor-Knoten in dieser XML."
+          setError(message)
+          toast.error(
+            xmlErr === 1
+              ? message
+              : `${xmlErr} XML ohne Shopfloor-Knoten. Floorline erwartet ShopfloorExport.`
+          )
+          return
+        }
         const parts = [
-          xmlFiles.length > 0 ? `${xmlFiles.length} XML` : null,
+          xmlOk.length > 0 ? `${xmlOk.length} XML` : null,
           tables.length > 0 ? `${tables.length} ${tables.join(", ")}` : null,
         ].filter((part) => part !== null)
-        setRestoreFailed([])
         toast.success(`Geladen: ${parts.join(" + ")}`)
+        if (xmlErr > 0) {
+          toast.warning(
+            `${xmlErr} XML ohne Shopfloor-Knoten. Die Datei bleibt in der Liste.`
+          )
+        }
         setViewState("dashboard")
       } catch (err) {
         const message = err instanceof Error ? err.message : "Import fehlgeschlagen"

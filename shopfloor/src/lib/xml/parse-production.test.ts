@@ -101,5 +101,99 @@ describe("parseProductionXml", () => {
 
     expect(batch.file.status).toBe("error")
     expect(batch.cycles).toHaveLength(0)
+    expect(batch.file.error_message).toMatch(/leer/i)
+  })
+
+  it("reads BOM and namespaced ShopfloorExport tags", () => {
+    const xml = `\uFEFF<?xml version="1.0"?>
+<n0:ShopfloorExport xmlns:n0="urn:shopfloor" n0:plant="AUSTIN" n0:shift="A">
+  <n0:Cycle n0:id="CYC-NS" n0:line="CELL-1" n0:result="PASS" n0:cycleMs="11000"/>
+</n0:ShopfloorExport>`
+
+    const batch = parseProductionXml({
+      fileName: "ns.xml",
+      xml,
+      byteSize: xml.length,
+    })
+
+    expect(batch.file.status).toBe("ok")
+    expect(batch.file.plant).toBe("AUSTIN")
+    expect(batch.cycles).toHaveLength(1)
+    expect(batch.cycles[0]?.cycle_id).toBe("CYC-NS")
+    expect(batch.cycles[0]?.line).toBe("CELL-1")
+    expect(batch.cycles[0]?.cycle_ms).toBe(11000)
+  })
+
+  it("reads the same Cycle fields from child elements", () => {
+    const xml = `<ShopfloorExport plant="AUSTIN" shift="A">
+      <Cycle>
+        <id>CYC-CHILD</id>
+        <line>MOD-1</line>
+        <result>REWORK</result>
+        <cycleMs>9000</cycleMs>
+        <goodQty>1</goodQty>
+      </Cycle>
+    </ShopfloorExport>`
+
+    const batch = parseProductionXml({
+      fileName: "children.xml",
+      xml,
+      byteSize: xml.length,
+    })
+
+    expect(batch.cycles).toHaveLength(1)
+    expect(batch.cycles[0]?.cycle_id).toBe("CYC-CHILD")
+    expect(batch.cycles[0]?.line).toBe("MOD-1")
+    expect(batch.cycles[0]?.result).toBe("REWORK")
+    expect(batch.cycles[0]?.cycle_ms).toBe(9000)
+    expect(batch.cycles[0]?.good_qty).toBe(1)
+  })
+
+  it("fills cycle and downtime ms from started and ended timestamps", () => {
+    const xml = `<ShopfloorExport plant="AUSTIN">
+      <Cycle id="CYC-T" line="CELL-1" result="PASS"
+        startedAt="2026-08-25T06:00:00Z" endedAt="2026-08-25T06:00:12Z"/>
+      <Downtime id="DT-T" line="MOD-1"
+        startedAt="2026-08-25T06:10:00Z" endedAt="2026-08-25T06:12:00Z"
+        reasonCode="STARVE"/>
+    </ShopfloorExport>`
+
+    const batch = parseProductionXml({
+      fileName: "times.xml",
+      xml,
+      byteSize: xml.length,
+    })
+
+    expect(batch.cycles[0]?.cycle_ms).toBe(12_000)
+    expect(batch.downtime[0]?.duration_ms).toBe(120_000)
+  })
+
+  it("keeps unknown cycle results as PASS", () => {
+    const xml = `<ShopfloorExport plant="AUSTIN">
+      <Cycle id="CYC-U" line="CELL-1" result="UNKNOWN"/>
+    </ShopfloorExport>`
+
+    const batch = parseProductionXml({
+      fileName: "unknown-result.xml",
+      xml,
+      byteSize: xml.length,
+    })
+
+    expect(batch.cycles[0]?.result).toBe("PASS")
+  })
+
+  it("rejects xml that is not ShopfloorExport", () => {
+    const xml = `<?xml version="1.0"?>
+<IDoc><EDI_DC40><DOCNUM>1</DOCNUM></EDI_DC40></IDoc>`
+
+    const batch = parseProductionXml({
+      fileName: "idoc.xml",
+      xml,
+      byteSize: xml.length,
+    })
+
+    expect(batch.file.status).toBe("error")
+    expect(batch.cycles).toHaveLength(0)
+    expect(batch.file.error_message).toMatch(/ShopfloorExport/)
   })
 })
