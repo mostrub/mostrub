@@ -72,7 +72,7 @@ export class Lake {
     const rows = await this.query<{ id: unknown }>("FROM lake.current_snapshot()");
     const first = rows[0];
     if (!first) {
-      throw ledgerError("LAKEHOUSE_READ_UNAVAILABLE", "no current snapshot", 503);
+      throw ledgerError("LAKEHOUSE_READ_UNAVAILABLE", "kein aktueller Snapshot", 503);
     }
     return asSnapshotId(asSafeInt(first.id));
   }
@@ -251,7 +251,7 @@ function wrapLakeError(err: unknown): Error {
 
 function quoteIdent(name: string): string {
   if (!/^[a-z_][a-z0-9_]*$/.test(name)) {
-    throw ledgerError("INVALID_DATABASE", `illegal schema name ${name}`, 500);
+    throw ledgerError("INVALID_DATABASE", `ungültiger Schema-Name ${name}`, 500);
   }
   return `"${name}"`;
 }

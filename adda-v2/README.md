@@ -1,47 +1,52 @@
 # ADDA light
 
-Private product repo: [`mostrub/ADDA-light`](https://github.com/mostrub/ADDA-light).
+Privates Produkt: [`mostrub/ADDA-light`](https://github.com/mostrub/ADDA-light).
 
-ADDA light is a local HLL-2 line floor. Postgres holds cases and the DuckLake
-catalog. DuckLake holds inspections. DuckDB is the only engine that writes or
-time-travels the lake.
+ADDA light ist der lokale Boden für HLL-2. Postgres hält Akten und den
+DuckLake-Katalog. DuckLake hält die Inspektionen. Nur DuckDB schreibt in den
+Lake und reist in der Zeit.
 
-It does not replace [`mostrub/ADDA`](https://github.com/mostrub/ADDA).
+Das ersetzt [`mostrub/ADDA`](https://github.com/mostrub/ADDA) nicht.
 
-## Stack
+Mehr in [docs/betrieb.md](docs/betrieb.md), [docs/kaliber.md](docs/kaliber.md)
+und [docs/daten.md](docs/daten.md).
 
-| Store | Role |
+## Speicher
+
+| Speicher | Aufgabe |
 | --- | --- |
-| PostgreSQL 16 | `control` schema plus DuckLake catalog |
+| PostgreSQL 16 | Schema `control` plus DuckLake-Katalog |
 | DuckLake | `inspections`, `measurements`, `findings`, `line_events` |
-| DuckDB | Attach `ducklake:postgres:…`, analytics, `SNAPSHOT_VERSION` |
+| DuckDB | Attach `ducklake:postgres:…`, Auswertungen, `SNAPSHOT_VERSION` |
 
-Ports: API `5757`, Vite `5759`. Bind `0.0.0.0` by default. Env prefix `LEDGER_`.
-Timezone `Europe/Zurich`.
+Ports: API `5757`, Vite `5759`. Bind standardmässig `0.0.0.0`. Env-Präfix
+`LEDGER_`. Zeitzone `Europe/Zurich`.
 
 ## Kaliber
 
-One instrument. No rooms, no ADDA chrome.
+Ein Instrument. Keine Räume, kein ADDA-Chrom. Die Oberfläche spricht nur
+Deutsch (de-CH).
 
-Seven Prüfungen on the same chassis (`?sicht=`):
+Sieben Prüfungen auf demselben Chassis (`?sicht=`):
 
-| Prüfung | Audit |
+| Prüfung | Blick |
 | --- | --- |
-| Maschine | Anode → Kathode → OQC, NIO first |
-| Tablett | 12-slot magazines |
-| Fach | Same slot across all magazines |
-| Fenster | Span histogram, p50/p95, over-limit cells |
-| Klasse | 11 defect classes × 24 Zurich hours |
-| Schicht | Civil-day report: hours, stations, span, 11 classes, open cases, all NIO. Print hides the bezel. |
-| Zeitreise | Lake snapshots on the selected cell |
+| Maschine | Anode → Kathode → OQC, NIO zuerst |
+| Tablett | Magazine mit 12 Fächern |
+| Fach | Dieselbe Lage über alle Magazine |
+| Fenster | Span-Histogramm, p50/p95, Zellen über der Grenze |
+| Klasse | 11 Fehlerklassen × 24 Zurich-Stunden |
+| Schicht | Bericht des zivilen Tags. Druck blendet Takt, Band und Kupon aus. |
+| Zeitreise | Lake-Snapshots der gewählten Zelle |
 
-Takt (24 h, Europe/Zurich) and the cell coupon stay on the bezel. Opening a
-cell does not leave the floor.
+Takt (24 h, Europe/Zurich) und der Zellkupon bleiben am Instrument. Eine Zelle
+öffnen verlässt den Boden nicht.
 
-## Run on the box
+## Auf der Box
 
-Arch Linux, Debian/Ubuntu, or macOS. Node 22 and PostgreSQL 16. `bin/setup.sh`
-installs both when the package manager is `pacman`, `apt-get`, or Homebrew.
+Arch Linux, Debian/Ubuntu oder macOS. Node 22 und PostgreSQL 16.
+`bin/setup.sh` installiert beides, wenn der Paketmanager `pacman`, `apt-get`
+oder Homebrew ist.
 
 ```bash
 git clone https://github.com/mostrub/ADDA-light.git
@@ -51,14 +56,14 @@ bin/setup.sh
 bin/dev.sh --seed 2026-08-24
 ```
 
-Open `http://127.0.0.1:5759` on the box, or `http://<box-ip>:5759` from the hall.
-`bin/dev.sh` prints LAN addresses.
+Auf der Box `http://127.0.0.1:5759`, in der Halle `http://<box-ip>:5759`.
+`bin/dev.sh` schreibt die LAN-Adressen.
 
-Case writes need `Authorization: Bearer $LEDGER_OPERATOR_TOKEN`. The Vite
-dev server injects that token from the env. Ingest is fail-closed without
-`LEDGER_INGEST_TOKEN`. Lakehouse read failures return
-`LAKEHOUSE_READ_UNAVAILABLE` and HTTP 503. The line board is the latest
-Zurich civil day, not the whole lake.
+Akten schreiben braucht `Authorization: Bearer $LEDGER_OPERATOR_TOKEN`. Der
+Vite-Devserver legt das Token aus der Umgebung. Ingest ohne
+`LEDGER_INGEST_TOKEN` bleibt zu. Lake-Lesefehler kommen als
+`LAKEHOUSE_READ_UNAVAILABLE` und HTTP 503. Das Linienboard ist der letzte
+zivile Tag in Zurich, nicht der ganze Lake.
 
 ```bash
 cp .env.example .env
@@ -76,8 +81,11 @@ LEDGER_PG_URL=postgres://ledger:ledger@127.0.0.1:5432/ledger \
 npm run dev:web
 ```
 
-Seed rows are labeled `source=seed`. They are not live VALTR.
+`LEDGER_LAKE_PATH` vom Repo-Root aus setzen. Relativ aus `apps/api` zeigt der
+Lake woanders hin als der Katalog.
 
-## What this is not
+Seed-Zeilen tragen `source=seed`. Das ist nicht live VALTR.
 
-Not Cosmograph, not Parachute, not the QG Werkbank, not ports 4747–4749.
+## Was das nicht ist
+
+Kein Cosmograph, kein Parachute, keine QG-Werkbank, keine Ports 4747–4749.

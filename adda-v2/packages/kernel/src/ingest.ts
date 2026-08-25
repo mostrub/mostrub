@@ -17,7 +17,7 @@ export async function ingestInspections(
   }));
   const snapshotId = await lake.withCommit({
     author: actor,
-    message: `ingest ${prepared.length} inspections`,
+    message: `${prepared.length} Inspektionen aufgenommen`,
     extra: JSON.stringify({ count: prepared.length, source: rows[0]?.source ?? "valtr" }),
     work: async () => {
       await lake.exec(
@@ -75,7 +75,7 @@ export async function ingestLineEvents(
   }));
   const snapshotId = await lake.withCommit({
     author: actor,
-    message: `ingest ${prepared.length} line events`,
+    message: `${prepared.length} Linienereignisse aufgenommen`,
     extra: JSON.stringify({ count: prepared.length, source: rows[0]?.source ?? "mqtt" }),
     work: async () => {
       await lake.exec(

@@ -31,13 +31,13 @@ web_pid=$!
 
 trap 'kill "$api_pid" "$web_pid" 2>/dev/null || true' EXIT INT TERM
 
-echo "API  http://127.0.0.1:5757"
-echo "UI   http://127.0.0.1:5759"
+echo "API      http://127.0.0.1:5757"
+echo "Kaliber  http://127.0.0.1:5759"
 if command -v ip >/dev/null 2>&1; then
   ip -4 -o addr show scope global | awk '{print $4}' | cut -d/ -f1 | while read -r addr; do
-    echo "LAN  http://${addr}:5759"
+    echo "Halle  http://${addr}:5759"
   done
 elif command -v ifconfig >/dev/null 2>&1; then
-  ifconfig | awk '/inet / && $2 != "127.0.0.1" {print "LAN  http://"$2":5759"}'
+  ifconfig | awk '/inet / && $2 != "127.0.0.1" {print "Halle  http://"$2":5759"}'
 fi
 wait

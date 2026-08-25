@@ -34,7 +34,7 @@ install_node() {
     fi
     return
   fi
-  echo "Install Node.js 22 or newer, then re-run bin/setup.sh" >&2
+  echo "Node.js 22 oder neuer installieren, dann bin/setup.sh erneut." >&2
   exit 1
 }
 
@@ -62,7 +62,7 @@ install_postgres() {
     sudo systemctl enable --now postgresql
     return
   fi
-  echo "Install PostgreSQL 16, then re-run bin/setup.sh" >&2
+  echo "PostgreSQL 16 installieren, dann bin/setup.sh erneut." >&2
   exit 1
 }
 
@@ -104,9 +104,9 @@ if [[ ! -f .env ]]; then
 fi
 
 if [[ "$(node_major)" -lt 22 ]]; then
-  echo "Node.js 22 or newer is required." >&2
+  echo "Node.js 22 oder neuer ist nötig." >&2
   exit 1
 fi
 
 npm install
-echo "Ready. Seed and start with: bin/dev.sh --seed 2026-08-24"
+echo "Bereit. Seed und Start: bin/dev.sh --seed 2026-08-24"

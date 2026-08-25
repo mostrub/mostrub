@@ -56,7 +56,7 @@ export function buildSeedRows(day: string): {
       const nio = n % 6 === 0 || (shiftIndex === 0 && n < DEFECT_CLASSES.length);
       const defect = DEFECT_CLASSES[n % DEFECT_CLASSES.length];
       if (!defect) {
-        throw new Error("defect register empty");
+        throw new Error("Fehlerregister leer");
       }
       const capturedAt = `${day}T${offsetTime(start, n * 90)}+02:00`;
       const inspection = inspectionIngestSchema.parse({
