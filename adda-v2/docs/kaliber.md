@@ -25,7 +25,8 @@ Die aktive Prüfung steht in `?sicht=`. Eine Zelle wählen ändert den Pfad auf
 | Schicht | Ziviler Tag mit Wahl. Berichte: Voll, Stunden, Stationen, Klassen, NIO, Akten. Druck und NIO-Liste. |
 | Zeitreise | Film der Stände im Datensee. Der Kupon zeigt nur den gewählten Stand. Fehlt der Stand: «kein Stand», kein Rückfall auf den laufenden Stand. |
 
-Takt oben: 24 Stunden Zürich. Band unten: letzte DMCs, NIO magenta.
+Zeitlinie oben: echte Ereignisse von der ersten Inspektion bis jetzt, kein
+15-Minuten- oder Stundenraster. Band unten: letzte DMCs, NIO magenta.
 
 ## Kupon
 

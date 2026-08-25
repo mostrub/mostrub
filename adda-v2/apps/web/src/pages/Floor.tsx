@@ -12,7 +12,16 @@ import {
   type LineCell,
   type ShiftReport,
 } from "../lib/api.ts";
-import { formatCount, formatDay, formatPercent, formatRate, formatWhen, verdictLabel } from "../lib/format.ts";
+import {
+  formatCount,
+  formatDay,
+  formatPercent,
+  formatRate,
+  formatWhen,
+  timelineAxis,
+  timelineOffset,
+  verdictLabel,
+} from "../lib/format.ts";
 import { Lcd, Note } from "../ui.tsx";
 
 const LENSES = [
@@ -285,7 +294,6 @@ export function Floor() {
       .catch(() => undefined);
   }, [caseId]);
 
-  const peakHour = board?.hours.reduce((max, row) => Math.max(max, row.inspected), 0) ?? 0;
   const selectedCell = board ? latestCell(board.cells, selected) : null;
   const seeded = Boolean(board?.cells.length && board.cells.every((cell) => cell.source === "seed"));
 
@@ -371,36 +379,7 @@ export function Floor() {
       {error ? <div className="bezel-alert">{error}</div> : null}
       {seeded ? <div className="bezel-alert is-seed">{de.seed}</div> : null}
 
-      <section className="takt-strip" aria-label={de.takt}>
-        <div className="mb-1 flex justify-between text-[11px] uppercase tracking-[0.2em] text-mute">
-          <span>{de.takt}</span>
-          <span>{de.taktHint}</span>
-        </div>
-        <div className="takt-grid">
-          {HOURS.map((hour) => {
-            const row = board?.hours.find((item) => item.hour === hour);
-            const inspected = row?.inspected ?? 0;
-            const nio = row?.nio ?? 0;
-            const fill = peakHour === 0 ? 0 : inspected / peakHour;
-            return (
-              <div
-                key={hour}
-                title={`${String(hour).padStart(2, "0")} · ${inspected} · ${nio} NIO`}
-                className="takt-col"
-              >
-                <div className="takt-well">
-                  <div
-                    className={`takt-fill ${nio > 0 ? "is-nio" : "is-io"}`}
-                    style={{ height: `${Math.round(fill * 100)}%` }}
-                  />
-                  {nio > 0 ? <span className="takt-tick" /> : null}
-                </div>
-                <span className="takt-label">{String(hour).padStart(2, "0")}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+      <Zeitlinie timeline={board?.timeline} selected={selected} now={now} onPick={pick} />
 
       <div className="well">
         {board && board.inspected === 0 ? <Note>{de.empty}</Note> : null}
@@ -597,6 +576,64 @@ function LensWell({
       return _never;
     }
   }
+}
+
+function Zeitlinie({
+  timeline,
+  selected,
+  now,
+  onPick,
+}: {
+  timeline: LineBoard["timeline"] | undefined;
+  selected: string;
+  now: Date;
+  onPick: (dmc: string) => void;
+}) {
+  const from = timeline?.from ?? now.toISOString();
+  const to = timeline?.to ?? now.toISOString();
+  const marks = (timeline?.events ?? []).map((event) => ({
+    ...event,
+    x: timelineOffset(event.at, from, to),
+  }));
+  const axis = timelineAxis(from, to);
+  const nowX = timelineOffset(now, from, to);
+  return (
+    <section className="takt-strip" aria-label={de.takt}>
+      <div className="mb-1 flex justify-between text-[11px] uppercase tracking-[0.2em] text-mute">
+        <span>{de.takt}</span>
+        <span>{de.taktHint}</span>
+      </div>
+      <div className="zeitlinie">
+        <div className="zeitlinie-rail">
+          {marks.map((mark, index) => (
+            <button
+              key={`${mark.dmc}-${mark.at}-${index}`}
+              type="button"
+              className={[
+                mark.nio ? "is-nio" : "is-io",
+                mark.dmc === selected ? "is-picked" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              style={{ left: `${mark.x * 100}%` }}
+              title={`${mark.dmc} ${mark.nio ? de.io.nio : de.io.io} ${formatWhen(mark.at)}`}
+              onClick={() => onPick(mark.dmc)}
+            />
+          ))}
+          <span className="zeitlinie-now" style={{ left: `${nowX * 100}%` }}>
+            {de.jetzt}
+          </span>
+        </div>
+        <div className="zeitlinie-axis">
+          {axis.map((tick) => (
+            <span key={+tick.at} style={{ left: `${timelineOffset(tick.at, from, to) * 100}%` }}>
+              {tick.label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 function Maschine({

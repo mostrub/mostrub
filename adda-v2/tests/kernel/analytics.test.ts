@@ -72,6 +72,48 @@ describe("shift analytics and seed", () => {
     expect(line.cells.every((cell) => cell.source === "seed")).toBe(true);
   });
 
+  it("plots the floor timeline on real event times, not clock buckets", async () => {
+    if (!ledger) throw new Error("ledger missing");
+    await ledger.ingestInspections([
+      inspectionIngestSchema.parse({
+        dmc: "HLL2-LIVE-0001",
+        capturedAt: "2026-08-25T13:07:00+02:00",
+        station: "anode",
+        tray: "T-1",
+        slot: 1,
+        partOk: true,
+        source: "seed",
+        measurements: { phiDeg: 0.1, widthMm: 11.5, heightMm: 5.4, spanMm: 0.04 },
+        findings: [],
+      }),
+      inspectionIngestSchema.parse({
+        dmc: "HLL2-LIVE-0002",
+        capturedAt: "2026-08-25T13:10:00+02:00",
+        station: "oqc",
+        tray: "T-1",
+        slot: 2,
+        partOk: false,
+        source: "seed",
+        measurements: { phiDeg: 0.1, widthMm: 11.5, heightMm: 5.4, spanMm: 0.2 },
+        findings: [{ defectClass: "Span", score: 0.9 }],
+      }),
+    ]);
+    const before = Date.now();
+    const line = await ledger.lineBoard();
+    const after = Date.now();
+    expect(line.timeline.events).toHaveLength(2);
+    expect(line.timeline.events.map((row) => row.dmc)).toEqual(["HLL2-LIVE-0001", "HLL2-LIVE-0002"]);
+    expect(+new Date(line.timeline.events[1]!.at) - +new Date(line.timeline.events[0]!.at)).toBe(3 * 60 * 1000);
+    expect(line.timeline.events[0]?.nio).toBe(false);
+    expect(line.timeline.events[1]?.nio).toBe(true);
+    expect(line.timeline.from).toBe(new Date("2026-08-25T13:07:00+02:00").toISOString());
+    expect(+new Date(line.timeline.to)).toBeGreaterThanOrEqual(+new Date("2026-08-25T13:10:00+02:00"));
+    expect(+new Date(line.timeline.to)).toBeGreaterThanOrEqual(before - 1000);
+    expect(+new Date(line.timeline.to)).toBeLessThanOrEqual(after + 1000);
+    expect("window" in line.timeline).toBe(false);
+    expect("bucket" in line.timeline).toBe(false);
+  });
+
   it("uses the Zurich civil day, not UTC, for the latest shift", async () => {
     if (!ledger) throw new Error("ledger missing");
     await ledger.ingestInspections([

@@ -17,8 +17,10 @@ export {
   loadChronik,
   lineBoard,
   latestShiftWindow,
+  floorTimeline,
   type ShiftReport,
   type LineBoard,
+  type FloorTimeline,
 } from "./analytics.ts";
 export {
   openCase,

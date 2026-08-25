@@ -165,6 +165,11 @@ export type LineBoard = {
   defects: { defectClass: string; count: number }[];
   trays: { tray: string; slots: { slot: number; cells: LineCell[] }[] }[];
   cells: LineCell[];
+  timeline: {
+    from: string;
+    to: string;
+    events: { at: string; dmc: string; nio: boolean; station: LineCell["station"] }[];
+  };
   stations: {
     station: "anode" | "cathode" | "oqc";
     inspected: number;

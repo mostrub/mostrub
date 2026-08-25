@@ -161,6 +161,19 @@ export type LineHour = {
   nio: number;
 };
 
+export type FloorMark = {
+  at: Date;
+  dmc: string;
+  nio: boolean;
+  station: LineCell["station"];
+};
+
+export type FloorTimeline = {
+  from: string;
+  to: string;
+  events: FloorMark[];
+};
+
 export type LineBoard = {
   snapshotId: SnapshotId;
   inspected: number;
@@ -173,6 +186,7 @@ export type LineBoard = {
   defects: { defectClass: string; count: number }[];
   trays: TrayBoard[];
   cells: LineCell[];
+  timeline: FloorTimeline;
   stations: {
     station: "anode" | "cathode" | "oqc";
     inspected: number;
@@ -350,6 +364,25 @@ async function queryWindow(lake: Lake, window: { from: string; to: string }): Pr
   };
 }
 
+export function floorTimeline(cells: LineCell[], now = new Date()): FloorTimeline {
+  const events = cells
+    .map((cell) => ({
+      at: new Date(cell.capturedAt),
+      dmc: cell.dmc,
+      nio: !cell.partOk,
+      station: cell.station,
+    }))
+    .sort((a, b) => +a.at - +b.at);
+  const first = events[0]?.at ?? now;
+  const last = events[events.length - 1]?.at ?? now;
+  const to = now > last ? now : last;
+  return {
+    from: first.toISOString(),
+    to: to.toISOString(),
+    events,
+  };
+}
+
 export async function lineBoard(lake: Lake): Promise<LineBoard> {
   const snapshotId = await lake.currentSnapshot();
   const window = await latestShiftWindow(lake);
@@ -366,6 +399,7 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
     hours: facts.hours,
     defects: facts.defects,
     cells: facts.cells,
+    timeline: floorTimeline(facts.cells),
     trays: trayNames.map((tray) => ({
       tray,
       slots: Array.from({ length: 12 }, (_, index) => {

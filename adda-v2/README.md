@@ -39,8 +39,8 @@ Sieben Prüfungen auf demselben Chassis (`?sicht=`):
 | Schicht | Bericht mit Tagwahl und Arten (Voll, Stunden, Stationen, Klassen, NIO, Akten). Druck und NIO-Liste. |
 | Zeitreise | Stände im Datensee der gewählten Zelle |
 
-Takt (24 h, Zürich) und der Zellkupon bleiben am Instrument. Eine Zelle
-öffnen verlässt den Boden nicht.
+Zeitlinie (Ereignisse bis jetzt) und der Zellkupon bleiben am Instrument. Eine
+Zelle öffnen verlässt den Boden nicht.
 
 ## Auf der Box
 

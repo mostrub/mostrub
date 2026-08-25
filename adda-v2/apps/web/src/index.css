@@ -530,52 +530,70 @@ textarea {
   box-shadow: inset 3px 0 0 var(--color-pick);
 }
 
-.takt-grid {
-  display: grid;
-  grid-template-columns: repeat(24, minmax(0, 1fr));
-  gap: 0.12rem;
-}
-
-.takt-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.takt-well {
-  position: relative;
-  height: 2.4rem;
+.zeitlinie {
   background: var(--color-well);
   border: 1px solid #1c2a36;
+  padding: 0.35rem 0.55rem 0.2rem;
 }
 
-.takt-fill {
+.zeitlinie-rail {
+  position: relative;
+  height: 2.6rem;
+}
+
+.zeitlinie-rail button {
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
+  bottom: 0.2rem;
+  width: 3px;
+  min-width: 3px;
+  padding: 0;
+  border: 0;
+  transform: translateX(-50%);
 }
 
-.takt-fill.is-io {
+.zeitlinie-rail button.is-io {
+  height: 1.15rem;
   background: var(--color-ice);
-  opacity: 0.7;
 }
 
-.takt-fill.is-nio {
+.zeitlinie-rail button.is-nio {
+  height: 2.05rem;
   background: var(--color-nio);
 }
 
-.takt-tick {
-  position: absolute;
-  top: 0;
-  inset-inline: 0;
-  height: 2px;
-  background: var(--color-ice);
+.zeitlinie-rail button.is-picked {
+  outline: 2px solid var(--color-pick);
+  outline-offset: 1px;
 }
 
-.takt-label {
-  font-size: 0.68rem;
-  text-align: center;
-  color: var(--color-mute);
+.zeitlinie-now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed var(--color-pick);
+  transform: translateX(-50%);
+  color: var(--color-pick);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding-left: 0.25rem;
+  pointer-events: none;
+}
+
+.zeitlinie-axis {
+  position: relative;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+}
+
+.zeitlinie-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: #7f91a3;
+  white-space: nowrap;
 }
 
 .mono {

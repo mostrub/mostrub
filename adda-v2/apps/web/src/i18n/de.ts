@@ -27,8 +27,9 @@ export const de = {
     see: "Stände",
   },
   lensesTitle: "Prüfungen",
-  takt: "Takt",
-  taktHint: "Zürich 00–23",
+  takt: "Zeitlinie",
+  taktHint: "Ereignisse bis jetzt",
+  jetzt: "Jetzt",
   kpis: {
     cells: "Teile",
     nio: "NIO",
