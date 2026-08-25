@@ -59,6 +59,21 @@ The process is the collector. Closing the browser does not stop alerts or sample
 
 ## Board
 
+![Full board](docs/screenshots/full_board.png)
+
+![Masthead](docs/screenshots/masthead.png)
+
+![Alerts](docs/screenshots/alerts.png)
+
+![KPIs](docs/screenshots/kpis.png)
+
+![Jail grid](docs/screenshots/jail_grid.png)
+
+![Node detail](docs/screenshots/node_panel.png)
+
+![Footer](docs/screenshots/footer.png)
+
+
 - Masthead signal lamp, clock, reader source, backend state
 - Alert rail with ACK (A on the keyboard)
 - KPI strip: online, jails, exits, routers, p95 RTT, keys in 7 days, health
