@@ -416,9 +416,11 @@ export function createSeedInventory(): InventoryState {
       },
     ],
     history: [],
-  } as InventoryState
+  }
 
-  const normalized = normalizeInventoryState(seed)
+  const normalized = normalizeInventoryState(
+    seed as Parameters<typeof normalizeInventoryState>[0],
+  )
   const first = normalized.laptops[0]
   if (!first) {
     return normalized

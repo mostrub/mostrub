@@ -105,6 +105,34 @@ describe("parseInventoryJson", () => {
     expect(parseInventoryJson(raw).ok).toBe(false)
   })
 
+  it("rejects a backup with two laptops sharing an inventory number", () => {
+    const laptop = {
+      id: "lap-1",
+      inventoryNumber: "INV-0001",
+      assetTag: "LT-1",
+      serialNumber: "SN",
+      hostname: "h",
+      make: "Dell",
+      model: "X",
+      laptopType: "standard",
+      operatingSystem: "windows-11",
+      department: "it",
+      assignedTo: "",
+      location: "",
+      status: "in-service",
+      purchaseDate: "",
+      warrantyEnd: "",
+      notes: "",
+    }
+    const raw = JSON.stringify({
+      laptops: [laptop, { ...laptop, id: "lap-2", assetTag: "LT-2", serialNumber: "SN-2" }],
+      printers: [],
+      software: [],
+      destructions: [],
+    })
+    expect(parseInventoryJson(raw).ok).toBe(false)
+  })
+
   it("rejects unknown laptop status values", () => {
     const raw = JSON.stringify({
       laptops: [
@@ -151,6 +179,24 @@ describe("isInventoryState", () => {
 describe("loadInventory", () => {
   afterEach(() => {
     Reflect.deleteProperty(globalThis, "localStorage")
+  })
+
+  it("still boots when first-visit seed cannot be written", () => {
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: {
+        ...memoryStorage(),
+        setItem: () => {
+          throw new Error("quota")
+        },
+      },
+    })
+
+    const loaded = loadInventory()
+    expect(loaded.status).toBe("ok")
+    if (loaded.status === "ok") {
+      expect(loaded.state.laptops.length).toBeGreaterThan(0)
+    }
   })
 
   it("persists seed on first visit", () => {

@@ -24,7 +24,9 @@ export function downloadBlob(filename: string, blob: Blob): void {
   document.body.append(anchor)
   anchor.click()
   anchor.remove()
-  URL.revokeObjectURL(url)
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 60_000)
 }
 
 export async function downloadAuditWorkbook(state: InventoryState): Promise<void> {

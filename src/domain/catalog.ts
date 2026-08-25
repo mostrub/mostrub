@@ -1,3 +1,4 @@
+import { newId as createId } from "@/lib/id"
 import { appendHistory, diffFields } from "./history"
 import { inventoryNumberTaken, nextInventoryNumber } from "./normalize"
 import type {
@@ -28,7 +29,7 @@ function required(value: string, label: string): string | null {
   return null
 }
 
-export function normalizeAssetTag(tag: string): string {
+function normalizeAssetTag(tag: string): string {
   return tag.trim().toLowerCase()
 }
 
@@ -116,26 +117,23 @@ function findHardwareByField(
   return null
 }
 
-export function findHardwareByTag(
-  state: InventoryState,
-  tag: string,
-): { kind: Exclude<AssetKind, "other">; id: string } | null {
-  const match = findHardwareByField(state, "assetTag", tag)
-  return match ? { kind: match.kind, id: match.id } : null
-}
-
-export function findHardware(
-  state: InventoryState,
-  query: string,
-): HardwareMatch | null {
-  return (
-    findHardwareByField(state, "assetTag", query) ??
-    findHardwareByField(state, "inventoryNumber", query)
-  )
-}
-
 function hasOpenDestruction(state: InventoryState, assetId: string): boolean {
   return state.destructions.some((record) => record.assetId === assetId)
+}
+
+function applyDestructionStatus<T extends { id: string; status: string }>(
+  items: T[],
+  linked: Set<string>,
+): T[] {
+  return items.map((item) => {
+    if (linked.has(item.id)) {
+      return { ...item, status: "destroyed" }
+    }
+    if (item.status === "destroyed") {
+      return { ...item, status: "in-service" }
+    }
+    return item
+  })
 }
 
 function syncDestroyedHardware(
@@ -147,24 +145,8 @@ function syncDestroyedHardware(
   )
 
   return {
-    laptops: state.laptops.map((item) => {
-      if (linked.has(item.id)) {
-        return { ...item, status: "destroyed" }
-      }
-      if (item.status === "destroyed") {
-        return { ...item, status: "in-service" }
-      }
-      return item
-    }),
-    printers: state.printers.map((item) => {
-      if (linked.has(item.id)) {
-        return { ...item, status: "destroyed" }
-      }
-      if (item.status === "destroyed") {
-        return { ...item, status: "in-service" }
-      }
-      return item
-    }),
+    laptops: applyDestructionStatus(state.laptops, linked),
+    printers: applyDestructionStatus(state.printers, linked),
   }
 }
 
@@ -516,25 +498,31 @@ export function upsertSoftware(
   }
 }
 
-export function removeSoftware(state: InventoryState, id: string): InventoryState {
+export function removeSoftware(
+  state: InventoryState,
+  id: string,
+): SaveResult<InventoryState> {
   const item = state.software.find((license) => license.id === id)
   const nextState = {
     ...state,
     software: state.software.filter((license) => license.id !== id),
   }
   if (!item) {
-    return nextState
+    return { ok: true, state: nextState }
   }
-  return appendHistory(nextState, {
-    action: "removed",
-    register: "software",
-    recordId: item.id,
-    inventoryNumber: item.inventoryNumber,
-    assetTag: item.entitlementId || item.name,
-    serialNumber: "",
-    summary: `Software ${item.inventoryNumber} aus dem Register entfernt`,
-    changes: [],
-  })
+  return {
+    ok: true,
+    state: appendHistory(nextState, {
+      action: "removed",
+      register: "software",
+      recordId: item.id,
+      inventoryNumber: item.inventoryNumber,
+      assetTag: item.entitlementId || item.name,
+      serialNumber: "",
+      summary: `Software ${item.inventoryNumber} aus dem Register entfernt`,
+      changes: [],
+    }),
+  }
 }
 
 export function recordDestruction(
@@ -550,19 +538,35 @@ export function recordDestruction(
   }
 
   const previous = state.destructions.find((item) => item.id === record.id)
+  const liveByTag = record.assetTag.trim()
+    ? findHardwareByField(state, "assetTag", record.assetTag)
+    : null
+  const liveByNumber = record.inventoryNumber.trim()
+    ? findHardwareByField(state, "inventoryNumber", record.inventoryNumber)
+    : null
+  if (record.assetKind === "other" && (liveByTag || liveByNumber)) {
+    return {
+      ok: false,
+      error: "Dieses Kennzeichen ist noch im Register. Geräteart Laptop oder Drucker wählen.",
+    }
+  }
   const kind = record.assetKind === "other" ? undefined : record.assetKind
   const byTag =
-    record.assetKind === "other"
+    record.assetKind === "other" || !record.assetTag.trim()
       ? null
-      : record.assetTag.trim()
-        ? findHardwareByField(state, "assetTag", record.assetTag, kind)
-        : null
+      : findHardwareByField(state, "assetTag", record.assetTag, kind)
   const byNumber =
-    record.assetKind === "other"
+    record.assetKind === "other" || !record.inventoryNumber.trim()
       ? null
-      : record.inventoryNumber.trim()
-        ? findHardwareByField(state, "inventoryNumber", record.inventoryNumber, kind)
-        : null
+      : findHardwareByField(state, "inventoryNumber", record.inventoryNumber, kind)
+  if ((liveByTag || liveByNumber) && !byTag && !byNumber && record.assetKind !== "other") {
+    return {
+      ok: false,
+      error: liveByTag?.kind === "laptop" || liveByNumber?.kind === "laptop"
+        ? "Kennzeichen gehört zu einem Laptop"
+        : "Kennzeichen gehört zu einem Drucker",
+    }
+  }
   if (byTag && byNumber && byTag.id !== byNumber.id) {
     return {
       ok: false,
@@ -570,6 +574,14 @@ export function recordDestruction(
     }
   }
   const match = byTag ?? byNumber
+  if (
+    match &&
+    state.destructions.some(
+      (item) => item.id !== record.id && item.assetId === match.id,
+    )
+  ) {
+    return { ok: false, error: "Dieses Gerät ist schon vernichtet" }
+  }
   const inventoryNumber =
     match?.item.inventoryNumber ||
     record.inventoryNumber.trim() ||
@@ -652,7 +664,7 @@ export function recordDestruction(
 export function removeDestruction(
   state: InventoryState,
   id: string,
-): InventoryState {
+): SaveResult<InventoryState> {
   const item = state.destructions.find((record) => record.id === id)
   const destructions = state.destructions.filter((record) => record.id !== id)
   const hardware = syncDestroyedHardware(state, destructions)
@@ -662,20 +674,23 @@ export function removeDestruction(
     destructions,
   }
   if (!item) {
-    return nextState
+    return { ok: true, state: nextState }
   }
-  return appendHistory(nextState, {
-    action: "destruction-removed",
-    register: "destruction",
-    recordId: item.id,
-    inventoryNumber: item.inventoryNumber,
-    assetTag: item.assetTag,
-    serialNumber: item.serialNumber,
-    summary: `Vernichtungseintrag entfernt für ${item.inventoryNumber || item.assetTag}`,
-    changes: [],
-  })
+  return {
+    ok: true,
+    state: appendHistory(nextState, {
+      action: "destruction-removed",
+      register: "destruction",
+      recordId: item.id,
+      inventoryNumber: item.inventoryNumber,
+      assetTag: item.assetTag,
+      serialNumber: item.serialNumber,
+      summary: `Vernichtungseintrag entfernt für ${item.inventoryNumber || item.assetTag}`,
+      changes: [],
+    }),
+  }
 }
 
 export function newId(): string {
-  return crypto.randomUUID()
+  return createId()
 }

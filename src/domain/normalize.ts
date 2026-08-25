@@ -1,10 +1,24 @@
-import type { InventoryState } from "./types"
+import type {
+  DestructionRecord,
+  HistoryEvent,
+  InventoryState,
+  Laptop,
+  Printer,
+  SoftwareLicense,
+} from "./types"
+
+type MaybeNumbered<T> = Omit<T, "inventoryNumber"> & { inventoryNumber?: string }
 
 function normalizeKey(value: string | undefined): string {
   return (value ?? "").trim().toLowerCase()
 }
 
-export function listInventoryNumbers(state: InventoryState): string[] {
+function listInventoryNumbers(state: {
+  laptops: Array<{ inventoryNumber?: string }>
+  printers: Array<{ inventoryNumber?: string }>
+  software: Array<{ inventoryNumber?: string }>
+  destructions: Array<{ inventoryNumber?: string }>
+}): string[] {
   return [
     ...state.laptops.map((item) => item.inventoryNumber ?? ""),
     ...state.printers.map((item) => item.inventoryNumber ?? ""),
@@ -13,7 +27,15 @@ export function listInventoryNumbers(state: InventoryState): string[] {
   ]
 }
 
-export function nextInventoryNumber(state: InventoryState, extra: string[] = []): string {
+export function nextInventoryNumber(
+  state: {
+    laptops: Array<{ inventoryNumber?: string }>
+    printers: Array<{ inventoryNumber?: string }>
+    software: Array<{ inventoryNumber?: string }>
+    destructions: Array<{ inventoryNumber?: string }>
+  },
+  extra: string[] = [],
+): string {
   const used = new Set(
     [...listInventoryNumbers(state), ...extra]
       .map(normalizeKey)
@@ -70,7 +92,12 @@ export function inventoryNumberTaken(
 function fillNumber(
   current: string,
   assigned: string[],
-  state: InventoryState,
+  state: {
+    laptops: Array<{ inventoryNumber?: string }>
+    printers: Array<{ inventoryNumber?: string }>
+    software: Array<{ inventoryNumber?: string }>
+    destructions: Array<{ inventoryNumber?: string }>
+  },
 ): string {
   const trimmed = current.trim()
   if (trimmed) {
@@ -82,7 +109,33 @@ function fillNumber(
   return next
 }
 
-export function normalizeInventoryState(state: InventoryState): InventoryState {
+export function inventoryIntegrityError(state: InventoryState): string | null {
+  const records = [
+    ...state.laptops,
+    ...state.printers,
+    ...state.software,
+    ...state.destructions,
+  ]
+  const ids = records.map((item) => item.id)
+  if (new Set(ids).size !== ids.length) {
+    return "Backup enthält doppelte Datensatz-IDs"
+  }
+  const numbers = records
+    .map((item) => item.inventoryNumber.trim().toLowerCase())
+    .filter((value) => value.length > 0)
+  if (new Set(numbers).size !== numbers.length) {
+    return "Backup enthält doppelte Inventarnummern"
+  }
+  return null
+}
+
+export function normalizeInventoryState(state: {
+  laptops: MaybeNumbered<Laptop>[]
+  printers: MaybeNumbered<Printer>[]
+  software: MaybeNumbered<SoftwareLicense>[]
+  destructions: MaybeNumbered<DestructionRecord>[]
+  history?: HistoryEvent[]
+}): InventoryState {
   const assigned: string[] = []
   const laptops = state.laptops.map((item) => ({
     ...item,
@@ -119,9 +172,25 @@ export function normalizeInventoryState(state: InventoryState): InventoryState {
     }
   })
 
+  const linked = new Set(
+    destructions.map((record) => record.assetId).filter((id) => id.length > 0),
+  )
+
   return {
-    laptops,
-    printers,
+    laptops: laptops.map((item) =>
+      linked.has(item.id)
+        ? { ...item, status: "destroyed" as const }
+        : item.status === "destroyed"
+          ? { ...item, status: "in-service" as const }
+          : item,
+    ),
+    printers: printers.map((item) =>
+      linked.has(item.id)
+        ? { ...item, status: "destroyed" as const }
+        : item.status === "destroyed"
+          ? { ...item, status: "in-service" as const }
+          : item,
+    ),
     software,
     destructions,
     history: Array.isArray(state.history) ? state.history : [],

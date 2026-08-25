@@ -41,7 +41,7 @@ export function ExportMenu() {
       <input
         ref={fileRef}
         type="file"
-        accept="application/json"
+        accept=".json,application/json"
         hidden
         onChange={async (event) => {
           const file = event.target.files?.[0]

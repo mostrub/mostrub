@@ -202,9 +202,12 @@ describe("catalog", () => {
     }
 
     const after = removeDestruction(withLog.state, withLog.state.destructions[0]!.id)
-    expect(after.laptops.find((item) => item.id === "lap-1")?.status).toBe(
-      "in-service",
-    )
+    expect(after.ok).toBe(true)
+    if (after.ok) {
+      expect(after.state.laptops.find((item) => item.id === "lap-1")?.status).toBe(
+        "in-service",
+      )
+    }
   })
 
   it("restores the previous asset when a destruction is retargeted", () => {
@@ -496,6 +499,46 @@ describe("catalog", () => {
       expect(retargeted.state.laptops.find((item) => item.id === "lap-2")?.status).toBe(
         "destroyed",
       )
+    }
+  })
+
+  it("rejects a second destruction for the same live laptop", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+    const first = recordDestruction(withLaptop.state, destruction({ assetId: "" }))
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+
+    const second = recordDestruction(
+      first.state,
+      destruction({ id: "dst-2", assetId: "", inventoryNumber: "" }),
+    )
+    expect(second.ok).toBe(false)
+    if (!second.ok) {
+      expect(second.error).toMatch(/schon vernichtet/i)
+    }
+  })
+
+  it("rejects a laptop tag logged as a printer", () => {
+    const withLaptop = upsertLaptop(emptyInventory(), laptop())
+    if (!withLaptop.ok) {
+      throw new Error(withLaptop.error)
+    }
+
+    const result = recordDestruction(
+      withLaptop.state,
+      destruction({
+        assetId: "",
+        assetKind: "printer",
+        inventoryNumber: "",
+      }),
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error).toMatch(/Laptop/i)
     }
   })
 

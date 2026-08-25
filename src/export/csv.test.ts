@@ -23,7 +23,7 @@ describe("rowsToCsv", () => {
       rows: [["LT-1", 'Needs "dock", then wipe']],
     })
 
-    expect(csv).toBe('Asset tag,Notes\nLT-1,"Needs ""dock"", then wipe"')
+    expect(csv).toBe('Asset tag;Notes\r\nLT-1;"Needs ""dock"", then wipe"')
   })
 
   it("preserves empty cells", () => {
@@ -32,6 +32,6 @@ describe("rowsToCsv", () => {
       rows: [["1", "", "3"]],
     })
 
-    expect(csv).toBe("A,B,C\n1,,3")
+    expect(csv).toBe("A;B;C\r\n1;;3")
   })
 })

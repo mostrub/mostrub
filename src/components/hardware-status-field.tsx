@@ -29,7 +29,7 @@ export function HardwareStatusField({
     <EnumSelect
       id={id}
       label="Status"
-      value={value === "destroyed" ? "in-service" : value}
+      value={value}
       onChange={onChange}
       items={optionList(EDITABLE_ASSET_STATUSES, STATUS_LABELS)}
     />

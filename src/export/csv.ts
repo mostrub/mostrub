@@ -22,10 +22,10 @@ export function rowsToCsv(input: {
   rows: Array<Array<string | number>>
 }): string {
   const lines = [
-    input.headers.map(csvEscape).join(","),
-    ...input.rows.map((row) => row.map(csvEscape).join(",")),
+    input.headers.map(csvEscape).join(";"),
+    ...input.rows.map((row) => row.map(csvEscape).join(";")),
   ]
-  return lines.join("\n")
+  return lines.join("\r\n")
 }
 
 export function csvBlob(csv: string): Blob {

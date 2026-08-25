@@ -9,7 +9,7 @@ import {
   PRINTER_TYPE_LABELS,
   STATUS_LABELS,
 } from "@/domain/labels"
-import { historyActionLabel } from "@/domain/history"
+import { formatHistoryChanges, historyActionLabel } from "@/domain/history"
 import type { AuditFinding, InventoryState } from "@/domain/types"
 
 export const AUDIT_SHEET_NAMES = [
@@ -325,9 +325,7 @@ export function buildAuditWorkbookPlan(input: {
           item.serialNumber,
           item.register,
           item.summary,
-          item.changes
-            .map((change) => `${change.field}: ${change.from} → ${change.to}`)
-            .join("; "),
+          formatHistoryChanges(item.changes),
         ]),
     },
   ]

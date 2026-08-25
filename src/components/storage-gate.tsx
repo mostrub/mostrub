@@ -35,7 +35,7 @@ export function StorageGate({ children }: { children: React.ReactNode }) {
           <input
             ref={fileRef}
             type="file"
-            accept="application/json"
+            accept=".json,application/json"
             hidden
             onChange={async (event) => {
               const file = event.target.files?.[0]

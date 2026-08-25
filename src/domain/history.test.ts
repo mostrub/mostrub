@@ -60,6 +60,23 @@ describe("queryDeviceHistory", () => {
     expect(queryDeviceHistory(created.state, "INV-00010")).toHaveLength(1)
   })
 
+  it("keeps the full trail after an inventory number change", () => {
+    const created = upsertLaptop(emptyInventory(), laptop())
+    if (!created.ok) {
+      throw new Error(created.error)
+    }
+    const renamed = upsertLaptop(created.state, {
+      ...created.state.laptops[0]!,
+      inventoryNumber: "INV-7777",
+    })
+    if (!renamed.ok) {
+      throw new Error(renamed.error)
+    }
+
+    const rows = queryDeviceHistory(renamed.state, "INV-7777")
+    expect(rows.map((event) => event.action).sort()).toEqual(["created", "updated"])
+  })
+
   it("finds history by serial number", () => {
     const created = upsertLaptop(emptyInventory(), laptop())
     if (!created.ok) {

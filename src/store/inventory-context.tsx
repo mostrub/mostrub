@@ -54,36 +54,25 @@ function applyResult(
   mutator: (current: InventoryState) => SaveResult<InventoryState>,
 ): string | null {
   let error: string | null = null
+  let pending: InventoryState | undefined
   setState((current) => {
     const result = mutator(current)
     if (!result.ok) {
       error = result.error
       return current
     }
-    try {
-      return persist(result.state)
-    } catch (caught) {
-      error = storageFailure(caught)
-      return current
-    }
+    pending = result.state
+    return result.state
   })
-  return error
-}
-
-function applyState(
-  setState: (updater: (current: InventoryState) => InventoryState) => void,
-  mutator: (current: InventoryState) => InventoryState,
-): string | null {
-  let error: string | null = null
-  setState((current) => {
-    try {
-      return persist(mutator(current))
-    } catch (caught) {
-      error = storageFailure(caught)
-      return current
-    }
-  })
-  return error
+  if (!pending) {
+    return error
+  }
+  try {
+    persist(pending)
+  } catch (caught) {
+    return storageFailure(caught)
+  }
+  return null
 }
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
@@ -108,12 +97,12 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
         applyResult(setState, (current) => recordDestruction(current, record)),
       deleteLaptop: (id) => applyResult(setState, (current) => removeLaptop(current, id)),
       deletePrinter: (id) => applyResult(setState, (current) => removePrinter(current, id)),
-      deleteSoftware: (id) => applyState(setState, (current) => removeSoftware(current, id)),
+      deleteSoftware: (id) => applyResult(setState, (current) => removeSoftware(current, id)),
       deleteDestruction: (id) =>
-        applyState(setState, (current) => removeDestruction(current, id)),
+        applyResult(setState, (current) => removeDestruction(current, id)),
       replaceState: (next) => {
         setStorageError(null)
-        return applyState(setState, () => next)
+        return applyResult(setState, () => ({ ok: true, state: next }))
       },
       resetToEmpty: () => {
         setStorageError(null)

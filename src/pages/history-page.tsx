@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTable } from "@/components/data-table"
 import { PageHeader } from "@/components/page-header"
-import { historyActionLabel, queryDeviceHistory } from "@/domain/history"
+import { formatHistoryChanges, historyActionLabel, queryDeviceHistory } from "@/domain/history"
 import { downloadRegisterCsv } from "@/export/download"
 import { useInventory } from "@/store/inventory-context"
 
@@ -26,12 +26,7 @@ export function HistoryPage() {
     }
     return queryDeviceHistory(state, query).map((event) => ({
       ...event,
-      changeText:
-        event.changes.length === 0
-          ? "—"
-          : event.changes
-              .map((change) => `${change.field}: ${change.from || "—"} → ${change.to || "—"}`)
-              .join("; "),
+      changeText: formatHistoryChanges(event.changes),
     }))
   }, [query, state])
 

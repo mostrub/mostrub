@@ -1,5 +1,5 @@
 import { emptyInventory } from "@/domain/catalog"
-import { normalizeInventoryState } from "@/domain/normalize"
+import { inventoryIntegrityError, normalizeInventoryState } from "@/domain/normalize"
 import { createSeedInventory } from "@/domain/seed"
 import type { InventoryState } from "@/domain/types"
 import { isInventoryState } from "@/domain/validate"
@@ -54,25 +54,30 @@ function coerceInventory(value: unknown): unknown {
   }
 }
 
-function toInventoryState(state: InventoryState): InventoryState {
-  return normalizeInventoryState({
+function toInventoryState(state: InventoryState): ParseInventoryResult {
+  const next = normalizeInventoryState({
     laptops: state.laptops,
     printers: state.printers,
     software: state.software,
     destructions: state.destructions,
     history: state.history ?? [],
   })
+  const integrity = inventoryIntegrityError(next)
+  if (integrity) {
+    return { ok: false, reason: integrity }
+  }
+  return { ok: true, state: next }
 }
 
 export function parseInventoryValue(value: unknown): ParseInventoryResult {
   const direct = coerceInventory(value)
   if (isInventoryState(direct)) {
-    return { ok: true, state: toInventoryState(direct) }
+    return toInventoryState(direct)
   }
   if (isRecord(value)) {
     const wrapped = coerceInventory(value.state)
     if (isInventoryState(wrapped)) {
-      return { ok: true, state: toInventoryState(wrapped) }
+      return toInventoryState(wrapped)
     }
   }
   return {
@@ -89,16 +94,15 @@ export function parseInventoryJson(raw: string): ParseInventoryResult {
   }
 }
 
-export function parseInventoryBackup(value: unknown): InventoryState | null {
-  const parsed = parseInventoryValue(value)
-  return parsed.ok ? parsed.state : null
-}
-
 export function loadInventory(): InventoryLoad {
   const raw = localStorage.getItem(STORAGE_KEY)
   if (!raw) {
     const seed = createSeedInventory()
-    saveInventory(seed)
+    try {
+      saveInventory(seed)
+    } catch {
+      return { status: "ok", state: seed }
+    }
     return { status: "ok", state: seed }
   }
 

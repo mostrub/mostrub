@@ -126,15 +126,15 @@ describe("buildPlantReport", () => {
       today: "2026-08-25",
     })
     const csv = rowsToCsv(report.registerSheet)
-    const lines = csv.split("\n")
+    const lines = csv.split("\r\n")
     expect(lines[0]).toBe(
-      "Register,Inv.-Nr.,Kennzeichen,Serie,Bezeichnung,Abteilung,Status,Standort",
+      "Register;Inv.-Nr.;Kennzeichen;Serie;Bezeichnung;Abteilung;Status;Standort",
     )
     expect(lines).toHaveLength(6)
-    expect(csv).toContain("Laptop,INV-0001,LT-1001")
-    expect(csv).toContain("Drucker,INV-2001,PR-2001")
-    expect(csv).toContain("Software,INV-3001")
-    expect(csv).toContain("Vernichtung,INV-0090")
+    expect(csv).toContain("Laptop;INV-0001;LT-1001")
+    expect(csv).toContain("Drucker;INV-2001;PR-2001")
+    expect(csv).toContain("Software;INV-3001")
+    expect(csv).toContain("Vernichtung;INV-0090")
   })
 })
 

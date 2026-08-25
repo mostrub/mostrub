@@ -95,7 +95,11 @@ export function ThemeProvider({
 
   const setTheme = React.useCallback(
     (nextTheme: Theme) => {
-      localStorage.setItem(storageKey, nextTheme)
+      try {
+        localStorage.setItem(storageKey, nextTheme)
+      } catch {
+        // Private mode or quota: keep the in-memory theme.
+      }
       setThemeState(nextTheme)
     },
     [storageKey]
