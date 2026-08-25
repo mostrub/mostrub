@@ -1,0 +1,21 @@
+name: tailboard
+
+on:
+  push:
+    paths: ["tailboard/**", ".github/workflows/tailboard.yml"]
+  pull_request:
+    paths: ["tailboard/**", ".github/workflows/tailboard.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tailboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: go test ./...
+      - run: go build -o /tmp/tailboard ./cmd/tailboard

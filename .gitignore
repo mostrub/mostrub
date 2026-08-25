@@ -34,3 +34,10 @@ logs/
 *.temp
 temp/
 tmp/
+
+# Tailboard
+tailboard/web/node_modules/
+tailboard/tailboard
+tailboard/*.db
+tailboard/*.exe
+.firecrawl/
