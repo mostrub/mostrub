@@ -21,5 +21,11 @@ ANDERER RECHNER
   Oben auf Freigabe klicken und dieser Person die Adresse schicken.
   Sie kann Windows, einen Mac oder Linux nutzen.
 
+DUCKDB-STAND
+  Unter Import den Stand auf die Freigabe schreiben
+  (Stand-Ordner wählen, dann Auf Freigabe speichern)
+  oder die .floorline-Datei herunterladen.
+  Mehrere Stände: den gewünschten in der Liste laden.
+
 Wenn Floorline nicht öffnet, den Installer einmal doppelklicken
 (install-windows.cmd oder install-macos.command) und Floorline erneut versuchen.

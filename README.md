@@ -6,7 +6,7 @@
 
 ### Floorline
 
-Lokaler Fertigungsprototyp in [`shopfloor/`](./shopfloor). Browser + DuckDB-WASM. Liest MES-XML aus einer Windows-Freigabe, drillt Produktion und Serverprofile, exportiert Parquet/CSV.
+Lokaler Fertigungsprototyp in [`shopfloor/`](./shopfloor). Browser + DuckDB-WASM. Liest MES-XML aus einer Windows-Freigabe, hält DuckDB-Stände als `.floorline` auf derselben Freigabe, drillt Produktion und Serverprofile, exportiert Parquet/CSV.
 
 Windows 11: `shopfloor/install-windows.cmd` doppelklicken. macOS: `shopfloor/install-macos.command` doppelklicken. Das legt **Floorline** und **Floorline beenden** auf den Desktop, plus eine kurze Anleitung. Der Alltag sind diese zwei Symbole. Die App öffnet sich im Vollbild.
 

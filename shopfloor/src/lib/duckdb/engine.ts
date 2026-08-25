@@ -17,6 +17,10 @@ import {
   loadAllParquet,
   persistParquet,
 } from "@/lib/duckdb/persist"
+import {
+  packFloorlineDb,
+  unpackFloorlineDb,
+} from "@/lib/duckdb/share-db"
 import { TABLE_PRIMARY_KEY, guessTable } from "@/lib/ingest-kind"
 import { TABLE_NAMES, type ProductionBatch, type TableName } from "@/lib/types"
 
@@ -317,6 +321,47 @@ export async function exportCopy(args: {
 
 export async function tableCount(table: TableName): Promise<number> {
   return queryValue(`SELECT COUNT(*) AS n FROM ${table}`)
+}
+
+export async function exportFloorlineDbBytes(name: string): Promise<Uint8Array> {
+  const tables: Partial<Record<TableName, Uint8Array>> = {}
+  for (const table of TABLE_NAMES) {
+    const count = await tableCount(table)
+    if (count === 0) {
+      continue
+    }
+    tables[table] = await exportCopy({
+      sql: `SELECT * FROM ${table}`,
+      format: "parquet",
+      path: persistExportPath(table),
+    })
+  }
+  return packFloorlineDb({ name, tables })
+}
+
+export async function loadFloorlineDbBytes(bytes: Uint8Array): Promise<string> {
+  const packed = unpackFloorlineDb(bytes)
+  await resetEngine()
+  const { db: instance, conn: connection } = requireConn()
+  for (const table of TABLE_NAMES) {
+    const parquet = packed.tables[table]
+    if (!parquet || parquet.byteLength === 0) {
+      continue
+    }
+    const path = `restore-${table}.parquet`
+    try {
+      await instance.registerFileBuffer(path, parquet)
+      await connection.query(insertParquetByName(table, path))
+    } finally {
+      try {
+        await instance.dropFile(path)
+      } catch {
+        // Restore files are ephemeral.
+      }
+    }
+  }
+  await persistAllTables()
+  return packed.manifest.name
 }
 
 export function isEngineReady(): boolean {

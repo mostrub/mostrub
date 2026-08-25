@@ -1,6 +1,7 @@
+import { isFloorlineDbName } from "@/lib/duckdb/share-db"
 import { TABLE_NAMES, type TableName } from "@/lib/types"
 
-export const INGEST_KINDS = ["xml", "csv", "parquet"] as const
+export const INGEST_KINDS = ["xml", "csv", "parquet", "floorline-db"] as const
 export type IngestKind = (typeof INGEST_KINDS)[number]
 
 export const TABLE_PRIMARY_KEY: Record<TableName, string> = {
@@ -46,6 +47,9 @@ export function classifyIngestName(fileName: string): IngestKind | null {
   }
   if (lower.endsWith(".parquet") || lower.endsWith(".pq")) {
     return "parquet"
+  }
+  if (isFloorlineDbName(fileName)) {
+    return "floorline-db"
   }
   return null
 }

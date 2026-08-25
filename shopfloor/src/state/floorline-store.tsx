@@ -11,15 +11,30 @@ import { toast } from "sonner"
 
 import { downloadBytes, downloadText } from "@/lib/download"
 import {
+  exportFloorlineDbBytes,
   ingestBatches,
   ingestTabularFile,
   initEngine,
+  loadFloorlineDbBytes,
   queryRows,
   resetEngine,
   exportCopy,
   tableCount,
   type QueryRow,
 } from "@/lib/duckdb/engine"
+import {
+  canPickShareDirectory,
+  isAbortError,
+  listShareDbNames,
+  pickShareDirectory,
+  readShareDbFile,
+  readShareFolderSnapshot,
+  requestDirectoryPermission,
+  saveLastShareDbName,
+  writeShareDbFile,
+  type ShareDirectoryHandle,
+} from "@/lib/duckdb/share-folder"
+import { sanitizeDbFileName, suggestedDbFileName } from "@/lib/duckdb/share-db"
 import { classifyIngestName, pickIngestFiles } from "@/lib/ingest-kind"
 import {
   loadPresets,
@@ -71,6 +86,19 @@ type FloorlineState = {
   ingestFiles: (fileList: File[]) => Promise<void>
   ingestDemo: () => Promise<void>
   clearData: () => Promise<void>
+  canUseShareFolder: boolean
+  shareFolderName: string | null
+  shareFolderPermitted: boolean
+  shareDbNames: string[]
+  activeShareDbName: string | null
+  suggestedShareDbName: string
+  pickShareFolder: () => Promise<void>
+  grantShareFolder: () => Promise<void>
+  refreshShareDbs: () => Promise<void>
+  saveShareDb: (name: string) => Promise<void>
+  loadShareDb: (fileName: string) => Promise<void>
+  downloadShareDb: (name: string) => Promise<void>
+  loadShareDbFile: (file: File) => Promise<void>
   exportTable: (args: { table: TableName; format: "csv" | "parquet" }) => Promise<void>
   shareUrl: () => string
   presets: FilterPreset[]
@@ -149,6 +177,12 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     typeof window === "undefined" ? [] : loadPresets()
   )
   const [restoreFailed, setRestoreFailed] = useState<TableName[]>([])
+  const [shareFolderHandle, setShareFolderHandle] =
+    useState<ShareDirectoryHandle | null>(null)
+  const [shareFolderName, setShareFolderName] = useState<string | null>(null)
+  const [shareFolderPermitted, setShareFolderPermitted] = useState(false)
+  const [shareDbNames, setShareDbNames] = useState<string[]>([])
+  const [activeShareDbName, setActiveShareDbName] = useState<string | null>(null)
 
   const refreshMeta = useCallback(async () => {
     const fileRows = await queryRows(
@@ -227,6 +261,19 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
           !query.includes("f=")
         ) {
           setViewState("dashboard")
+        }
+        try {
+          const snapshot = await readShareFolderSnapshot()
+          if (cancelled) {
+            return
+          }
+          setShareFolderHandle(snapshot.handle)
+          setShareFolderName(snapshot.folderName)
+          setShareFolderPermitted(snapshot.permitted)
+          setShareDbNames(snapshot.names)
+          setActiveShareDbName(snapshot.lastName)
+        } catch {
+          // A remembered folder is optional.
         }
       })
       .catch((err: unknown) => {
@@ -311,6 +358,51 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     setRestoreFailed([])
   }, [])
 
+  const forgetActiveStand = useCallback(async () => {
+    setActiveShareDbName(null)
+    try {
+      await saveLastShareDbName(null)
+    } catch {
+      // Local cache is optional.
+    }
+  }, [])
+
+  const rememberActiveStand = useCallback(async (name: string) => {
+    setActiveShareDbName(name)
+    try {
+      await saveLastShareDbName(name)
+    } catch {
+      // Local cache is optional.
+    }
+  }, [])
+
+  const applyShareSnapshot = useCallback(
+    (snapshot: {
+      handle: ShareDirectoryHandle | null
+      folderName: string | null
+      permitted: boolean
+      names: string[]
+    }) => {
+      setShareFolderHandle(snapshot.handle)
+      setShareFolderName(snapshot.folderName)
+      setShareFolderPermitted(snapshot.permitted)
+      setShareDbNames(snapshot.names)
+    },
+    []
+  )
+
+  const applyFloorlineDbBytes = useCallback(
+    async (bytes: Uint8Array, label: string) => {
+      await loadFloorlineDbBytes(bytes)
+      await rememberActiveStand(label)
+      await refreshMeta()
+      setRestoreFailed([])
+      toast.success(`Stand geladen: ${label}`)
+      setViewState("dashboard")
+    },
+    [refreshMeta, rememberActiveStand]
+  )
+
   const ingestFiles = useCallback(
     async (fileList: File[]) => {
       setLoading(true)
@@ -318,7 +410,22 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       try {
         const accepted = pickIngestFiles(fileList)
         if (accepted.length === 0) {
-          throw new Error("Keine .xml-, .csv- oder .parquet-Dateien in diesem Wurf")
+          throw new Error(
+            "Keine .xml-, .csv-, .parquet- oder .floorline-Dateien in diesem Wurf"
+          )
+        }
+        const packs = accepted.filter(
+          (file) => classifyIngestName(file.name) === "floorline-db"
+        )
+        if (packs[0]) {
+          const bytes = new Uint8Array(await packs[0].arrayBuffer())
+          await applyFloorlineDbBytes(bytes, packs[0].name)
+          if (accepted.length > 1) {
+            toast.info(
+              "Nur die Stand-Datei wurde geladen. Andere Dateien in diesem Wurf wurden ignoriert."
+            )
+          }
+          return
         }
         const xmlFiles = accepted.filter(
           (file) => classifyIngestName(file.name) === "xml"
@@ -344,14 +451,11 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         for (const file of tabular) {
           tables.push(await ingestTabularFile(file))
         }
+        await forgetActiveStand()
         await refreshMeta()
         const parts = [
-          xmlFiles.length > 0
-            ? `${xmlFiles.length} XML`
-            : null,
-          tables.length > 0
-            ? `${tables.length} ${tables.join(", ")}`
-            : null,
+          xmlFiles.length > 0 ? `${xmlFiles.length} XML` : null,
+          tables.length > 0 ? `${tables.length} ${tables.join(", ")}` : null,
         ].filter((part) => part !== null)
         setRestoreFailed([])
         toast.success(`Geladen: ${parts.join(" + ")}`)
@@ -364,7 +468,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         setLoading(false)
       }
     },
-    [refreshMeta]
+    [applyFloorlineDbBytes, forgetActiveStand, refreshMeta]
   )
 
   const ingestDemo = useCallback(async () => {
@@ -373,6 +477,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     try {
       await resetEngine()
       await ingestBatches(parseShareSamples())
+      await forgetActiveStand()
       await refreshMeta()
       setRestoreFailed([])
       toast.success("Demo-Produktionsfreigabe geladen (3 XML-Dateien)")
@@ -384,7 +489,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [refreshMeta])
+  }, [forgetActiveStand, refreshMeta])
 
   const clearData = useCallback(async () => {
     setLoading(true)
@@ -395,11 +500,158 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       setReports([])
       setRowCounts(EMPTY_COUNTS)
       setRestoreFailed([])
+      await forgetActiveStand()
       toast.success("Geladene Daten gelöscht")
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [forgetActiveStand])
+
+  const refreshShareDbs = useCallback(async () => {
+    if (!shareFolderHandle || !shareFolderPermitted) {
+      return
+    }
+    setShareDbNames(await listShareDbNames(shareFolderHandle))
+  }, [shareFolderHandle, shareFolderPermitted])
+
+  const pickShareFolder = useCallback(async () => {
+    try {
+      const handle = await pickShareDirectory()
+      applyShareSnapshot({
+        handle,
+        folderName: handle.name,
+        permitted: true,
+        names: await listShareDbNames(handle),
+      })
+      toast.success(`Freigabeordner: ${handle.name}`)
+    } catch (err) {
+      if (isAbortError(err)) {
+        return
+      }
+      const message =
+        err instanceof Error ? err.message : "Freigabeordner konnte nicht öffnen"
+      toast.error(message)
+    }
+  }, [applyShareSnapshot])
+
+  const grantShareFolder = useCallback(async () => {
+    if (!shareFolderHandle) {
+      await pickShareFolder()
+      return
+    }
+    try {
+      const state = await requestDirectoryPermission(shareFolderHandle, "readwrite")
+      if (state !== "granted") {
+        throw new Error("Kein Zugriff auf den Freigabeordner.")
+      }
+      applyShareSnapshot({
+        handle: shareFolderHandle,
+        folderName: shareFolderHandle.name,
+        permitted: true,
+        names: await listShareDbNames(shareFolderHandle),
+      })
+    } catch (err) {
+      if (isAbortError(err)) {
+        return
+      }
+      const message =
+        err instanceof Error ? err.message : "Zugriff auf den Freigabeordner fehlgeschlagen"
+      toast.error(message)
+    }
+  }, [applyShareSnapshot, pickShareFolder, shareFolderHandle])
+
+  const saveShareDb = useCallback(
+    async (name: string) => {
+      if (!shareFolderHandle || !shareFolderPermitted) {
+        throw new Error("Zuerst einen Freigabeordner wählen.")
+      }
+      setLoading(true)
+      setError(null)
+      try {
+        const fileName = sanitizeDbFileName(name)
+        const bytes = await exportFloorlineDbBytes(fileName)
+        const saved = await writeShareDbFile(shareFolderHandle, fileName, bytes)
+        await rememberActiveStand(saved)
+        setShareDbNames(await listShareDbNames(shareFolderHandle))
+        toast.success(`Stand gespeichert: ${saved}`)
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Stand konnte nicht speichern"
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [rememberActiveStand, shareFolderHandle, shareFolderPermitted]
+  )
+
+  const loadShareDb = useCallback(
+    async (fileName: string) => {
+      if (!shareFolderHandle || !shareFolderPermitted) {
+        throw new Error("Zuerst einen Freigabeordner wählen.")
+      }
+      setLoading(true)
+      setError(null)
+      try {
+        const bytes = await readShareDbFile(shareFolderHandle, fileName)
+        await applyFloorlineDbBytes(bytes, fileName)
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Stand konnte nicht laden"
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [applyFloorlineDbBytes, shareFolderHandle, shareFolderPermitted]
+  )
+
+  const downloadShareDb = useCallback(
+    async (name: string) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const fileName = sanitizeDbFileName(name)
+        const bytes = await exportFloorlineDbBytes(fileName)
+        downloadBytes({
+          bytes,
+          fileName,
+          mime: "application/octet-stream",
+        })
+        await rememberActiveStand(fileName)
+        toast.success(`Stand-Datei: ${fileName}`)
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Stand konnte nicht erzeugen"
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [rememberActiveStand]
+  )
+
+  const loadShareDbFile = useCallback(
+    async (file: File) => {
+      setLoading(true)
+      setError(null)
+      try {
+        const bytes = new Uint8Array(await file.arrayBuffer())
+        await applyFloorlineDbBytes(bytes, file.name)
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Stand konnte nicht laden"
+        setError(message)
+        toast.error(message)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [applyFloorlineDbBytes]
+  )
 
   const exportTable = useCallback(
     async (args: { table: TableName; format: "csv" | "parquet" }) => {
@@ -458,6 +710,15 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     return queryRows(assertReadOnlySelect(sql))
   }, [])
 
+  const suggestedShareDbName = useMemo(
+    () =>
+      suggestedDbFileName({
+        plants: [...new Set(files.map((file) => file.plant).filter((plant) => plant !== ""))],
+        shiftDate: files.find((file) => file.shift_date)?.shift_date ?? null,
+      }),
+    [files]
+  )
+
   const value = useMemo<FloorlineState>(
     () => ({
       ready,
@@ -479,6 +740,19 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       ingestFiles,
       ingestDemo,
       clearData,
+      canUseShareFolder: canPickShareDirectory(),
+      shareFolderName,
+      shareFolderPermitted,
+      shareDbNames,
+      activeShareDbName,
+      suggestedShareDbName,
+      pickShareFolder,
+      grantShareFolder,
+      refreshShareDbs,
+      saveShareDb,
+      loadShareDb,
+      downloadShareDb,
+      loadShareDbFile,
       exportTable,
       shareUrl,
       presets,
@@ -506,6 +780,18 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       ingestFiles,
       ingestDemo,
       clearData,
+      shareFolderName,
+      shareFolderPermitted,
+      shareDbNames,
+      activeShareDbName,
+      suggestedShareDbName,
+      pickShareFolder,
+      grantShareFolder,
+      refreshShareDbs,
+      saveShareDb,
+      loadShareDb,
+      downloadShareDb,
+      loadShareDbFile,
       exportTable,
       shareUrl,
       presets,

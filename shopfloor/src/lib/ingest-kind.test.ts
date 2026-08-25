@@ -7,6 +7,8 @@ describe("classifyIngestName", () => {
     expect(classifyIngestName("shift-a.xml")).toBe("xml")
     expect(classifyIngestName("cycles.CSV")).toBe("csv")
     expect(classifyIngestName("cycles.parquet")).toBe("parquet")
+    expect(classifyIngestName("austin.floorline")).toBe("floorline-db")
+    expect(classifyIngestName("nacht.DDB")).toBe("floorline-db")
     expect(classifyIngestName("notes.txt")).toBeNull()
   })
 })
@@ -35,10 +37,12 @@ describe("pickIngestFiles", () => {
       new File(["x"], "a.xml"),
       new File(["x"], "b.txt"),
       new File(["x"], "c.parquet"),
+      new File(["x"], "stand.floorline"),
     ]
     expect(pickIngestFiles(files).map((file) => file.name)).toEqual([
       "a.xml",
       "c.parquet",
+      "stand.floorline",
     ])
   })
 })

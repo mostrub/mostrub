@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { DataTable } from "@/components/data-table"
+import { ShareDbCard } from "@/components/share-db-card"
 import { useFloorline } from "@/state/floorline-store"
 import { sampleFileBlobs } from "@/lib/xml/sample-production"
 import { downloadText } from "@/lib/download"
@@ -27,7 +28,9 @@ export function IngestPage() {
         <p className="text-sm text-muted-foreground">
           XML aus der Freigabe, einem Ordner oder CSV/Parquet aus dieser App
           ablegen. Ein Refresh behält den letzten Stand auf diesem Rechner.
-          Start und Stopp über die Desktop-Symbole.
+          DuckDB-Stände als <code>.floorline</code> auf die Freigabe legen und
+          bei mehreren Dateien eine davon laden. Start und Stopp über die
+          Desktop-Symbole.
         </p>
       </div>
       {error ? (
@@ -66,7 +69,7 @@ export function IngestPage() {
             </span>
             <input
               type="file"
-              accept=".xml,.csv,.parquet,.pq,text/xml,application/xml,text/csv"
+              accept=".xml,.csv,.parquet,.pq,.floorline,.ddb,text/xml,application/xml,text/csv"
               multiple
               className="sr-only"
               onChange={(event) => {
@@ -135,6 +138,7 @@ export function IngestPage() {
           </div>
         </CardContent>
       </Card>
+      <ShareDbCard />
       <Card>
         <CardHeader>
           <CardTitle>Geladene Dateien</CardTitle>
