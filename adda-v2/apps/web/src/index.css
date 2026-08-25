@@ -1,17 +1,16 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Arial Narrow", "Liberation Sans Narrow", "Helvetica Neue", sans-serif;
+  --font-sans: "Helvetica Neue", "Liberation Sans", Arial, sans-serif;
   --font-mono: "Menlo", "Consolas", ui-monospace, monospace;
-  --color-floor: #0b0e11;
-  --color-panel: #12171c;
-  --color-steel: #1c242c;
-  --color-line: #2a343d;
-  --color-amber: #f0b429;
-  --color-nio: #ff4d3d;
-  --color-io: #3ecf8e;
-  --color-mist: #9aa7b2;
-  --color-white: #eef3f6;
+  --color-paper: #d5d2c6;
+  --color-sheet: #ece9dc;
+  --color-ink: #161814;
+  --color-rule: #7a7d72;
+  --color-mute: #5c6056;
+  --color-nio: #b1122a;
+  --color-mark: #f3ec9a;
+  --color-ok: #161814;
 }
 
 html,
@@ -22,7 +21,13 @@ body,
 
 body {
   margin: 0;
-  background: var(--color-floor);
-  color: var(--color-white);
-  font-family: var(--font-mono);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
 }

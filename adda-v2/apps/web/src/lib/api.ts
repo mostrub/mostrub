@@ -112,6 +112,17 @@ export type Chronik = {
   }[];
 };
 
+export type LineCell = {
+  dmc: string;
+  capturedAt: string;
+  station: "anode" | "cathode" | "oqc";
+  tray: string;
+  slot: number;
+  partOk: boolean;
+  spanMm: number | null;
+  defectClass: string | null;
+};
+
 export type LineBoard = {
   snapshotId: number;
   inspected: number;
@@ -119,21 +130,23 @@ export type LineBoard = {
   yield: number | null;
   taktPerHour: number | null;
   spanMean: number | null;
+  spanWindow: {
+    min: number | null;
+    p50: number | null;
+    p95: number | null;
+    max: number | null;
+    mean: number | null;
+  };
   hours: { hour: number; inspected: number; nio: number }[];
   defects: { defectClass: string; count: number }[];
+  trays: { tray: string; slots: { slot: number; cells: LineCell[] }[] }[];
+  cells: LineCell[];
   stations: {
     station: "anode" | "cathode" | "oqc";
     inspected: number;
     nio: number;
     nioRate: number | null;
-    last: {
-      dmc: string;
-      capturedAt: string;
-      station: "anode" | "cathode" | "oqc";
-      partOk: boolean;
-      spanMm: number | null;
-      defectClass: string | null;
-    }[];
+    last: LineCell[];
   }[];
   _provenance: { store: string; query: string; snapshotId: number };
 };

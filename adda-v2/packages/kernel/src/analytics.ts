@@ -123,9 +123,24 @@ export type LineCell = {
   dmc: string;
   capturedAt: Date;
   station: "anode" | "cathode" | "oqc";
+  tray: string;
+  slot: number;
   partOk: boolean;
   spanMm: number | null;
   defectClass: string | null;
+};
+
+export type SpanWindow = {
+  min: number | null;
+  p50: number | null;
+  p95: number | null;
+  max: number | null;
+  mean: number | null;
+};
+
+export type TrayBoard = {
+  tray: string;
+  slots: { slot: number; cells: LineCell[] }[];
 };
 
 export type LineHour = {
@@ -141,8 +156,11 @@ export type LineBoard = {
   yield: number | null;
   taktPerHour: number | null;
   spanMean: number | null;
+  spanWindow: SpanWindow;
   hours: LineHour[];
   defects: { defectClass: string; count: number }[];
+  trays: TrayBoard[];
+  cells: LineCell[];
   stations: {
     station: "anode" | "cathode" | "oqc";
     inspected: number;
@@ -179,8 +197,19 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
        GREATEST(1, date_diff('hour', MIN(captured_at), MAX(captured_at)))::DOUBLE AS hours
      FROM lake.inspections`,
   );
-  const span = await lake.query<{ span_mean: number | null }>(
-    `SELECT AVG(span_mm) AS span_mean FROM lake.measurements`,
+  const span = await lake.query<{
+    span_min: number | null;
+    span_p50: number | null;
+    span_p95: number | null;
+    span_max: number | null;
+    span_mean: number | null;
+  }>(
+    `SELECT MIN(span_mm) AS span_min,
+            quantile_cont(span_mm, 0.5) AS span_p50,
+            quantile_cont(span_mm, 0.95) AS span_p95,
+            MAX(span_mm) AS span_max,
+            AVG(span_mm) AS span_mean
+     FROM lake.measurements`,
   );
   const stationRates = await lake.query<{
     station: string;
@@ -206,39 +235,60 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
      GROUP BY defect_class
      ORDER BY count DESC, defect_class`,
   );
-  const recent = await lake.query<{
+  const rawCells = await lake.query<{
     dmc: string;
     captured_at: Date;
     station: string;
+    tray: string;
+    slot: number;
     part_ok: boolean;
     span_mm: number | null;
     defect_class: string | null;
-    rn: number;
   }>(
-    `SELECT dmc, captured_at, station, part_ok, span_mm, defect_class, rn FROM (
-       SELECT i.dmc, i.captured_at, i.station, i.part_ok, m.span_mm,
-              (SELECT f.defect_class FROM lake.findings f
-               WHERE f.inspection_id = i.inspection_id
-               ORDER BY f.score DESC LIMIT 1) AS defect_class,
-              row_number() OVER (PARTITION BY i.station ORDER BY i.captured_at DESC) AS rn
-       FROM lake.inspections i
-       LEFT JOIN lake.measurements m ON m.inspection_id = i.inspection_id
-     ) ranked
-     WHERE rn <= 8
-     ORDER BY station, captured_at DESC`,
+    `SELECT i.dmc, i.captured_at, i.station, i.tray, i.slot, i.part_ok, m.span_mm,
+            (SELECT f.defect_class FROM lake.findings f
+             WHERE f.inspection_id = i.inspection_id
+             ORDER BY f.score DESC LIMIT 1) AS defect_class
+     FROM lake.inspections i
+     LEFT JOIN lake.measurements m ON m.inspection_id = i.inspection_id
+     ORDER BY i.tray, i.slot, i.captured_at`,
   );
   const total = totals[0] ?? { inspected: 0, nio: 0, hours: 1 };
   const inspected = Number(total.inspected);
   const nio = Number(total.nio);
   const spanHours = Number(total.hours) || 1;
-  const spanMean = span[0]?.span_mean ?? null;
+  const spanRow = span[0];
+  const cells = rawCells.flatMap((row) => {
+    const station = asStation(row.station);
+    if (!station) return [];
+    return [
+      {
+        dmc: row.dmc,
+        capturedAt: row.captured_at,
+        station,
+        tray: row.tray,
+        slot: Number(row.slot),
+        partOk: row.part_ok,
+        spanMm: row.span_mm === null ? null : Number(row.span_mm),
+        defectClass: row.defect_class,
+      } satisfies LineCell,
+    ];
+  });
+  const trayNames = [...new Set(cells.map((cell) => cell.tray))].sort();
   return {
     snapshotId: asSnapshotId(asSafeInt(snapshotId)),
     inspected,
     nio,
     yield: inspected === 0 ? null : (inspected - nio) / inspected,
     taktPerHour: inspected === 0 ? null : inspected / spanHours,
-    spanMean: spanMean === null ? null : Number(spanMean),
+    spanMean: asNumber(spanRow?.span_mean),
+    spanWindow: {
+      min: asNumber(spanRow?.span_min),
+      p50: asNumber(spanRow?.span_p50),
+      p95: asNumber(spanRow?.span_p95),
+      max: asNumber(spanRow?.span_max),
+      mean: asNumber(spanRow?.span_mean),
+    },
     hours: hours.map((row) => ({
       hour: Number(row.hour),
       inspected: Number(row.inspected),
@@ -247,6 +297,17 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
     defects: defects.map((item) => ({
       defectClass: item.defect_class,
       count: Number(item.count),
+    })),
+    cells,
+    trays: trayNames.map((tray) => ({
+      tray,
+      slots: Array.from({ length: 12 }, (_, index) => {
+        const slot = index + 1;
+        return {
+          slot,
+          cells: cells.filter((cell) => cell.tray === tray && cell.slot === slot),
+        };
+      }),
     })),
     stations: STATIONS.map((station) => {
       const rate = stationRates.find((row) => row.station === station);
@@ -257,16 +318,11 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
         inspected: count,
         nio: stationNio,
         nioRate: count === 0 ? null : stationNio / count,
-        last: recent
-          .filter((row) => row.station === station)
-          .map((row) => ({
-            dmc: row.dmc,
-            capturedAt: row.captured_at,
-            station,
-            partOk: row.part_ok,
-            spanMm: row.span_mm === null ? null : Number(row.span_mm),
-            defectClass: row.defect_class,
-          })),
+        last: cells
+          .filter((cell) => cell.station === station)
+          .slice()
+          .sort((a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt))
+          .slice(0, 8),
       };
     }),
     _provenance: {
@@ -275,6 +331,16 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
       snapshotId: asSnapshotId(asSafeInt(snapshotId)),
     },
   };
+}
+
+function asStation(value: string): LineCell["station"] | null {
+  if (value === "anode" || value === "cathode" || value === "oqc") return value;
+  return null;
+}
+
+function asNumber(value: number | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  return Number(value);
 }
 
 function zurichToday(): string {

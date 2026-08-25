@@ -93,10 +93,18 @@ describe("ledger api", () => {
     });
     const line = await app.request("/api/linie");
     expect(line.status).toBe(200);
-    const board = (await line.json()) as { inspected: number; stations: unknown[]; hours: unknown[] };
+    const board = (await line.json()) as {
+      inspected: number;
+      stations: unknown[];
+      hours: unknown[];
+      trays: unknown[];
+      cells: unknown[];
+    };
     expect(board.inspected).toBe(72);
     expect(board.stations).toHaveLength(3);
     expect(board.hours.length).toBeGreaterThan(0);
+    expect(board.trays).toHaveLength(3);
+    expect(board.cells).toHaveLength(72);
 
     const schicht = await app.request("/api/schicht");
     expect(schicht.status).toBe(200);

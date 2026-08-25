@@ -18,16 +18,13 @@ It does not replace [`mostrub/ADDA`](https://github.com/mostrub/ADDA).
 
 Ports: API `5757`, Vite `5759`. Env prefix `LEDGER_`. Timezone `Europe/Zurich`.
 
-## Rooms
+## Leitstand
 
-| Route | What it shows |
-| --- | --- |
-| `/linie` | Station lanes, takt-by-hour, yield, span, defect mix |
-| `/band` | Inspection and line-event tape |
-| `/zelle/:dmc` | Cell dossier, open Akte |
-| `/schicht` | Latest civil day with inspections |
-| `/pin` | DuckLake snapshots and time travel |
-| `/akte/:id` | Pin a snapshot, scrap disposition |
+One surface. No rooms.
+
+The line is a set of physical trays. Each Fach is a cell. Takt is a 24-hour
+rule. Span is a process window with p50/p95 and a 0,12 mm limit. Defect classes
+and the Durchlauf sit on the same Blatt. Opening a cell keeps you on the floor.
 
 ## Hardware
 

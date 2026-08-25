@@ -56,6 +56,10 @@ describe("shift analytics and seed", () => {
     expect(line.hours.map((row) => row.hour).sort((a, b) => a - b)).toEqual([6, 14, 22]);
     expect(line.defects.length).toBe(11);
     expect(line.stations.every((station) => station.inspected > 0)).toBe(true);
+    expect(line.trays).toHaveLength(3);
+    expect(line.cells).toHaveLength(72);
+    expect(line.spanWindow.p95).not.toBeNull();
+    expect((line.spanWindow.p95 ?? 0) >= (line.spanWindow.p50 ?? 0)).toBe(true);
     const window = await ledger.latestShiftWindow();
     expect(window.from.startsWith("2026-08-24")).toBe(true);
   });
