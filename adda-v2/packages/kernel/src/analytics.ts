@@ -81,34 +81,36 @@ export async function loadChronik(
   const limit = filter.limit ?? 200;
   const dmcClause = filter.dmc ? `AND dmc = '${sqlLiteral(filter.dmc)}'` : "";
   const fromClause = filter.from
-    ? `AND at >= TIMESTAMPTZ '${sqlLiteral(filter.from)}'`
+    ? `AND occurred_at >= TIMESTAMPTZ '${sqlLiteral(filter.from)}'`
     : "";
-  const toClause = filter.to ? `AND at < TIMESTAMPTZ '${sqlLiteral(filter.to)}'` : "";
+  const toClause = filter.to
+    ? `AND occurred_at < TIMESTAMPTZ '${sqlLiteral(filter.to)}'`
+    : "";
 
   const rows = await lake.query<{
-    at: Date;
+    occurred_at: Date;
     kind: "inspection" | "line";
     dmc: string;
     summary: string;
     source: string;
   }>(
-    `SELECT * FROM (
-       SELECT captured_at AS at, 'inspection' AS kind, dmc,
+    `SELECT occurred_at, kind, dmc, summary, source FROM (
+       SELECT captured_at AS occurred_at, 'inspection' AS kind, dmc,
               CASE WHEN part_ok THEN 'IO' ELSE 'NIO' END AS summary, source
        FROM lake.inspections
        UNION ALL
-       SELECT observed_at AS at, 'line' AS kind, dmc, upper(verdict) AS summary, source
+       SELECT observed_at AS occurred_at, 'line' AS kind, dmc, upper(verdict) AS summary, source
        FROM lake.line_events
      ) events
      WHERE 1=1 ${dmcClause} ${fromClause} ${toClause}
-     ORDER BY at DESC
+     ORDER BY occurred_at DESC
      LIMIT ${limit}`,
   );
 
   return {
     snapshotId: asSnapshotId(asSafeInt(snapshotId)),
     events: rows.map((row) => ({
-      at: row.at,
+      at: row.occurred_at,
       kind: row.kind,
       dmc: row.dmc,
       summary: row.summary,

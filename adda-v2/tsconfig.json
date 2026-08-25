@@ -2,6 +2,7 @@
   "files": [],
   "references": [
     { "path": "packages/types" },
-    { "path": "packages/kernel" }
+    { "path": "packages/kernel" },
+    { "path": "apps/api" }
   ]
 }

@@ -33,7 +33,14 @@ export class Lake {
     try {
       await installExtensions(db);
       await run(db, attachSql(config, { readOnly: false }));
-      await bootstrapEvidenceTables(db);
+      await run(db, "BEGIN");
+      try {
+        await bootstrapEvidenceTables(db);
+        await run(db, "COMMIT");
+      } catch (err) {
+        await run(db, "ROLLBACK").catch(() => undefined);
+        throw err;
+      }
     } catch (err) {
       await closeDb(db).catch(() => undefined);
       throw wrapLakeError(err);

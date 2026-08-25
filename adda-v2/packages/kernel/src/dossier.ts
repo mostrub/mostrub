@@ -1,5 +1,6 @@
 import {
   asSnapshotId,
+  LedgerError,
   ledgerError,
   type Dmc,
   type SnapshotId,
@@ -56,6 +57,15 @@ export async function loadDossierAt(
   const historical = await attachAtSnapshot(lake.config, snapshotId);
   try {
     return await readDossier(historical, dmc, snapshotId);
+  } catch (err) {
+    if (err instanceof LedgerError && /does not exist/i.test(err.message)) {
+      throw ledgerError(
+        "SNAPSHOT_CONFLICT",
+        `Snapshot ${snapshotId} liegt vor dem Evidenzschema`,
+        409,
+      );
+    }
+    throw err;
   } finally {
     await historical.close();
   }

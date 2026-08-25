@@ -45,5 +45,8 @@ describe("shift analytics and seed", () => {
     expect(report._provenance.store).toBe("ducklake");
     expect(report._provenance.snapshotId).toBeGreaterThan(0);
     expect(report.defects.length).toBeGreaterThan(0);
+    const chronik = await ledger.chronik({ limit: 10 });
+    expect(chronik.events.length).toBeGreaterThan(0);
+    expect(chronik.events[0]?.dmc.startsWith("HLL2-")).toBe(true);
   });
 });
