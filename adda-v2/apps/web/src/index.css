@@ -533,12 +533,13 @@ textarea {
 .zeitlinie {
   background: var(--color-well);
   border: 1px solid #1c2a36;
-  padding: 0.35rem 0.55rem 0.2rem;
+  padding: 0.35rem 1.6rem 0.2rem 0.55rem;
 }
 
 .zeitlinie-rail {
   position: relative;
   height: 2.6rem;
+  overflow: visible;
 }
 
 .zeitlinie-rail button {

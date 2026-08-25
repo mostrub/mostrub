@@ -605,10 +605,13 @@ function Zeitlinie({
       </div>
       <div className="zeitlinie">
         <div className="zeitlinie-rail">
-          {marks.map((mark, index) => (
+          {marks.map((mark, index) => {
+            const label = `${mark.dmc} ${mark.nio ? de.io.nio : de.io.io} ${formatWhen(mark.at)}`;
+            return (
             <button
               key={`${mark.dmc}-${mark.at}-${index}`}
               type="button"
+              aria-label={label}
               className={[
                 mark.nio ? "is-nio" : "is-io",
                 mark.dmc === selected ? "is-picked" : "",
@@ -616,10 +619,11 @@ function Zeitlinie({
                 .filter(Boolean)
                 .join(" ")}
               style={{ left: `${mark.x * 100}%` }}
-              title={`${mark.dmc} ${mark.nio ? de.io.nio : de.io.io} ${formatWhen(mark.at)}`}
+              title={label}
               onClick={() => onPick(mark.dmc)}
             />
-          ))}
+            );
+          })}
           <span className="zeitlinie-now" style={{ left: `${nowX * 100}%` }}>
             {de.jetzt}
           </span>
@@ -681,8 +685,8 @@ function Maschine({
               </div>
               <h3 className="subhead">{nioOnly ? de.alleNio : de.zuletzt}</h3>
               <ol className="last-cells">
-                {rows.map((cell) => (
-                  <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                {rows.map((cell, index) => (
+                  <li key={`${cell.dmc}-${cell.capturedAt}-${index}`}>
                     <CellRow cell={cell} selected={selected} onPick={onPick} />
                   </li>
                 ))}
@@ -814,8 +818,8 @@ function Fach({
                 <span>{formatPercent(rate)}</span>
               </button>
               <ol className="fach-dmcs">
-                {row.cells.map((cell) => (
-                  <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                {row.cells.map((cell, index) => (
+                  <li key={`${cell.dmc}-${cell.capturedAt}-${index}`}>
                     <button
                       type="button"
                       className={[!cell.partOk ? "is-nio" : "", cell.dmc === selected ? "is-picked" : ""]
@@ -1073,8 +1077,8 @@ function Schicht({
             <>
               <h3 className="subhead">{de.alleNio}</h3>
               <ol className="last-cells">
-                {nio.map((cell) => (
-                  <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                {nio.map((cell, index) => (
+                  <li key={`${cell.dmc}-${cell.capturedAt}-${index}`}>
                     <CellRow
                       cell={cell}
                       selected={selected}
@@ -1171,8 +1175,8 @@ function Fenster({
       </p>
       <h3 className="subhead">{de.span.offenders}</h3>
       <ol className="last-cells">
-        {offenders.map((cell) => (
-          <li key={`${cell.dmc}-${cell.capturedAt}`}>
+        {offenders.map((cell, index) => (
+          <li key={`${cell.dmc}-${cell.capturedAt}-${index}`}>
             <CellRow cell={cell} selected={selected} onPick={onPick} extra={fmtMm(cell.spanMm)} />
           </li>
         ))}
