@@ -8,19 +8,50 @@ need() {
   command -v "$1" >/dev/null 2>&1
 }
 
+node_major() {
+  node -e 'process.stdout.write(process.versions.node.split(".")[0])' 2>/dev/null || echo 0
+}
+
+install_node() {
+  if need node && [[ "$(node_major)" -ge 22 ]]; then
+    return
+  fi
+  if need brew; then
+    brew install node@22
+    export PATH="$(brew --prefix node@22)/bin:${PATH}"
+    return
+  fi
+  if need pacman; then
+    sudo pacman -S --needed --noconfirm nodejs npm
+    return
+  fi
+  if need apt-get; then
+    sudo apt-get update
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs npm
+    if [[ "$(node_major)" -lt 22 ]]; then
+      curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+      sudo DEBIAN_FRONTEND=noninteractive apt-get install -y nodejs
+    fi
+    return
+  fi
+  echo "Install Node.js 22 or newer, then re-run bin/setup.sh" >&2
+  exit 1
+}
+
 install_postgres() {
-  if need psql; then
+  if need psql && pg_isready -h 127.0.0.1 >/dev/null 2>&1; then
     return
   fi
   if need brew; then
     brew install postgresql@16
     brew services start postgresql@16
+    export PATH="$(brew --prefix postgresql@16)/bin:${PATH}"
     return
   fi
   if need pacman; then
     sudo pacman -S --needed --noconfirm postgresql
     if [[ ! -d /var/lib/postgres/data ]]; then
-      sudo -u postgres initdb -D /var/lib/postgres/data
+      sudo -u postgres initdb -D /var/lib/postgres/data --locale=C.UTF-8 --encoding=UTF8
     fi
     sudo systemctl enable --now postgresql
     return
@@ -38,9 +69,13 @@ install_postgres() {
 psql_super() {
   if need sudo && id postgres >/dev/null 2>&1; then
     sudo -u postgres psql -v ON_ERROR_STOP=1 "$@"
-  else
-    psql -v ON_ERROR_STOP=1 "$@"
+    return
   fi
+  if need brew; then
+    psql -v ON_ERROR_STOP=1 "$@"
+    return
+  fi
+  psql -v ON_ERROR_STOP=1 "$@"
 }
 
 create_databases() {
@@ -60,6 +95,7 @@ SQL
   done
 }
 
+install_node
 install_postgres
 create_databases
 
@@ -67,10 +103,10 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
 
-if ! need node || ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) < 22)'; then
+if [[ "$(node_major)" -lt 22 ]]; then
   echo "Node.js 22 or newer is required." >&2
   exit 1
 fi
 
 npm install
-echo "Ready. Seed and start with: bin/dev.sh"
+echo "Ready. Seed and start with: bin/dev.sh --seed 2026-08-24"

@@ -34,7 +34,7 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
   app.use(
     "*",
     cors({
-      origin: ["http://127.0.0.1:5759", "http://localhost:5759"],
+      origin: (origin) => origin || "*",
       allowMethods: ["GET", "POST", "OPTIONS"],
       allowHeaders: ["Content-Type", "Authorization"],
     }),

@@ -1,9 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { configFromEnv, createPool, Ledger, resetControlForTests, resetLakeForTests } from "../../packages/kernel/src/index.ts";
 import { createApp } from "../../apps/api/src/app.ts";
+import { apiConfigFromEnv } from "../../apps/api/src/config.ts";
 import { inspectionIngestSchema } from "../../packages/types/src/index.ts";
 
 describe("ledger api", () => {
+  it("listens on every interface unless LEDGER_API_HOST is set", () => {
+    expect(apiConfigFromEnv({}).host).toBe("0.0.0.0");
+    expect(apiConfigFromEnv({ LEDGER_API_HOST: "192.168.10.4" }).host).toBe("192.168.10.4");
+  });
+
   let ledger: Ledger | undefined;
 
   beforeEach(async () => {

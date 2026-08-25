@@ -7,7 +7,7 @@ export type ApiConfig = {
 
 export function apiConfigFromEnv(env: NodeJS.ProcessEnv = process.env): ApiConfig {
   return {
-    host: env.LEDGER_API_HOST ?? "127.0.0.1",
+    host: env.LEDGER_API_HOST ?? "0.0.0.0",
     port: Number(env.LEDGER_API_PORT ?? "5757"),
     ingestToken: env.LEDGER_INGEST_TOKEN ?? "",
     operatorToken: env.LEDGER_OPERATOR_TOKEN ?? "",
