@@ -96,12 +96,23 @@ textarea {
 }
 
 .lenses button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
   border: 1px solid #5d6670;
   background: linear-gradient(180deg, #f4f6f8, #c5ccd4);
-  padding: 0.4rem 0.7rem;
+  padding: 0.35rem 0.65rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   font-size: 0.7rem;
+}
+
+.lenses button small {
+  letter-spacing: 0.08em;
+  font-size: 0.58rem;
+  opacity: 0.7;
+  text-transform: none;
 }
 
 .lenses button.is-on {
@@ -368,6 +379,82 @@ textarea {
   opacity: 0.4;
 }
 
+.fach-rail {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(5.5rem, 1fr));
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+}
+
+.fach-rail > li > button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: left;
+  border: 1px solid #254055;
+  background: #0a1822;
+  color: inherit;
+  padding: 0.35rem;
+}
+
+.fach-rail > li > button.is-nio {
+  border-color: var(--color-nio);
+}
+
+.fach-rail > li > button.is-picked {
+  box-shadow: inset 3px 0 0 var(--color-pick);
+}
+
+.fach-dmcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0;
+}
+
+.fach-dmcs button {
+  border: 1px solid #254055;
+  background: #08131c;
+  color: var(--color-ice);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  padding: 0.1rem 0.25rem;
+}
+
+.fach-dmcs button.is-nio {
+  color: #ff6aad;
+  border-color: var(--color-nio);
+}
+
+.fach-dmcs button.is-picked {
+  box-shadow: inset 2px 0 0 var(--color-pick);
+}
+
+.schicht-defects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.schicht-defects button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #1c2a36;
+  background: #08131c;
+  color: inherit;
+  padding: 0.35rem 0.5rem;
+}
+
 .film {
   display: flex;
   flex-direction: column;
@@ -471,5 +558,9 @@ textarea {
 
   .stations {
     grid-template-columns: 1fr;
+  }
+
+  .fach-rail {
+    grid-template-columns: repeat(12, minmax(5.5rem, 1fr));
   }
 }

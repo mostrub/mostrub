@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { de, type Lens } from "../i18n/de.ts";
 import {
   api,
@@ -12,10 +12,22 @@ import {
   type LineCell,
   type ShiftReport,
 } from "../lib/api.ts";
-import { formatCount, formatPercent, formatRate, formatWhen, verdictLabel } from "../lib/format.ts";
+import { formatCount, formatDay, formatPercent, formatRate, formatWhen, verdictLabel } from "../lib/format.ts";
 import { Lcd, Note } from "../ui.tsx";
 
-const LENSES = ["maschine", "tablett", "fenster", "klasse", "see"] as const satisfies readonly Lens[];
+const LENSES = [
+  "maschine",
+  "tablett",
+  "fach",
+  "fenster",
+  "klasse",
+  "schicht",
+  "see",
+] as const satisfies readonly Lens[];
+
+function isLens(value: string | null): value is Lens {
+  return value !== null && LENSES.some((id) => id === value);
+}
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const SPAN_LIMIT = 0.12;
 const BIN_W = 0.02;
@@ -80,7 +92,9 @@ function latestCell(cells: LineCell[], dmc: string): LineCell | null {
 export function Floor() {
   const { dmc: routeDmc, id: caseId } = useParams();
   const navigate = useNavigate();
-  const [lens, setLens] = useState<Lens>("maschine");
+  const [params, setParams] = useSearchParams();
+  const sicht = params.get("sicht");
+  const lens: Lens = isLens(sicht) ? sicht : "maschine";
   const [board, setBoard] = useState<LineBoard | null>(null);
   const [tape, setTape] = useState<Chronik | null>(null);
   const [shift, setShift] = useState<ShiftReport | null>(null);
@@ -214,9 +228,14 @@ export function Floor() {
               type="button"
               aria-pressed={id === lens}
               className={id === lens ? "is-on" : undefined}
-              onClick={() => setLens(id)}
+              onClick={() => {
+                const next = new URLSearchParams(params);
+                next.set("sicht", id);
+                setParams(next, { replace: true });
+              }}
             >
-              {de.lenses[id]}
+              <span>{de.lenses[id]}</span>
+              <small>{de.lensHint[id]}</small>
             </button>
           ))}
         </nav>
@@ -271,6 +290,7 @@ export function Floor() {
         <LensWell
           lens={lens}
           board={board}
+          shift={shift}
           lake={lake}
           selected={selected}
           travelId={travelId}
@@ -334,6 +354,7 @@ export function Floor() {
 function LensWell({
   lens,
   board,
+  shift,
   lake,
   selected,
   travelId,
@@ -342,6 +363,7 @@ function LensWell({
 }: {
   lens: Lens;
   board: LineBoard | null;
+  shift: ShiftReport | null;
   lake: LakeStatus | null;
   selected: string;
   travelId: string;
@@ -353,10 +375,14 @@ function LensWell({
       return <Maschine board={board} selected={selected} onPick={onPick} />;
     case "tablett":
       return <Tablett board={board} selected={selected} onPick={onPick} />;
+    case "fach":
+      return <Fach board={board} selected={selected} onPick={onPick} />;
     case "fenster":
       return <Fenster board={board} selected={selected} onPick={onPick} />;
     case "klasse":
       return <Klasse board={board} onPick={onPick} />;
+    case "schicht":
+      return <Schicht board={board} shift={shift} onPick={onPick} />;
     case "see":
       return <See lake={lake} selected={selected} travelId={travelId} onTravelId={onTravelId} />;
     default: {
@@ -476,6 +502,116 @@ function Tablett({
           </article>
         ) : null}
       </div>
+    </section>
+  );
+}
+
+function Fach({
+  board,
+  selected,
+  onPick,
+}: {
+  board: LineBoard | null;
+  selected: string;
+  onPick: (dmc: string) => void;
+}) {
+  const slots = useMemo(() => {
+    return Array.from({ length: 12 }, (_, index) => {
+      const slot = index + 1;
+      const cells = (board?.cells ?? []).filter((cell) => cell.slot === slot);
+      const nio = cells.filter((cell) => !cell.partOk);
+      return { slot, cells, nio };
+    });
+  }, [board]);
+  return (
+    <section>
+      <h2>{de.lenses.fach}</h2>
+      <p className="lede">{de.fachLede}</p>
+      <ol className="fach-rail">
+        {slots.map((row) => {
+          const rate = row.cells.length === 0 ? null : row.nio.length / row.cells.length;
+          const pickCell = row.nio[0] ?? row.cells[row.cells.length - 1];
+          return (
+            <li key={row.slot}>
+              <button
+                type="button"
+                className={[
+                  row.nio.length ? "is-nio" : "is-io",
+                  pickCell && pickCell.dmc === selected ? "is-picked" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                disabled={!pickCell}
+                onClick={() => pickCell && onPick(pickCell.dmc)}
+              >
+                <span className="mono">{String(row.slot).padStart(2, "0")}</span>
+                <Lcd label={de.kpis.nio} value={formatCount(row.nio.length)} warn={row.nio.length > 0} />
+                <span>{formatPercent(rate)}</span>
+              </button>
+              <ol className="fach-dmcs">
+                {row.cells.map((cell) => (
+                  <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                    <button
+                      type="button"
+                      className={[!cell.partOk ? "is-nio" : "", cell.dmc === selected ? "is-picked" : ""]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={() => onPick(cell.dmc)}
+                    >
+                      {cell.dmc.slice(-6)}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+function Schicht({
+  board,
+  shift,
+  onPick,
+}: {
+  board: LineBoard | null;
+  shift: ShiftReport | null;
+  onPick: (dmc: string) => void;
+}) {
+  return (
+    <section>
+      <h2>{de.lenses.schicht}</h2>
+      <p className="lede">{de.schichtLede}</p>
+      {shift ? (
+        <>
+          <div className="span-readouts">
+            <Lcd label={de.kpis.cells} value={formatCount(shift.inspected)} />
+            <Lcd label={de.io.io} value={formatCount(shift.io)} />
+            <Lcd label={de.kpis.nio} value={formatCount(shift.nio)} warn={shift.nio > 0} />
+            <Lcd label={de.kpis.yield} value={formatPercent(shift.yield)} warn={(shift.yield ?? 1) < 0.8} />
+          </div>
+          <p className="hint">
+            {formatDay(shift.from)} → {formatWhen(shift.to)}
+          </p>
+          <ol className="schicht-defects">
+            {shift.defects.map((item) => {
+              const hit = board?.cells.find((cell) => cell.defectClass === item.defectClass && !cell.partOk);
+              return (
+                <li key={item.defectClass}>
+                  <button type="button" disabled={!hit} onClick={() => hit && onPick(hit.dmc)}>
+                    <span>{defectLabel(item.defectClass)}</span>
+                    <span className="mono">{formatCount(item.count)}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </>
+      ) : (
+        <p className="hint">{de.empty}</p>
+      )}
     </section>
   );
 }

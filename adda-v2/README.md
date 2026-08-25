@@ -23,15 +23,17 @@ Timezone `Europe/Zurich`.
 
 One instrument. No rooms, no ADDA chrome.
 
-Five lenses on the same chassis:
+Seven Prüfungen on the same chassis (`?sicht=`):
 
-| Lens | What it shows |
+| Prüfung | Audit |
 | --- | --- |
-| Maschine | Anode → Kathode → OQC, last cells per station |
+| Maschine | Anode → Kathode → OQC, NIO first |
 | Tablett | 12-slot magazines |
-| Fenster | Span histogram, p50/p95, 0,12 mm limit |
-| Klasse | Defect × Zurich-hour matrix |
-| See | Snapshot film and Zeitreise on the selected cell |
+| Fach | Same slot across all magazines |
+| Fenster | Span histogram, p50/p95, over-limit cells |
+| Klasse | 11 defect classes × 24 Zurich hours |
+| Schicht | Civil-day IO/NIO, yield, class list |
+| Zeitreise | Lake snapshots on the selected cell |
 
 Takt (24 h, Europe/Zurich) and the cell coupon stay on the bezel. Opening a
 cell does not leave the floor.
