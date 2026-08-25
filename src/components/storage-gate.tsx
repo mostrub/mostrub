@@ -24,10 +24,10 @@ export function StorageGate({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen min-w-[1180px] items-center justify-center bg-background p-8">
       <Card className="w-[560px] rounded-sm">
         <CardHeader>
-          <CardTitle>Saved inventory could not be read</CardTitle>
+          <CardTitle>Gespeichertes Inventar konnte nicht gelesen werden</CardTitle>
           <CardDescription>
-            The copy in this browser was left untouched. It was not replaced with
-            the demo plant.
+            Der Bestand in diesem Browser blieb unverändert. Er wurde nicht durch
+            die Werksdemo ersetzt.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -49,16 +49,16 @@ export function StorageGate({ children }: { children: React.ReactNode }) {
                 return
               }
               replaceState(parsed.state)
-              toast.success("Backup imported")
+              toast.success("Backup übernommen")
             }}
           />
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => fileRef.current?.click()}>Import backup</Button>
+            <Button onClick={() => fileRef.current?.click()}>Backup importieren</Button>
             <Button variant="outline" onClick={resetToEmpty}>
-              Start empty
+              Leer starten
             </Button>
             <Button variant="outline" onClick={loadDemo}>
-              Load plant demo
+              Werksdemo laden
             </Button>
           </div>
         </CardContent>

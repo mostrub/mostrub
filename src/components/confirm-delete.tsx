@@ -14,7 +14,7 @@ import {
 export function ConfirmDelete({
   label,
   onConfirm,
-  description = "This removes the record from the register. Destruction history is kept separately if you already logged it.",
+  description = "Der Datensatz wird aus dem Register entfernt. Ein vorhandener Vernichtungseintrag bleibt erhalten.",
 }: {
   label: string
   onConfirm: () => void
@@ -23,16 +23,16 @@ export function ConfirmDelete({
   return (
     <AlertDialog>
       <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
-        Delete
+        Löschen
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
+          <AlertDialogTitle>{label} löschen?</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Delete</AlertDialogAction>
+          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Löschen</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

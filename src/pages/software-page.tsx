@@ -44,7 +44,7 @@ export function SoftwarePage() {
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Software"
-        description="Seat counts, renewals, and entitlement IDs. Over-assigned titles are saved and listed on the audit tab."
+        description="Plätze, Verlängerungen und Lizenzschlüssel. Überbelegte Titel werden gespeichert und stehen unter Prüfung."
         actions={
           <>
             <Button
@@ -53,43 +53,43 @@ export function SoftwarePage() {
                 try {
                   downloadRegisterCsv(state, "Software licenses")
                 } catch {
-                  toast.error("Export failed")
+                  toast.error("Export fehlgeschlagen")
                 }
               }}
             >
               CSV
             </Button>
-            <Button onClick={() => setDraft(blankSoftware(newId()))}>Add title</Button>
+            <Button onClick={() => setDraft(blankSoftware(newId()))}>Titel anlegen</Button>
           </>
         }
       />
       <div className="border bg-muted/30 px-2 py-2">
         <Input
           className="w-72"
-          placeholder="Search name, vendor, entitlement..."
+          placeholder="Name, Hersteller, Lizenzschlüssel..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
       <DataTable
         rows={rows}
-        emptyTitle="No software matches"
-        emptyDescription="Add a title or clear the search."
+        emptyTitle="Keine Software gefunden"
+        emptyDescription="Titel anlegen oder Suche leeren."
         columns={[
-          { header: "Inventory #", cell: (row) => row.inventoryNumber },
+          { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber },
           { header: "Name", cell: (row) => row.name },
-          { header: "Vendor", cell: (row) => row.vendor },
-          { header: "Type", cell: (row) => LICENSE_TYPE_LABELS[row.licenseType] },
+          { header: "Hersteller", cell: (row) => row.vendor },
+          { header: "Typ", cell: (row) => LICENSE_TYPE_LABELS[row.licenseType] },
           {
-            header: "Seats",
+            header: "Plätze",
             cell: (row) => `${row.seatsAssigned} / ${row.seatsPurchased}`,
           },
-          { header: "Department", cell: (row) => DEPARTMENT_LABELS[row.department] },
-          { header: "Renewal", cell: (row) => row.renewalDate || "—" },
+          { header: "Abteilung", cell: (row) => DEPARTMENT_LABELS[row.department] },
+          { header: "Verlängerung", cell: (row) => row.renewalDate || "—" },
           {
-            header: "Annual",
+            header: "Jahreskosten",
             cell: (row) =>
-              row.annualCost.toLocaleString("en-US", {
+              row.annualCost.toLocaleString("de-DE", {
                 style: "currency",
                 currency: "USD",
                 maximumFractionDigits: 0,
@@ -106,10 +106,10 @@ export function SoftwarePage() {
                   render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
                   nativeButton={false}
                 >
-                  History
+                  Historie
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
-                  Edit
+                  Bearbeiten
                 </Button>
                 <ConfirmDelete
                   label={row.name}
@@ -127,9 +127,9 @@ export function SoftwarePage() {
             setDraft(null)
           }
         }}
-        title={draft && state.software.some((item) => item.id === draft.id) ? "Edit software" : "Add software"}
-        description="Assigned seats above purchased seats are saved and listed as findings."
-        submitLabel="Save software"
+        title={draft && state.software.some((item) => item.id === draft.id) ? "Software bearbeiten" : "Software anlegen"}
+        description="Mehr zugewiesene als gekaufte Plätze werden gespeichert und als Befund geführt."
+        submitLabel="Software speichern"
         onSubmit={() => {
           if (!draft) {
             return
@@ -139,7 +139,7 @@ export function SoftwarePage() {
             toast.error(error)
             return
           }
-          toast.success("Software saved")
+          toast.success("Software gespeichert")
           setDraft(null)
         }}
       >

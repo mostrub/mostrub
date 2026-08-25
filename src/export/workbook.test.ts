@@ -119,8 +119,8 @@ describe("buildAuditWorkbookPlan", () => {
     const byDept = plan.sheets.find((sheet) => sheet.name === "Laptops by department")
 
     expect(laptops?.rows).toHaveLength(2)
-    expect(byDept?.rows.some((row) => row.includes("Engineering"))).toBe(true)
-    expect(byDept?.rows.some((row) => row.includes("Operations"))).toBe(true)
+    expect(byDept?.rows.some((row) => row.includes("Konstruktion"))).toBe(true)
+    expect(byDept?.rows.some((row) => row.includes("Betrieb"))).toBe(true)
   })
 
   it("excludes destroyed laptops from the department tab", () => {

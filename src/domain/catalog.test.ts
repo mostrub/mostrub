@@ -95,7 +95,7 @@ describe("catalog", () => {
     const result = upsertLaptop(emptyInventory(), laptop({ assetTag: "  " }))
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error).toMatch(/asset tag/i)
+      expect(result.error).toMatch(/Anlagenkennzeichen/i)
     }
   })
 
@@ -111,7 +111,7 @@ describe("catalog", () => {
     )
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error).toMatch(/already exists/i)
+      expect(result.error).toMatch(/existiert schon/i)
     }
   })
 
@@ -257,7 +257,7 @@ describe("catalog", () => {
     const result = removeLaptop(withLog.state, "lap-1")
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error).toMatch(/destruction log/i)
+      expect(result.error).toMatch(/Vernichtungseintrag/i)
     }
   })
 
@@ -273,7 +273,7 @@ describe("catalog", () => {
     )
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error).toMatch(/serial/i)
+      expect(result.error).toMatch(/Seriennummer/i)
     }
   })
 
@@ -316,7 +316,7 @@ describe("catalog", () => {
     )
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error).toMatch(/inventory number/i)
+      expect(result.error).toMatch(/Inventarnummer/i)
     }
   })
 

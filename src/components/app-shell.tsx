@@ -8,20 +8,20 @@ import { cn } from "@/lib/utils"
 import { MoonIcon, SunIcon } from "lucide-react"
 
 const NAV = [
-  { to: "/", label: "Overview", end: true },
+  { to: "/", label: "Übersicht", end: true },
   { to: "/laptops", label: "Laptops" },
-  { to: "/printers", label: "Printers" },
+  { to: "/printers", label: "Drucker" },
   { to: "/software", label: "Software" },
-  { to: "/destruction", label: "Destruction" },
-  { to: "/history", label: "History" },
-  { to: "/audit", label: "Audit" },
+  { to: "/destruction", label: "Vernichtung" },
+  { to: "/history", label: "Historie" },
+  { to: "/audit", label: "Prüfung" },
 ]
 
 function registerTitle(pathname: string): string {
   const match = NAV.find((item) =>
     item.end ? pathname === item.to : pathname.startsWith(item.to),
   )
-  return match?.label ?? "Overview"
+  return match?.label ?? "Übersicht"
 }
 
 export function AppShell() {
@@ -38,10 +38,10 @@ export function AppShell() {
       <aside className="flex w-52 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground">
         <div className="border-b px-3 py-3">
           <p className="text-[11px] tracking-wide text-muted-foreground uppercase">
-            Plant floor
+            Werkhalle
           </p>
           <p className="text-sm font-semibold">{ORG_NAME}</p>
-          <p className="text-xs text-muted-foreground">Asset register</p>
+          <p className="text-xs text-muted-foreground">Anlagenregister</p>
         </div>
         <nav className="flex flex-col py-1">
           {NAV.map((item) => (
@@ -66,7 +66,7 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-10 shrink-0 items-center gap-3 border-b bg-muted/40 px-3">
           <p className="text-sm">
-            <span className="text-muted-foreground">Register</span>
+            <span className="text-muted-foreground">Bestand</span>
             <span className="px-1.5 text-muted-foreground">/</span>
             <span className="font-medium">{registerTitle(location.pathname)}</span>
           </p>
@@ -75,7 +75,7 @@ export function AppShell() {
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Toggle theme"
+              aria-label="Darstellung wechseln"
               onClick={() => setTheme(resolvedDark ? "light" : "dark")}
             >
               {resolvedDark ? <SunIcon /> : <MoonIcon />}

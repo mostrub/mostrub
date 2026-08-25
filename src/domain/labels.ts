@@ -11,27 +11,27 @@ import type {
 } from "./types"
 
 export const DEPARTMENT_LABELS = {
-  operations: "Operations",
-  maintenance: "Maintenance",
-  engineering: "Engineering",
-  quality: "Quality",
-  safety: "Safety",
+  operations: "Betrieb",
+  maintenance: "Instandhaltung",
+  engineering: "Konstruktion",
+  quality: "Qualität",
+  safety: "Arbeitssicherheit",
   it: "IT",
-  finance: "Finance",
-  hr: "HR",
-  warehouse: "Warehouse",
-  production: "Production",
-  "ot-controls": "OT / Controls",
-  contractor: "Contractor",
+  finance: "Finanzen",
+  hr: "Personal",
+  warehouse: "Lager",
+  production: "Fertigung",
+  "ot-controls": "OT / Leittechnik",
+  contractor: "Fremdfirma",
 } as const satisfies Record<Department, string>
 
 export const LAPTOP_TYPE_LABELS = {
   standard: "Standard",
-  engineering: "Engineering workstation",
-  "field-rugged": "Field / rugged",
-  executive: "Executive",
-  "shared-kiosk": "Shared / kiosk",
-  "contractor-loaner": "Contractor loaner",
+  engineering: "Konstruktionsarbeitsplatz",
+  "field-rugged": "Feld / robust",
+  executive: "Führungskraft",
+  "shared-kiosk": "Gemeinschaft / Kiosk",
+  "contractor-loaner": "Leihgerät Fremdfirma",
 } as const satisfies Record<LaptopType, string>
 
 export const OS_LABELS = {
@@ -43,51 +43,51 @@ export const OS_LABELS = {
 } as const satisfies Record<OperatingSystem, string>
 
 export const STATUS_LABELS = {
-  "in-service": "In service",
-  spare: "Spare",
-  repair: "Repair",
-  lost: "Lost",
-  retired: "Retired",
-  destroyed: "Destroyed",
+  "in-service": "Im Einsatz",
+  spare: "Reserve",
+  repair: "Reparatur",
+  lost: "Verloren",
+  retired: "Ausgemustert",
+  destroyed: "Vernichtet",
 } as const satisfies Record<AssetStatus, string>
 
 export const PRINTER_TYPE_LABELS = {
   laser: "Laser",
-  inkjet: "Inkjet",
-  label: "Label",
-  mfp: "Multifunction",
+  inkjet: "Tinte",
+  label: "Etikett",
+  mfp: "Multifunktion",
   plotter: "Plotter",
 } as const satisfies Record<PrinterType, string>
 
 export const LICENSE_TYPE_LABELS = {
-  "per-seat": "Per seat",
-  site: "Site",
-  subscription: "Subscription",
+  "per-seat": "Pro Platz",
+  site: "Standortlizenz",
+  subscription: "Abo",
   oem: "OEM",
   freeware: "Freeware",
 } as const satisfies Record<LicenseType, string>
 
 export const DESTRUCTION_METHOD_LABELS = {
-  "secure-wipe-recycle": "Secure wipe + recycle",
-  "physical-shred": "Physical shred",
-  degauss: "Degauss",
-  "return-to-vendor": "Return to vendor",
+  "secure-wipe-recycle": "Sicheres Löschen + Recycling",
+  "physical-shred": "Physische Schredderung",
+  degauss: "Entmagnetisieren",
+  "return-to-vendor": "Rückgabe an Lieferant",
 } as const satisfies Record<DestructionMethod, string>
 
 export const ASSET_KIND_LABELS = {
   laptop: "Laptop",
-  printer: "Printer",
-  other: "Other",
+  printer: "Drucker",
+  other: "Sonstiges",
 } as const satisfies Record<AssetKind, string>
 
 export const FINDING_LABELS = {
-  "missing-serial": "Missing serial",
-  "expired-warranty": "Expired warranty",
-  "unassigned-in-service": "Unassigned in-service asset",
-  "license-over-assigned": "License over-assigned",
-  "license-expiring": "License renewing soon",
-  "license-expired": "License expired",
-  "destroy-without-witness": "Destruction without witness",
+  "missing-serial": "Seriennummer fehlt",
+  "expired-warranty": "Garantie abgelaufen",
+  "unassigned-in-service": "Im Einsatz ohne Zuweisung",
+  "license-over-assigned": "Lizenz überbelegt",
+  "license-expiring": "Lizenz läuft bald ab",
+  "license-expired": "Lizenz abgelaufen",
+  "destroy-without-witness": "Vernichtung ohne Zeugen",
 } as const satisfies Record<FindingCode, string>
 
 export function optionList<T extends string>(

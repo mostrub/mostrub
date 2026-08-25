@@ -34,22 +34,22 @@ export function DestructionForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <EnumSelect
           id="dst-kind"
-          label="Asset kind"
+          label="Geräteart"
           value={value.assetKind}
           onChange={(next) => set("assetKind", next)}
           items={optionList(ASSET_KINDS, ASSET_KIND_LABELS)}
         />
         <Field>
-          <FieldLabel htmlFor="dst-inv">Inventory #</FieldLabel>
+          <FieldLabel htmlFor="dst-inv">Inventarnummer</FieldLabel>
           <Input
             id="dst-inv"
-            placeholder="INV-0001 or leave blank"
+            placeholder="INV-0001 oder leer lassen"
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="dst-tag">Asset tag</FieldLabel>
+          <FieldLabel htmlFor="dst-tag">Anlagenkennzeichen</FieldLabel>
           <Input
             id="dst-tag"
             value={value.assetTag}
@@ -57,7 +57,7 @@ export function DestructionForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="dst-serial">Serial</FieldLabel>
+          <FieldLabel htmlFor="dst-serial">Serie</FieldLabel>
           <Input
             id="dst-serial"
             value={value.serialNumber}
@@ -66,20 +66,20 @@ export function DestructionForm({
         </Field>
         <EnumSelect
           id="dst-dept"
-          label="Department"
+          label="Abteilung"
           value={value.department}
           onChange={(next) => set("department", next)}
           items={optionList(DEPARTMENTS, DEPARTMENT_LABELS)}
         />
         <EnumSelect
           id="dst-method"
-          label="Method"
+          label="Verfahren"
           value={value.method}
           onChange={(next) => set("method", next)}
           items={optionList(DESTRUCTION_METHODS, DESTRUCTION_METHOD_LABELS)}
         />
         <Field>
-          <FieldLabel htmlFor="dst-date">Destroyed on</FieldLabel>
+          <FieldLabel htmlFor="dst-date">Vernichtet am</FieldLabel>
           <Input
             id="dst-date"
             type="date"
@@ -88,7 +88,7 @@ export function DestructionForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="dst-witness">Witness</FieldLabel>
+          <FieldLabel htmlFor="dst-witness">Zeuge</FieldLabel>
           <Input
             id="dst-witness"
             value={value.witnessedBy}
@@ -96,7 +96,7 @@ export function DestructionForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="dst-cert">Certificate / ticket</FieldLabel>
+          <FieldLabel htmlFor="dst-cert">Zertifikat / Ticket</FieldLabel>
           <Input
             id="dst-cert"
             value={value.certificateId}
@@ -104,7 +104,7 @@ export function DestructionForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="dst-reason">Reason</FieldLabel>
+          <FieldLabel htmlFor="dst-reason">Grund</FieldLabel>
           <Input
             id="dst-reason"
             value={value.reason}
@@ -113,7 +113,7 @@ export function DestructionForm({
         </Field>
       </div>
       <Field>
-        <FieldLabel htmlFor="dst-notes">Notes</FieldLabel>
+        <FieldLabel htmlFor="dst-notes">Notizen</FieldLabel>
         <Textarea
           id="dst-notes"
           value={value.notes}

@@ -49,8 +49,8 @@ export function DestructionPage() {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
-        title="Destruction"
-        description="Chain of custody for wiped, shredded, degaussed, or vendor-returned assets. If the tag still exists on a laptop or printer, that record is marked destroyed."
+        title="Vernichtung"
+        description="Nachweis für gelöschte, geschredderte, entmagnetisierte oder zurückgegebene Geräte. Existiert das Kennzeichen noch am Laptop oder Drucker, wird der Datensatz als vernichtet markiert."
         actions={
           <>
             <Button
@@ -59,14 +59,14 @@ export function DestructionPage() {
                 try {
                   downloadRegisterCsv(state, "Destruction log")
                 } catch {
-                  toast.error("Export failed")
+                  toast.error("Export fehlgeschlagen")
                 }
               }}
             >
               CSV
             </Button>
             <Button onClick={() => setDraft(blankDestruction(newId()))}>
-              Log destruction
+              Vernichtung erfassen
             </Button>
           </>
         }
@@ -74,24 +74,24 @@ export function DestructionPage() {
       <div className="border bg-muted/30 px-2 py-2">
         <Input
           className="w-72"
-          placeholder="Search tag, witness, certificate, method..."
+          placeholder="Kennzeichen, Zeuge, Zertifikat, Verfahren..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
       <DataTable
         rows={rows}
-        emptyTitle="No destruction records"
-        emptyDescription="Log a wipe or shred when hardware leaves the plant."
+        emptyTitle="Keine Vernichtungseinträge"
+        emptyDescription="Löschen oder Schreddern erfassen, wenn Hardware das Werk verlässt."
         columns={[
-          { header: "Inventory #", cell: (row) => row.inventoryNumber || "—" },
-          { header: "Tag", cell: (row) => row.assetTag },
-          { header: "Kind", cell: (row) => ASSET_KIND_LABELS[row.assetKind] },
-          { header: "Method", cell: (row) => DESTRUCTION_METHOD_LABELS[row.method] },
-          { header: "Department", cell: (row) => DEPARTMENT_LABELS[row.department] },
-          { header: "Date", cell: (row) => row.destroyedOn },
-          { header: "Witness", cell: (row) => row.witnessedBy || "—" },
-          { header: "Certificate", cell: (row) => row.certificateId || "—" },
+          { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber || "—" },
+          { header: "Kennzeichen", cell: (row) => row.assetTag },
+          { header: "Art", cell: (row) => ASSET_KIND_LABELS[row.assetKind] },
+          { header: "Verfahren", cell: (row) => DESTRUCTION_METHOD_LABELS[row.method] },
+          { header: "Abteilung", cell: (row) => DEPARTMENT_LABELS[row.department] },
+          { header: "Datum", cell: (row) => row.destroyedOn },
+          { header: "Zeuge", cell: (row) => row.witnessedBy || "—" },
+          { header: "Zertifikat", cell: (row) => row.certificateId || "—" },
           {
             header: "",
             className: "text-right",
@@ -107,14 +107,14 @@ export function DestructionPage() {
                   }
                   nativeButton={false}
                 >
-                  History
+                  Historie
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
-                  Edit
+                  Bearbeiten
                 </Button>
                 <ConfirmDelete
                   label={row.assetTag}
-                  description="This removes the destruction log. If this was the last log for the asset, its status returns to in service."
+                  description="Der Vernichtungseintrag wird entfernt. War es der letzte Eintrag zum Gerät, geht der Status zurück auf Im Einsatz."
                   onConfirm={() => deleteDestruction(row.id)}
                 />
               </div>
@@ -131,11 +131,11 @@ export function DestructionPage() {
         }}
         title={
           draft && state.destructions.some((item) => item.id === draft.id)
-            ? "Edit destruction"
-            : "Log destruction"
+            ? "Vernichtung bearbeiten"
+            : "Vernichtung erfassen"
         }
-        description="Witness and certificate ID are what consulting teams look for first."
-        submitLabel="Save record"
+        description="Zeuge und Zertifikat sind das Erste, wonach die Prüfung sucht."
+        submitLabel="Eintrag speichern"
         onSubmit={() => {
           if (!draft) {
             return
@@ -145,7 +145,7 @@ export function DestructionPage() {
             toast.error(error)
             return
           }
-          toast.success("Destruction recorded")
+          toast.success("Vernichtung erfasst")
           setDraft(null)
         }}
       >

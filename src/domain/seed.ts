@@ -436,7 +436,7 @@ export function createSeedInventory(): InventoryState {
         inventoryNumber: first.inventoryNumber,
         assetTag: first.assetTag,
         serialNumber: first.serialNumber,
-        summary: `Laptop ${first.inventoryNumber} added (${first.assetTag})`,
+        summary: `Laptop ${first.inventoryNumber} angelegt (${first.assetTag})`,
         changes: [],
       },
       {
@@ -448,7 +448,7 @@ export function createSeedInventory(): InventoryState {
         inventoryNumber: first.inventoryNumber,
         assetTag: first.assetTag,
         serialNumber: first.serialNumber,
-        summary: `Laptop ${first.inventoryNumber}: assignedTo, location changed`,
+        summary: `Laptop ${first.inventoryNumber}: assignedTo, location geändert`,
         changes: [
           { field: "assignedTo", from: "", to: first.assignedTo },
           { field: "location", from: "Receiving", to: first.location },

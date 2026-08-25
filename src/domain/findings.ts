@@ -63,7 +63,7 @@ function hardwareFindings(
           recordId: item.id,
           assetTag: item.assetTag,
           department: item.department,
-          summary: `${FINDING_LABELS["expired-warranty"]}: ${item.assetTag} ended ${item.warrantyEnd}`,
+          summary: `${FINDING_LABELS["expired-warranty"]}: ${item.assetTag} endete ${item.warrantyEnd}`,
         })
       }
     }
@@ -90,7 +90,7 @@ export function collectAuditFindings(
         recordId: license.id,
         assetTag: license.entitlementId || license.name,
         department: license.department,
-        summary: `${license.name} has ${license.seatsAssigned} assigned of ${license.seatsPurchased} purchased`,
+        summary: `${license.name}: ${license.seatsAssigned} zugewiesen von ${license.seatsPurchased} gekauft`,
       })
     }
 
@@ -103,7 +103,7 @@ export function collectAuditFindings(
         recordId: license.id,
         assetTag: license.entitlementId || license.name,
         department: license.department,
-        summary: `${license.name} expired on ${license.renewalDate}`,
+        summary: `${license.name} abgelaufen am ${license.renewalDate}`,
       })
     } else if (remaining !== null && remaining <= 30) {
       findings.push({
@@ -113,7 +113,7 @@ export function collectAuditFindings(
         recordId: license.id,
         assetTag: license.entitlementId || license.name,
         department: license.department,
-        summary: `${license.name} renews in ${remaining} days (${license.renewalDate})`,
+        summary: `${license.name} verlängert in ${remaining} Tagen (${license.renewalDate})`,
       })
     }
   }

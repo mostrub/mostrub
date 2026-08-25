@@ -89,7 +89,7 @@ export function LaptopsPage() {
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
         title="Laptops"
-        description="Tracked by department, hardware type, and operating system. Use Destroy on the destruction register when a unit is wiped or shredded."
+        description="Nach Abteilung, Gerätetyp und Betriebssystem. Vernichtung über das Vernichtungsregister, wenn ein Gerät gelöscht oder geschreddert wird."
         actions={
           <>
             <Button
@@ -98,29 +98,29 @@ export function LaptopsPage() {
                 try {
                   downloadRegisterCsv(state, "Laptops")
                 } catch {
-                  toast.error("Export failed")
+                  toast.error("Export fehlgeschlagen")
                 }
               }}
             >
               CSV
             </Button>
-            <Button onClick={() => setDraft(blankLaptop(newId()))}>Add laptop</Button>
+            <Button onClick={() => setDraft(blankLaptop(newId()))}>Laptop anlegen</Button>
           </>
         }
       />
       <div className="flex flex-wrap items-center gap-2 border bg-muted/30 px-2 py-2">
         <Input
           className="w-72"
-          placeholder="Search inventory #, tag, serial, user, department, OS..."
+          placeholder="Inventarnummer, Kennzeichen, Serie, Nutzer, Abteilung, OS..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
         <FilterSelect
-          label="Department"
+          label="Abteilung"
           value={department}
           onChange={setDepartment}
           items={[
-            { value: "all", label: "All departments" },
+            { value: "all", label: "Alle Abteilungen" },
             ...DEPARTMENTS.map((value) => ({
               value,
               label: DEPARTMENT_LABELS[value],
@@ -128,11 +128,11 @@ export function LaptopsPage() {
           ]}
         />
         <FilterSelect
-          label="Type"
+          label="Typ"
           value={laptopType}
           onChange={setLaptopType}
           items={[
-            { value: "all", label: "All types" },
+            { value: "all", label: "Alle Typen" },
             ...LAPTOP_TYPES.map((value) => ({
               value,
               label: LAPTOP_TYPE_LABELS[value],
@@ -144,7 +144,7 @@ export function LaptopsPage() {
           value={operatingSystem}
           onChange={setOperatingSystem}
           items={[
-            { value: "all", label: "All OS" },
+            { value: "all", label: "Alle OS" },
             ...OPERATING_SYSTEMS.map((value) => ({
               value,
               label: OS_LABELS[value],
@@ -156,8 +156,8 @@ export function LaptopsPage() {
           value={status}
           onChange={setStatus}
           items={[
-            { value: "active", label: "Hide destroyed" },
-            { value: "all", label: "All statuses" },
+            { value: "active", label: "Vernichtete ausblenden" },
+            { value: "all", label: "Alle Status" },
             ...ASSET_STATUSES.map((value) => ({
               value,
               label: STATUS_LABELS[value],
@@ -167,16 +167,16 @@ export function LaptopsPage() {
       </div>
       <DataTable
         rows={rows}
-        emptyTitle="No laptops match"
-        emptyDescription="Add a laptop or clear the search."
+        emptyTitle="Keine Laptops gefunden"
+        emptyDescription="Laptop anlegen oder Suche leeren."
         columns={[
-          { header: "Inventory #", cell: (row) => row.inventoryNumber },
-          { header: "Tag", cell: (row) => row.assetTag },
+          { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber },
+          { header: "Kennzeichen", cell: (row) => row.assetTag },
           { header: "Hostname", cell: (row) => row.hostname },
-          { header: "Type", cell: (row) => LAPTOP_TYPE_LABELS[row.laptopType] },
+          { header: "Typ", cell: (row) => LAPTOP_TYPE_LABELS[row.laptopType] },
           { header: "OS", cell: (row) => OS_LABELS[row.operatingSystem] },
-          { header: "Department", cell: (row) => DEPARTMENT_LABELS[row.department] },
-          { header: "Assigned", cell: (row) => row.assignedTo || "—" },
+          { header: "Abteilung", cell: (row) => DEPARTMENT_LABELS[row.department] },
+          { header: "Zugewiesen", cell: (row) => row.assignedTo || "—" },
           { header: "Status", cell: (row) => <StatusBadge status={row.status} /> },
           {
             header: "",
@@ -189,10 +189,10 @@ export function LaptopsPage() {
                   render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
                   nativeButton={false}
                 >
-                  History
+                  Historie
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
-                  Edit
+                  Bearbeiten
                 </Button>
                 <ConfirmDelete
                   label={row.assetTag}
@@ -215,9 +215,9 @@ export function LaptopsPage() {
             setDraft(null)
           }
         }}
-        title={draft && state.laptops.some((item) => item.id === draft.id) ? "Edit laptop" : "Add laptop"}
-        description="Department, type, and OS are required for audit grouping."
-        submitLabel="Save laptop"
+        title={draft && state.laptops.some((item) => item.id === draft.id) ? "Laptop bearbeiten" : "Laptop anlegen"}
+        description="Abteilung, Typ und Betriebssystem sind für die Prüfung Pflicht."
+        submitLabel="Laptop speichern"
         onSubmit={() => {
           if (!draft) {
             return
@@ -227,7 +227,7 @@ export function LaptopsPage() {
             toast.error(error)
             return
           }
-          toast.success("Laptop saved")
+          toast.success("Laptop gespeichert")
           setDraft(null)
         }}
       >

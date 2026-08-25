@@ -30,16 +30,16 @@ export function PrinterForm({
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="printer-inv">Inventory #</FieldLabel>
+          <FieldLabel htmlFor="printer-inv">Inventarnummer</FieldLabel>
           <Input
             id="printer-inv"
-            placeholder="Assigned on save if blank"
+            placeholder="Wird beim Speichern vergeben, wenn leer"
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="printer-tag">Asset tag</FieldLabel>
+          <FieldLabel htmlFor="printer-tag">Anlagenkennzeichen</FieldLabel>
           <Input
             id="printer-tag"
             value={value.assetTag}
@@ -47,7 +47,7 @@ export function PrinterForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="printer-serial">Serial</FieldLabel>
+          <FieldLabel htmlFor="printer-serial">Serie</FieldLabel>
           <Input
             id="printer-serial"
             value={value.serialNumber}
@@ -55,7 +55,7 @@ export function PrinterForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="printer-make">Make</FieldLabel>
+          <FieldLabel htmlFor="printer-make">Hersteller</FieldLabel>
           <Input
             id="printer-make"
             value={value.make}
@@ -63,7 +63,7 @@ export function PrinterForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="printer-model">Model</FieldLabel>
+          <FieldLabel htmlFor="printer-model">Modell</FieldLabel>
           <Input
             id="printer-model"
             value={value.model}
@@ -72,14 +72,14 @@ export function PrinterForm({
         </Field>
         <EnumSelect
           id="printer-type"
-          label="Type"
+          label="Typ"
           value={value.printerType}
           onChange={(next) => set("printerType", next)}
           items={optionList(PRINTER_TYPES, PRINTER_TYPE_LABELS)}
         />
         <EnumSelect
           id="printer-dept"
-          label="Department"
+          label="Abteilung"
           value={value.department}
           onChange={(next) => set("department", next)}
           items={optionList(DEPARTMENTS, DEPARTMENT_LABELS)}
@@ -92,7 +92,7 @@ export function PrinterForm({
           items={optionList(ASSET_STATUSES, STATUS_LABELS)}
         />
         <Field>
-          <FieldLabel htmlFor="printer-location">Location</FieldLabel>
+          <FieldLabel htmlFor="printer-location">Standort</FieldLabel>
           <Input
             id="printer-location"
             value={value.location}
@@ -100,7 +100,7 @@ export function PrinterForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="printer-ip">IP address</FieldLabel>
+          <FieldLabel htmlFor="printer-ip">IP-Adresse</FieldLabel>
           <Input
             id="printer-ip"
             value={value.ipAddress}
@@ -109,7 +109,7 @@ export function PrinterForm({
         </Field>
       </div>
       <Field>
-        <FieldLabel htmlFor="printer-notes">Notes</FieldLabel>
+        <FieldLabel htmlFor="printer-notes">Notizen</FieldLabel>
         <Textarea
           id="printer-notes"
           value={value.notes}

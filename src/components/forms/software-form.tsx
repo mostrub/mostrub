@@ -20,10 +20,10 @@ export function SoftwareForm({
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="sw-inv">Inventory #</FieldLabel>
+          <FieldLabel htmlFor="sw-inv">Inventarnummer</FieldLabel>
           <Input
             id="sw-inv"
-            placeholder="Assigned on save if blank"
+            placeholder="Wird beim Speichern vergeben, wenn leer"
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
@@ -37,7 +37,7 @@ export function SoftwareForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="sw-vendor">Vendor</FieldLabel>
+          <FieldLabel htmlFor="sw-vendor">Hersteller</FieldLabel>
           <Input
             id="sw-vendor"
             value={value.vendor}
@@ -45,7 +45,7 @@ export function SoftwareForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="sw-entitlement">Entitlement / key</FieldLabel>
+          <FieldLabel htmlFor="sw-entitlement">Lizenz / Schlüssel</FieldLabel>
           <Input
             id="sw-entitlement"
             value={value.entitlementId}
@@ -54,13 +54,13 @@ export function SoftwareForm({
         </Field>
         <EnumSelect
           id="sw-type"
-          label="License type"
+          label="Lizenztyp"
           value={value.licenseType}
           onChange={(next) => set("licenseType", next)}
           items={optionList(LICENSE_TYPES, LICENSE_TYPE_LABELS)}
         />
         <Field>
-          <FieldLabel htmlFor="sw-purchased">Seats purchased</FieldLabel>
+          <FieldLabel htmlFor="sw-purchased">Gekaufte Plätze</FieldLabel>
           <Input
             id="sw-purchased"
             type="number"
@@ -70,7 +70,7 @@ export function SoftwareForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="sw-assigned">Seats assigned</FieldLabel>
+          <FieldLabel htmlFor="sw-assigned">Zugewiesene Plätze</FieldLabel>
           <Input
             id="sw-assigned"
             type="number"
@@ -80,19 +80,19 @@ export function SoftwareForm({
           />
           {value.seatsAssigned > value.seatsPurchased ? (
             <p className="text-sm text-destructive">
-              Assigned seats exceed purchased seats. This will show as an audit finding.
+              Mehr Plätze zugewiesen als gekauft. Das erscheint als Prüfbefund.
             </p>
           ) : null}
         </Field>
         <EnumSelect
           id="sw-dept"
-          label="Department"
+          label="Abteilung"
           value={value.department}
           onChange={(next) => set("department", next)}
           items={optionList(DEPARTMENTS, DEPARTMENT_LABELS)}
         />
         <Field>
-          <FieldLabel htmlFor="sw-renewal">Renewal date</FieldLabel>
+          <FieldLabel htmlFor="sw-renewal">Verlängerungsdatum</FieldLabel>
           <Input
             id="sw-renewal"
             type="date"
@@ -101,7 +101,7 @@ export function SoftwareForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="sw-cost">Annual cost</FieldLabel>
+          <FieldLabel htmlFor="sw-cost">Jahreskosten</FieldLabel>
           <Input
             id="sw-cost"
             type="number"
@@ -112,7 +112,7 @@ export function SoftwareForm({
         </Field>
       </div>
       <Field>
-        <FieldLabel htmlFor="sw-notes">Notes</FieldLabel>
+        <FieldLabel htmlFor="sw-notes">Notizen</FieldLabel>
         <Textarea
           id="sw-notes"
           value={value.notes}

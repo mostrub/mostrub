@@ -23,7 +23,7 @@ export function emptyInventory(): InventoryState {
 
 function required(value: string, label: string): string | null {
   if (value.trim().length === 0) {
-    return `${label} is required`
+    return `${label} ist Pflicht`
   }
   return null
 }
@@ -76,7 +76,7 @@ function withInventoryNumber<T extends { id: string; inventoryNumber: string }>(
     ? normalizeInventoryNumber(record.inventoryNumber)
     : nextInventoryNumber(state)
   if (inventoryNumberTaken(state, inventoryNumber, record.id)) {
-    return { error: "That inventory number is already in use" }
+    return { error: "Diese Inventarnummer ist schon vergeben" }
   }
   return { ...record, inventoryNumber }
 }
@@ -156,7 +156,7 @@ function blockDestroyedDelete(status: string): SaveResult<InventoryState> | null
   if (status === "destroyed") {
     return {
       ok: false,
-      error: "Remove the destruction log first",
+      error: "Zuerst den Vernichtungseintrag entfernen",
     }
   }
   return null
@@ -166,15 +166,15 @@ export function upsertLaptop(
   state: InventoryState,
   laptop: Laptop,
 ): SaveResult<InventoryState> {
-  const missing = required(laptop.assetTag, "Asset tag")
+  const missing = required(laptop.assetTag, "Anlagenkennzeichen")
   if (missing) {
     return { ok: false, error: missing }
   }
   if (hasDuplicateTag(state.laptops, laptop)) {
-    return { ok: false, error: "A laptop with this asset tag already exists" }
+    return { ok: false, error: "Ein Laptop mit diesem Kennzeichen existiert schon" }
   }
   if (hasDuplicateSerial(state.laptops, laptop)) {
-    return { ok: false, error: "A laptop with this serial already exists" }
+    return { ok: false, error: "Ein Laptop mit dieser Seriennummer existiert schon" }
   }
   const numbered = withInventoryNumber(state, laptop)
   if ("error" in numbered) {
@@ -208,7 +208,7 @@ function laptopHistory(
       inventoryNumber: next.inventoryNumber,
       assetTag: next.assetTag,
       serialNumber: next.serialNumber,
-      summary: `Laptop ${next.inventoryNumber} added (${next.assetTag.trim()})`,
+      summary: `Laptop ${next.inventoryNumber} angelegt (${next.assetTag.trim()})`,
       changes: [],
     }
   }
@@ -243,8 +243,8 @@ function laptopHistory(
     serialNumber: next.serialNumber,
     summary:
       changes.length > 0
-        ? `Laptop ${next.inventoryNumber}: ${changes.map((item) => item.field).join(", ")} changed`
-        : `Laptop ${next.inventoryNumber} saved`,
+        ? `Laptop ${next.inventoryNumber}: ${changes.map((item) => item.field).join(", ")} geändert`
+        : `Laptop ${next.inventoryNumber} gespeichert`,
     changes,
   }
 }
@@ -274,7 +274,7 @@ export function removeLaptop(
       inventoryNumber: item.inventoryNumber,
       assetTag: item.assetTag,
       serialNumber: item.serialNumber,
-      summary: `Laptop ${item.inventoryNumber} removed from the register`,
+      summary: `Laptop ${item.inventoryNumber} aus dem Register entfernt`,
       changes: [],
     }),
   }
@@ -284,15 +284,15 @@ export function upsertPrinter(
   state: InventoryState,
   printer: Printer,
 ): SaveResult<InventoryState> {
-  const missing = required(printer.assetTag, "Asset tag")
+  const missing = required(printer.assetTag, "Anlagenkennzeichen")
   if (missing) {
     return { ok: false, error: missing }
   }
   if (hasDuplicateTag(state.printers, printer)) {
-    return { ok: false, error: "A printer with this asset tag already exists" }
+    return { ok: false, error: "Ein Drucker mit diesem Kennzeichen existiert schon" }
   }
   if (hasDuplicateSerial(state.printers, printer)) {
-    return { ok: false, error: "A printer with this serial already exists" }
+    return { ok: false, error: "Ein Drucker mit dieser Seriennummer existiert schon" }
   }
   const numbered = withInventoryNumber(state, printer)
   if ("error" in numbered) {
@@ -318,8 +318,8 @@ export function upsertPrinter(
       assetTag: numbered.assetTag.trim(),
       serialNumber: numbered.serialNumber,
       summary: previous
-        ? `Printer ${numbered.inventoryNumber} updated`
-        : `Printer ${numbered.inventoryNumber} added (${numbered.assetTag.trim()})`,
+        ? `Drucker ${numbered.inventoryNumber} geändert`
+        : `Drucker ${numbered.inventoryNumber} angelegt (${numbered.assetTag.trim()})`,
       changes: previous
         ? diffFields(
             {
@@ -371,7 +371,7 @@ export function removePrinter(
       inventoryNumber: item.inventoryNumber,
       assetTag: item.assetTag,
       serialNumber: item.serialNumber,
-      summary: `Printer ${item.inventoryNumber} removed from the register`,
+      summary: `Drucker ${item.inventoryNumber} aus dem Register entfernt`,
       changes: [],
     }),
   }
@@ -381,7 +381,7 @@ export function upsertSoftware(
   state: InventoryState,
   license: SoftwareLicense,
 ): SaveResult<InventoryState> {
-  const missing = required(license.name, "Software name")
+  const missing = required(license.name, "Softwarename")
   if (missing) {
     return { ok: false, error: missing }
   }
@@ -406,8 +406,8 @@ export function upsertSoftware(
       assetTag: numbered.entitlementId || numbered.name,
       serialNumber: "",
       summary: previous
-        ? `Software ${numbered.inventoryNumber} updated`
-        : `Software ${numbered.inventoryNumber} added (${numbered.name})`,
+        ? `Software ${numbered.inventoryNumber} geändert`
+        : `Software ${numbered.inventoryNumber} angelegt (${numbered.name})`,
       changes: previous
         ? diffFields(
             {
@@ -448,7 +448,7 @@ export function removeSoftware(state: InventoryState, id: string): InventoryStat
     inventoryNumber: item.inventoryNumber,
     assetTag: item.entitlementId || item.name,
     serialNumber: "",
-    summary: `Software ${item.inventoryNumber} removed from the register`,
+    summary: `Software ${item.inventoryNumber} aus dem Register entfernt`,
     changes: [],
   })
 }
@@ -459,7 +459,7 @@ export function recordDestruction(
 ): SaveResult<InventoryState> {
   const missing = required(
     record.assetTag.trim() || record.inventoryNumber.trim(),
-    "Asset tag or inventory number",
+    "Anlagenkennzeichen oder Inventarnummer",
   )
   if (missing) {
     return { ok: false, error: missing }
@@ -493,7 +493,7 @@ export function recordDestruction(
       inventoryNumber: nextRecord.inventoryNumber,
       assetTag: nextRecord.assetTag,
       serialNumber: nextRecord.serialNumber,
-      summary: `Destruction logged for ${nextRecord.inventoryNumber || nextRecord.assetTag}`,
+      summary: `Vernichtung erfasst für ${nextRecord.inventoryNumber || nextRecord.assetTag}`,
       changes: [],
     }),
   }
@@ -521,7 +521,7 @@ export function removeDestruction(
     inventoryNumber: item.inventoryNumber,
     assetTag: item.assetTag,
     serialNumber: item.serialNumber,
-    summary: `Destruction log removed for ${item.inventoryNumber || item.assetTag}`,
+    summary: `Vernichtungseintrag entfernt für ${item.inventoryNumber || item.assetTag}`,
     changes: [],
   })
 }

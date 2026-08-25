@@ -77,7 +77,7 @@ export function parseInventoryValue(value: unknown): ParseInventoryResult {
   }
   return {
     ok: false,
-    reason: "That file is not a complete inventory backup",
+    reason: "Diese Datei ist kein vollständiges Inventar-Backup",
   }
 }
 
@@ -85,7 +85,7 @@ export function parseInventoryJson(raw: string): ParseInventoryResult {
   try {
     return parseInventoryValue(JSON.parse(raw) as unknown)
   } catch {
-    return { ok: false, reason: "That file is not valid JSON" }
+    return { ok: false, reason: "Diese Datei ist kein gültiges JSON" }
   }
 }
 

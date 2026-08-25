@@ -18,8 +18,8 @@ export function AuditPage() {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
-        title="Audit"
-        description="Exceptions consulting teams usually ask for: missing serials, expired warranties, unassigned in-service laptops, expired or soon-to-renew licenses, and destruction without a witness."
+        title="Prüfung"
+        description="Was die Prüfung zuerst fragt: fehlende Seriennummern, abgelaufene Garantien, nicht zugewiesene Laptops im Einsatz, abgelaufene oder bald fällige Lizenzen, Vernichtung ohne Zeugen."
         actions={
           <>
             <Button
@@ -28,49 +28,49 @@ export function AuditPage() {
                 try {
                   downloadRegisterCsv(state, "Audit findings")
                 } catch {
-                  toast.error("Export failed")
+                  toast.error("Export fehlgeschlagen")
                 }
               }}
             >
-              Findings CSV
+              Befunde CSV
             </Button>
             <Button
               onClick={() => {
                 void downloadAuditWorkbook(state)
                   .then(() => {
-                    toast.success("Excel workbook downloaded")
+                    toast.success("Excel-Mappe heruntergeladen")
                   })
                   .catch(() => {
-                    toast.error("Export failed")
+                    toast.error("Export fehlgeschlagen")
                   })
               }}
             >
-              Excel workbook
+              Excel-Mappe
             </Button>
           </>
         }
       />
       <DataTable
         rows={findings}
-        emptyTitle="Register is clean"
-        emptyDescription="No current exceptions. Export the workbook anyway for a dated snapshot."
+        emptyTitle="Register ist sauber"
+        emptyDescription="Keine aktuellen Abweichungen. Die Mappe trotzdem als Stichtagsstand exportieren."
         columns={[
           {
-            header: "Severity",
+            header: "Schwere",
             cell: (row) => (
               <Badge variant={row.severity === "high" ? "destructive" : "outline"}>
                 {row.severity}
               </Badge>
             ),
           },
-          { header: "Finding", cell: (row) => FINDING_LABELS[row.code] },
+          { header: "Befund", cell: (row) => FINDING_LABELS[row.code] },
           { header: "Register", cell: (row) => row.register },
-          { header: "Asset", cell: (row) => row.assetTag },
+          { header: "Gerät", cell: (row) => row.assetTag },
           {
-            header: "Department",
+            header: "Abteilung",
             cell: (row) => (row.department ? DEPARTMENT_LABELS[row.department] : "—"),
           },
-          { header: "Summary", cell: (row) => row.summary },
+          { header: "Kurztext", cell: (row) => row.summary },
         ]}
       />
     </div>

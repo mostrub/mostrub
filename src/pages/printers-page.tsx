@@ -47,8 +47,8 @@ export function PrintersPage() {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
-        title="Printers"
-        description="Shop floor labelers, plotters, and office MFPs. IP and location stay on the consulting printer tab."
+        title="Drucker"
+        description="Etikettierer, Plotter und Büro-MFPs. IP und Standort stehen im Druckerblatt der Prüfung."
         actions={
           <>
             <Button
@@ -57,35 +57,35 @@ export function PrintersPage() {
                 try {
                   downloadRegisterCsv(state, "Printers")
                 } catch {
-                  toast.error("Export failed")
+                  toast.error("Export fehlgeschlagen")
                 }
               }}
             >
               CSV
             </Button>
-            <Button onClick={() => setDraft(blankPrinter(newId()))}>Add printer</Button>
+            <Button onClick={() => setDraft(blankPrinter(newId()))}>Drucker anlegen</Button>
           </>
         }
       />
       <div className="border bg-muted/30 px-2 py-2">
         <Input
           className="w-72"
-          placeholder="Search tag, IP, location, type..."
+          placeholder="Kennzeichen, IP, Standort, Typ..."
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
       </div>
       <DataTable
         rows={rows}
-        emptyTitle="No printers match"
-        emptyDescription="Add a printer or clear the search."
+        emptyTitle="Keine Drucker gefunden"
+        emptyDescription="Drucker anlegen oder Suche leeren."
         columns={[
-          { header: "Inventory #", cell: (row) => row.inventoryNumber },
-          { header: "Tag", cell: (row) => row.assetTag },
-          { header: "Device", cell: (row) => `${row.make} ${row.model}` },
-          { header: "Type", cell: (row) => PRINTER_TYPE_LABELS[row.printerType] },
-          { header: "Department", cell: (row) => DEPARTMENT_LABELS[row.department] },
-          { header: "Location", cell: (row) => row.location },
+          { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber },
+          { header: "Kennzeichen", cell: (row) => row.assetTag },
+          { header: "Gerät", cell: (row) => `${row.make} ${row.model}` },
+          { header: "Typ", cell: (row) => PRINTER_TYPE_LABELS[row.printerType] },
+          { header: "Abteilung", cell: (row) => DEPARTMENT_LABELS[row.department] },
+          { header: "Standort", cell: (row) => row.location },
           { header: "IP", cell: (row) => row.ipAddress || "—" },
           { header: "Status", cell: (row) => <StatusBadge status={row.status} /> },
           {
@@ -99,10 +99,10 @@ export function PrintersPage() {
                   render={<Link to={`/history?q=${encodeURIComponent(row.inventoryNumber)}`} />}
                   nativeButton={false}
                 >
-                  History
+                  Historie
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setDraft(row)}>
-                  Edit
+                  Bearbeiten
                 </Button>
                 <ConfirmDelete
                   label={row.assetTag}
@@ -125,9 +125,9 @@ export function PrintersPage() {
             setDraft(null)
           }
         }}
-        title={draft && state.printers.some((item) => item.id === draft.id) ? "Edit printer" : "Add printer"}
-        description="Keep serial and IP filled so floor walks match the register."
-        submitLabel="Save printer"
+        title={draft && state.printers.some((item) => item.id === draft.id) ? "Drucker bearbeiten" : "Drucker anlegen"}
+        description="Serie und IP ausfüllen, damit der Rundgang zum Register passt."
+        submitLabel="Drucker speichern"
         onSubmit={() => {
           if (!draft) {
             return
@@ -137,7 +137,7 @@ export function PrintersPage() {
             toast.error(error)
             return
           }
-          toast.success("Printer saved")
+          toast.success("Drucker gespeichert")
           setDraft(null)
         }}
       >

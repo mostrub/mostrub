@@ -26,7 +26,7 @@ async function runExport(task: () => void | Promise<void>, success: string) {
     await task()
     toast.success(success)
   } catch {
-    toast.error("Export failed")
+    toast.error("Export fehlgeschlagen")
   }
 }
 
@@ -56,7 +56,7 @@ export function ExportMenu() {
             return
           }
           replaceState(parsed.state)
-          toast.success("Backup imported")
+          toast.success("Backup übernommen")
         }}
       />
       <DropdownMenu>
@@ -66,33 +66,33 @@ export function ExportMenu() {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-56">
           <DropdownMenuGroup>
-            <DropdownMenuLabel>Consulting audit</DropdownMenuLabel>
+            <DropdownMenuLabel>Prüfexport</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => {
                 void runExport(
                   () => downloadAuditWorkbook(state),
-                  "Excel workbook downloaded",
+                  "Excel-Mappe heruntergeladen",
                 )
               }}
             >
-              Excel workbook (all tabs)
+              Excel-Mappe (alle Blätter)
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                void runExport(() => downloadCsvPack(state), "CSV pack downloaded")
+                void runExport(() => downloadCsvPack(state), "CSV-Paket heruntergeladen")
               }}
             >
-              CSV pack (zip)
+              CSV-Paket (Zip)
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuLabel>Single CSV</DropdownMenuLabel>
+            <DropdownMenuLabel>Einzelnes CSV</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Laptops"),
-                  "Laptops CSV downloaded",
+                  "Laptops-CSV heruntergeladen",
                 )
               }}
             >
@@ -102,27 +102,27 @@ export function ExportMenu() {
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Laptops by department"),
-                  "Department CSV downloaded",
+                  "Abteilungs-CSV heruntergeladen",
                 )
               }}
             >
-              Laptops by department
+              Laptops nach Abteilung
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Printers"),
-                  "Printers CSV downloaded",
+                  "Drucker-CSV heruntergeladen",
                 )
               }}
             >
-              Printers
+              Drucker
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Software licenses"),
-                  "Software CSV downloaded",
+                  "Software-CSV heruntergeladen",
                 )
               }}
             >
@@ -132,67 +132,67 @@ export function ExportMenu() {
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Destruction log"),
-                  "Destruction CSV downloaded",
+                  "Vernichtungs-CSV heruntergeladen",
                 )
               }}
             >
-              Destruction log
+              Vernichtungsprotokoll
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Audit findings"),
-                  "Findings CSV downloaded",
+                  "Befunde-CSV heruntergeladen",
                 )
               }}
             >
-              Audit findings
+              Prüfbefunde
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 void runExport(
                   () => downloadRegisterCsv(state, "Device history"),
-                  "History CSV downloaded",
+                  "Historie-CSV heruntergeladen",
                 )
               }}
             >
-              Device history
+              Gerätehistorie
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuLabel>Backup</DropdownMenuLabel>
+            <DropdownMenuLabel>Sicherung</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => {
-                void runExport(() => downloadBackup(state), "JSON backup downloaded")
+                void runExport(() => downloadBackup(state), "JSON-Backup heruntergeladen")
               }}
             >
-              Download JSON backup
+              JSON-Backup herunterladen
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => fileRef.current?.click()}>
-              Import JSON backup
+              JSON-Backup importieren
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                if (!window.confirm("Clear the current inventory and start empty?")) {
+                if (!window.confirm("Aktuelles Inventar leeren und neu beginnen?")) {
                   return
                 }
                 resetToEmpty()
-                toast.success("Inventory cleared")
+                toast.success("Inventar geleert")
               }}
             >
-              Reset to empty
+              Leer zurücksetzen
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                if (!window.confirm("Replace the current inventory with the plant demo?")) {
+                if (!window.confirm("Aktuelles Inventar durch die Werksdemo ersetzen?")) {
                   return
                 }
                 loadDemo()
-                toast.success("Plant demo loaded")
+                toast.success("Werksdemo geladen")
               }}
             >
-              Reload plant demo
+              Werksdemo neu laden
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

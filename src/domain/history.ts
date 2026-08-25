@@ -44,15 +44,15 @@ export function diffFields(
 export function historyActionLabel(action: HistoryAction): string {
   switch (action) {
     case "created":
-      return "Created"
+      return "Angelegt"
     case "updated":
-      return "Updated"
+      return "Geändert"
     case "destroyed":
-      return "Destroyed"
+      return "Vernichtet"
     case "destruction-removed":
-      return "Destruction removed"
+      return "Vernichtung aufgehoben"
     case "removed":
-      return "Removed from register"
+      return "Aus dem Register entfernt"
     default: {
       const exhaustive: never = action
       return exhaustive

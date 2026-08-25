@@ -32,16 +32,16 @@ export function LaptopForm({
     <FieldGroup>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="laptop-inv">Inventory #</FieldLabel>
+          <FieldLabel htmlFor="laptop-inv">Inventarnummer</FieldLabel>
           <Input
             id="laptop-inv"
-            placeholder="Assigned on save if blank"
+            placeholder="Wird beim Speichern vergeben, wenn leer"
             value={value.inventoryNumber}
             onChange={(event) => set("inventoryNumber", event.target.value)}
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-tag">Asset tag</FieldLabel>
+          <FieldLabel htmlFor="laptop-tag">Anlagenkennzeichen</FieldLabel>
           <Input
             id="laptop-tag"
             value={value.assetTag}
@@ -49,7 +49,7 @@ export function LaptopForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-serial">Serial</FieldLabel>
+          <FieldLabel htmlFor="laptop-serial">Serie</FieldLabel>
           <Input
             id="laptop-serial"
             value={value.serialNumber}
@@ -65,7 +65,7 @@ export function LaptopForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-assignee">Assigned to</FieldLabel>
+          <FieldLabel htmlFor="laptop-assignee">Zugewiesen an</FieldLabel>
           <Input
             id="laptop-assignee"
             value={value.assignedTo}
@@ -73,7 +73,7 @@ export function LaptopForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-make">Make</FieldLabel>
+          <FieldLabel htmlFor="laptop-make">Hersteller</FieldLabel>
           <Input
             id="laptop-make"
             value={value.make}
@@ -81,7 +81,7 @@ export function LaptopForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-model">Model</FieldLabel>
+          <FieldLabel htmlFor="laptop-model">Modell</FieldLabel>
           <Input
             id="laptop-model"
             value={value.model}
@@ -90,21 +90,21 @@ export function LaptopForm({
         </Field>
         <EnumSelect
           id="laptop-type"
-          label="Type"
+          label="Typ"
           value={value.laptopType}
           onChange={(next) => set("laptopType", next)}
           items={optionList(LAPTOP_TYPES, LAPTOP_TYPE_LABELS)}
         />
         <EnumSelect
           id="laptop-os"
-          label="Operating system"
+          label="Betriebssystem"
           value={value.operatingSystem}
           onChange={(next) => set("operatingSystem", next)}
           items={optionList(OPERATING_SYSTEMS, OS_LABELS)}
         />
         <EnumSelect
           id="laptop-dept"
-          label="Department"
+          label="Abteilung"
           value={value.department}
           onChange={(next) => set("department", next)}
           items={optionList(DEPARTMENTS, DEPARTMENT_LABELS)}
@@ -117,7 +117,7 @@ export function LaptopForm({
           items={optionList(ASSET_STATUSES, STATUS_LABELS)}
         />
         <Field>
-          <FieldLabel htmlFor="laptop-location">Location</FieldLabel>
+          <FieldLabel htmlFor="laptop-location">Standort</FieldLabel>
           <Input
             id="laptop-location"
             value={value.location}
@@ -125,7 +125,7 @@ export function LaptopForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-purchase">Purchase date</FieldLabel>
+          <FieldLabel htmlFor="laptop-purchase">Kaufdatum</FieldLabel>
           <Input
             id="laptop-purchase"
             type="date"
@@ -134,7 +134,7 @@ export function LaptopForm({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="laptop-warranty">Warranty end</FieldLabel>
+          <FieldLabel htmlFor="laptop-warranty">Garantieende</FieldLabel>
           <Input
             id="laptop-warranty"
             type="date"
@@ -144,7 +144,7 @@ export function LaptopForm({
         </Field>
       </div>
       <Field>
-        <FieldLabel htmlFor="laptop-notes">Notes</FieldLabel>
+        <FieldLabel htmlFor="laptop-notes">Notizen</FieldLabel>
         <Textarea
           id="laptop-notes"
           value={value.notes}

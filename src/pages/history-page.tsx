@@ -33,8 +33,8 @@ export function HistoryPage() {
   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       <PageHeader
-        title="Device history"
-        description="Search by inventory number, asset tag, or serial to see create, assignment, status, and destruction events for a device."
+        title="Gerätehistorie"
+        description="Nach Inventarnummer, Anlagenkennzeichen oder Serie suchen, um Anlage, Zuweisung, Status und Vernichtung eines Geräts zu sehen."
         actions={
           <Button
             variant="outline"
@@ -42,7 +42,7 @@ export function HistoryPage() {
               try {
                 downloadRegisterCsv(state, "Device history")
               } catch {
-                toast.error("Export failed")
+                toast.error("Export fehlgeschlagen")
               }
             }}
           >
@@ -65,31 +65,31 @@ export function HistoryPage() {
       >
         <Input
           className="w-96"
-          placeholder="Inventory #, tag, or serial..."
+          placeholder="Inventarnummer, Kennzeichen oder Serie..."
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
         />
-        <Button type="submit">Search history</Button>
+        <Button type="submit">Historie suchen</Button>
       </form>
       <DataTable
         rows={rows}
-        emptyTitle={query ? "No history matches that search" : "No history yet"}
+        emptyTitle={query ? "Keine Historie zu dieser Suche" : "Noch keine Historie"}
         emptyDescription={
           query
-            ? "Try the inventory number, asset tag, or serial printed on the device."
-            : "Saves, assignment changes, and destruction logs show up here."
+            ? "Inventarnummer, Anlagenkennzeichen oder Serie vom Gerät versuchen."
+            : "Speichern, Zuweisungen und Vernichtung erscheinen hier."
         }
         columns={[
           {
-            header: "When",
+            header: "Wann",
             cell: (row) => row.at.replace("T", " ").replace(/\.\d+Z$/, " UTC"),
           },
-          { header: "Action", cell: (row) => historyActionLabel(row.action) },
-          { header: "Inventory #", cell: (row) => row.inventoryNumber || "—" },
-          { header: "Tag", cell: (row) => row.assetTag || "—" },
-          { header: "Serial", cell: (row) => row.serialNumber || "—" },
-          { header: "Summary", cell: (row) => row.summary },
-          { header: "Changes", cell: (row) => row.changeText },
+          { header: "Aktion", cell: (row) => historyActionLabel(row.action) },
+          { header: "Inv.-Nr.", cell: (row) => row.inventoryNumber || "—" },
+          { header: "Kennzeichen", cell: (row) => row.assetTag || "—" },
+          { header: "Serie", cell: (row) => row.serialNumber || "—" },
+          { header: "Kurztext", cell: (row) => row.summary },
+          { header: "Änderungen", cell: (row) => row.changeText },
         ]}
       />
     </div>
