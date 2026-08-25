@@ -161,6 +161,19 @@ export function DashboardPage() {
     }
   }, [filters, ready, rowCounts.cycles])
 
+  const paretoPoints = useMemo(
+    () =>
+      paretoWithCumulative(
+        pareto.map((row) => ({
+          reason_code: String(row.reason_code ?? ""),
+          minutes: Number(row.minutes ?? 0),
+          events: Number(row.events ?? 0),
+          category: String(row.category ?? ""),
+        }))
+      ),
+    [pareto]
+  )
+
   if (rowCounts.cycles === 0) {
     return (
       <EmptyProduction
@@ -174,18 +187,6 @@ export function DashboardPage() {
     patchFilters({ lines: [line] })
     setView("triage")
   }
-  const paretoPoints = useMemo(
-    () =>
-      paretoWithCumulative(
-        pareto.map((row) => ({
-          reason_code: String(row.reason_code ?? ""),
-          minutes: Number(row.minutes ?? 0),
-          events: Number(row.events ?? 0),
-          category: String(row.category ?? ""),
-        }))
-      ),
-    [pareto]
-  )
   const targetBucketMs = Math.round(Number(kpis?.avg_target_ms ?? 0) / 1000) * 1000
 
   const units = Number(kpis?.units ?? 0)
