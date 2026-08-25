@@ -1,12 +1,14 @@
-# Adda Ledger
+# ADDA light
 
-Adda Ledger is version two of Adda. It is a new product in this repository.
-It does not replace or take over [`mostrub/ADDA`](https://github.com/mostrub/ADDA).
+Home: [`mostrub/ADDA-light`](https://github.com/mostrub/ADDA-light).
 
-The live HLL-2 stack on the Mac Studio stays where it is. Ledger is a
-case-first forensic bench: Postgres holds cases and the DuckLake catalog,
-DuckLake holds inspections, and DuckDB is the only engine that writes or
-time-travels the lake.
+ADDA light is a new product. It does not replace or take over
+[`mostrub/ADDA`](https://github.com/mostrub/ADDA). The live HLL-2 stack on
+the Mac Studio stays where it is.
+
+This is a case-first forensic bench: Postgres holds cases and the DuckLake
+catalog, DuckLake holds inspections, and DuckDB is the only engine that
+writes or time-travels the lake.
 
 ## Stack
 
@@ -23,7 +25,6 @@ Ports: API `5757`, Vite `5759`. Env prefix `LEDGER_`.
 PostgreSQL 16 with databases `ledger` and `ledger_test`, user `ledger`.
 
 ```bash
-cd adda-v2
 cp .env.example .env
 npm install
 npm test

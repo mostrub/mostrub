@@ -1,5 +1,5 @@
 export const de = {
-  product: "Adda Ledger",
+  product: "ADDA light",
   tag: "Forensische Aktenbank · HLL-2",
   rooms: {
     akten: "Akten",

@@ -1,12 +1,12 @@
-# Adda Ledger (ADDA v2) design
+# ADDA light design
 
 Author: Marc Strub (@mostrub)
 
-Adda Ledger is a new product. It is not a reskin of `mostrub/ADDA`, and it
+ADDA light is a new product. It is not a reskin of `mostrub/ADDA`, and it
 does not replace that repository. The live Mac Studio stack stays where it is.
 
-This document is the product and architecture spec. Implementation lives under
-`adda-v2/` in `mostrub/mostrub`.
+Canonical repository: [`mostrub/ADDA-light`](https://github.com/mostrub/ADDA-light).
+A working copy also lives under `adda-v2/` in this profile repo.
 
 ## Why a second product
 

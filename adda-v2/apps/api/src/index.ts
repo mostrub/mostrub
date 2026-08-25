@@ -14,7 +14,7 @@ const server = serve(
     port: api.port,
   },
   (info) => {
-    process.stdout.write(`adda-ledger api on ${info.address}:${info.port}\n`);
+    process.stdout.write(`adda-light api on ${info.address}:${info.port}\n`);
   },
 );
 

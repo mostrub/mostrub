@@ -1,8 +1,8 @@
-# Adda Ledger implementation plan
+# ADDA light implementation plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship Adda Ledger, a case-first forensic evidence kernel for HLL-2, using Postgres as catalog and control plane, DuckLake as the evidence book, and DuckDB as the only analytical engine.
+**Goal:** Ship ADDA light, a case-first forensic evidence kernel for HLL-2, using Postgres as catalog and control plane, DuckLake as the evidence book, and DuckDB as the only analytical engine. Canonical repo: `mostrub/ADDA-light`.
 
 **Architecture:** One kernel process attaches DuckLake through `ducklake:postgres:` and writes Parquet under `adda-v2/data/lake`. Hono exposes ingest and operator APIs. The React bench has six rooms (Akten, Zelle, Chronik, Bank, See, Schicht). The existing `mostrub/ADDA` tree is never copied or overwritten.
 

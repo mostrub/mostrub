@@ -61,7 +61,7 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
     const status = await c.get("ledger").lakeStatus();
     return c.json({
       ok: true,
-      service: "adda-ledger",
+      service: "adda-light",
       snapshotId: status.currentSnapshotId,
     });
   });
