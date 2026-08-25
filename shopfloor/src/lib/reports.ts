@@ -1,5 +1,7 @@
 import { queryRows } from "@/lib/duckdb/engine"
 import { sqlFrom } from "@/lib/filters"
+import { computeOee } from "@/lib/oee"
+import { oeeSql } from "@/lib/queries"
 import type { AutoReport, ProductionFilters } from "@/lib/types"
 
 function num(value: string | number | boolean | null): number {
@@ -70,6 +72,17 @@ async function buildShiftReport(
   } else {
     findings.push(`First-pass yield is ${pct(fpy)}.`)
   }
+  const oeeRow = (await queryRows(oeeSql(filters)))[0]
+  const oee = computeOee({
+    windowMs: num(oeeRow?.window_ms ?? 0),
+    unplannedDowntimeMs: num(oeeRow?.unplanned_ms ?? 0),
+    units: num(oeeRow?.units ?? 0),
+    goodUnits: num(oeeRow?.good_units ?? 0),
+    targetCycleMs: num(oeeRow?.target_cycle_ms ?? 0),
+  })
+  findings.push(
+    `OEE is ${pct(oee.oee)} (A ${pct(oee.availability)} · P ${pct(oee.performance)} · Q ${pct(oee.quality)}).`
+  )
   const worst = lines[0]
   if (worst) {
     findings.push(
@@ -90,6 +103,11 @@ async function buildShiftReport(
       { label: "FPY", value: pct(fpy), tone: fpy < 95 ? "bad" : fpy < 98 ? "warn" : "ok" },
       { label: "Pace vs target", value: pct(pace), tone: pace < 90 ? "warn" : "ok" },
       { label: "Scrap", value: scrap.toFixed(0), tone: scrap > 0 ? "warn" : "ok" },
+      {
+        label: "OEE",
+        value: pct(oee.oee),
+        tone: oee.oee < 65 ? "bad" : oee.oee < 85 ? "warn" : "ok",
+      },
     ],
     findings,
     tables: [

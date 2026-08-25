@@ -15,6 +15,7 @@ import { APP_VIEWS, type AppView } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { FilterChips } from "@/components/filter-chips"
 import { FilterRail } from "@/components/filter-rail"
 import { useFloorline } from "@/state/floorline-store"
 
@@ -74,9 +75,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           {loading ? <Badge>working</Badge> : null}
         </div>
       </header>
+      <FilterChips />
       <div className="flex min-h-0 flex-1">
         {view === "ingest" ? null : <FilterRail />}
-        <main className="min-w-0 flex-1 overflow-auto p-4">{children}</main>
+        <main className="min-w-0 flex-1 overflow-auto p-4 print:p-0">
+          {children}
+        </main>
       </div>
     </div>
   )

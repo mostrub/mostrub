@@ -3,6 +3,7 @@ import {
   CYCLE_RESULTS,
   DOWNTIME_CATEGORIES,
 } from "@/lib/types"
+import { useState } from "react"
 import { toggleValue } from "@/lib/filters"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -52,7 +53,18 @@ function OptionList(args: {
 }
 
 export function FilterRail() {
-  const { filters, facets, filterCount, patchFilters, clearFilters } = useFloorline()
+  const {
+    filters,
+    facets,
+    filterCount,
+    patchFilters,
+    clearFilters,
+    presets,
+    saveCurrentPreset,
+    applyPreset,
+    deletePreset,
+  } = useFloorline()
+  const [presetName, setPresetName] = useState("")
 
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r bg-sidebar">
@@ -67,6 +79,50 @@ export function FilterRail() {
       </div>
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 p-3">
+          <FieldSet>
+            <FieldLegend variant="label">Presets</FieldLegend>
+            <FieldGroup className="gap-2">
+              <Field>
+                <FieldLabel htmlFor="preset-name">Save current</FieldLabel>
+                <Input
+                  id="preset-name"
+                  value={presetName}
+                  placeholder="ASM-2 night"
+                  onChange={(event) => setPresetName(event.target.value)}
+                />
+              </Field>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={presetName.trim() === ""}
+                onClick={() => {
+                  saveCurrentPreset(presetName)
+                  setPresetName("")
+                }}
+              >
+                Save preset
+              </Button>
+              {presets.map((preset) => (
+                <div key={preset.id} className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="min-w-0 flex-1 justify-start"
+                    onClick={() => applyPreset(preset.id)}
+                  >
+                    {preset.name}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => deletePreset(preset.id)}
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </FieldGroup>
+          </FieldSet>
           <Field>
             <FieldLabel htmlFor="search">Search</FieldLabel>
             <Input

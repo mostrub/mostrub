@@ -5,7 +5,13 @@ import duckdbMvp from "@duckdb/duckdb-wasm/dist/duckdb-mvp.wasm?url"
 import mvpWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-mvp.worker.js?url"
 
 import { INSERT_SQL, SCHEMA_SQL } from "@/lib/duckdb/schema"
-import type { ProductionBatch, TableName } from "@/lib/types"
+import {
+  clearPersisted,
+  loadAllParquet,
+  persistParquet,
+} from "@/lib/duckdb/persist"
+import { guessTable } from "@/lib/ingest-kind"
+import { TABLE_NAMES, type ProductionBatch, type TableName } from "@/lib/types"
 
 export type QueryRow = Record<string, string | number | boolean | null>
 
@@ -39,6 +45,11 @@ export async function initEngine(): Promise<void> {
   await connection.query(SCHEMA_SQL)
   db = instance
   conn = connection
+  try {
+    await restorePersisted()
+  } catch {
+    // Corrupt cache should not block a fresh session.
+  }
 }
 
 function requireConn(): {
@@ -120,6 +131,57 @@ export async function ingestBatches(batches: ProductionBatch[]): Promise<void> {
   if (alarms.length > 0) await connection.query(INSERT_SQL.alarms)
   if (serverSamples.length > 0) await connection.query(INSERT_SQL.server_samples)
   if (controllers.length > 0) await connection.query(INSERT_SQL.controllers)
+  await persistAllTables()
+}
+
+export async function ingestTabularFile(file: File): Promise<TableName> {
+  const { db: instance, conn: connection } = requireConn()
+  const bytes = new Uint8Array(await file.arrayBuffer())
+  const path = `upload-${file.name.replace(/[^A-Za-z0-9._-]/g, "_")}`
+  await instance.registerFileBuffer(path, bytes)
+  const lower = file.name.toLowerCase()
+  const reader = lower.endsWith(".parquet") || lower.endsWith(".pq")
+    ? `read_parquet('${path}')`
+    : `read_csv_auto('${path}', HEADER=true)`
+  const described = await queryRows(`DESCRIBE SELECT * FROM ${reader}`)
+  const columns = described.map((row) => String(row.column_name ?? ""))
+  const table = guessTable(columns)
+  if (!table) {
+    throw new Error(
+      `${file.name} does not match a Floorline table. Export CSV/Parquet from this app, or use ShopfloorExport XML.`
+    )
+  }
+  await connection.query(`INSERT INTO ${table} BY NAME SELECT * FROM ${reader}`)
+  await persistAllTables()
+  return table
+}
+
+async function restorePersisted(): Promise<void> {
+  const { db: instance, conn: connection } = requireConn()
+  const stored = await loadAllParquet()
+  for (const table of TABLE_NAMES) {
+    const bytes = stored[table]
+    if (!bytes) {
+      continue
+    }
+    const path = `restore-${table}.parquet`
+    await instance.registerFileBuffer(path, bytes)
+    await connection.query(`INSERT INTO ${table} SELECT * FROM read_parquet('${path}')`)
+  }
+}
+
+export async function persistAllTables(): Promise<void> {
+  for (const table of TABLE_NAMES) {
+    const count = await tableCount(table)
+    if (count === 0) {
+      continue
+    }
+    const bytes = await exportCopy({
+      sql: `SELECT * FROM ${table}`,
+      format: "parquet",
+    })
+    await persistParquet(table, bytes)
+  }
 }
 
 export async function resetEngine(): Promise<void> {
@@ -132,6 +194,7 @@ export async function resetEngine(): Promise<void> {
     DELETE FROM controllers;
     DELETE FROM ingest_files;
   `)
+  await clearPersisted()
 }
 
 export async function exportCopy(args: {

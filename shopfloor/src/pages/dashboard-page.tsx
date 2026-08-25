@@ -4,12 +4,16 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "rec
 import type { QueryRow } from "@/lib/duckdb/engine"
 import { queryRows } from "@/lib/duckdb/engine"
 import { formatMinutes, formatNumber, formatPct } from "@/lib/format"
+import { computeOee } from "@/lib/oee"
 import {
+  cycleHistogramSql,
   downtimeParetoSql,
   failCodesSql,
   fpyByLineSql,
   hourlyThroughputSql,
   kpiSql,
+  oeeSql,
+  shiftCompareSql,
 } from "@/lib/queries"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -38,6 +42,10 @@ const dtConfig = {
   minutes: { label: "Minutes", color: "var(--chart-4)" },
 } satisfies ChartConfig
 
+const histConfig = {
+  cycles: { label: "Cycles", color: "var(--chart-1)" },
+} satisfies ChartConfig
+
 export function DashboardPage() {
   const { filters, rowCounts, ready } = useFloorline()
   const [kpis, setKpis] = useState<QueryRow | null>(null)
@@ -45,6 +53,15 @@ export function DashboardPage() {
   const [lines, setLines] = useState<QueryRow[]>([])
   const [pareto, setPareto] = useState<QueryRow[]>([])
   const [fails, setFails] = useState<QueryRow[]>([])
+  const [hist, setHist] = useState<QueryRow[]>([])
+  const [compare, setCompare] = useState<QueryRow[]>([])
+  const [oee, setOee] = useState(computeOee({
+    windowMs: 0,
+    unplannedDowntimeMs: 0,
+    units: 0,
+    goodUnits: 0,
+    targetCycleMs: 0,
+  }))
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -59,8 +76,11 @@ export function DashboardPage() {
       queryRows(fpyByLineSql(filters)),
       queryRows(downtimeParetoSql(filters)),
       queryRows(failCodesSql(filters)),
+      queryRows(oeeSql(filters)),
+      queryRows(cycleHistogramSql(filters)),
+      queryRows(shiftCompareSql(filters)),
     ])
-      .then(([kpiRows, hourRows, lineRows, dtRows, failRows]) => {
+      .then(([kpiRows, hourRows, lineRows, dtRows, failRows, oeeRows, histRows, compareRows]) => {
         if (cancelled) {
           return
         }
@@ -69,6 +89,18 @@ export function DashboardPage() {
         setLines(lineRows)
         setPareto(dtRows)
         setFails(failRows)
+        setHist(histRows)
+        setCompare(compareRows)
+        const oeeRow = oeeRows[0]
+        setOee(
+          computeOee({
+            windowMs: Number(oeeRow?.window_ms ?? 0),
+            unplannedDowntimeMs: Number(oeeRow?.unplanned_ms ?? 0),
+            units: Number(oeeRow?.units ?? 0),
+            goodUnits: Number(oeeRow?.good_units ?? 0),
+            targetCycleMs: Number(oeeRow?.target_cycle_ms ?? 0),
+          })
+        )
       })
       .finally(() => {
         if (!cancelled) {
@@ -109,9 +141,12 @@ export function DashboardPage() {
           Live DuckDB aggregates for the current filter set.
         </p>
       </div>
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-8">
         <Kpi label="Units" value={formatNumber(units)} busy={busy} />
-        <Kpi label="FPY" value={formatPct(fpy)} busy={busy} tone={fpy < 95 ? "bad" : "ok"} />
+        <Kpi label="OEE" value={formatPct(oee.oee)} busy={busy} tone={oee.oee < 65 ? "bad" : "ok"} />
+        <Kpi label="Availability" value={formatPct(oee.availability)} busy={busy} />
+        <Kpi label="Performance" value={formatPct(oee.performance)} busy={busy} />
+        <Kpi label="Quality" value={formatPct(oee.quality)} busy={busy} tone={fpy < 95 ? "bad" : "ok"} />
         <Kpi label="Pace vs target" value={formatPct(pace)} busy={busy} />
         <Kpi
           label="Downtime"
@@ -119,7 +154,7 @@ export function DashboardPage() {
           busy={busy}
         />
         <Kpi
-          label="Critical / open alarms"
+          label="Critical / open"
           value={`${formatNumber(Number(kpis?.critical_alarms ?? 0))} / ${formatNumber(Number(kpis?.open_alarms ?? 0))}`}
           busy={busy}
           tone={Number(kpis?.open_alarms ?? 0) > 0 ? "bad" : "ok"}
@@ -185,6 +220,32 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <DataTable rows={fails} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Cycle time</CardTitle>
+            <CardDescription>Counts by 1s bucket</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={histConfig} className="h-56 w-full">
+              <BarChart data={hist}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="bucket_ms" tickLine={false} axisLine={false} />
+                <YAxis tickLine={false} axisLine={false} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="cycles" fill="var(--color-cycles)" radius={3} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Shift × line</CardTitle>
+            <CardDescription>Compare FPY and pace across crews</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DataTable rows={compare} />
           </CardContent>
         </Card>
       </div>

@@ -128,3 +128,13 @@
     @apply font-sans;
     }
 }
+
+@media print {
+  header,
+  aside {
+    display: none !important;
+  }
+  main {
+    overflow: visible !important;
+  }
+}

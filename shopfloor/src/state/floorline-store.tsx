@@ -12,12 +12,23 @@ import { toast } from "sonner"
 import { downloadBytes, downloadText } from "@/lib/download"
 import {
   ingestBatches,
+  ingestTabularFile,
   initEngine,
   queryRows,
   resetEngine,
   exportCopy,
   tableCount,
+  type QueryRow,
 } from "@/lib/duckdb/engine"
+import { classifyIngestName, pickIngestFiles } from "@/lib/ingest-kind"
+import {
+  loadPresets,
+  removePreset,
+  savePresets,
+  upsertPreset,
+  type FilterPreset,
+} from "@/lib/presets"
+import { assertReadOnlySelect } from "@/lib/sql-guard"
 import {
   EMPTY_FILTERS,
   activeFilterCount,
@@ -60,6 +71,11 @@ type FloorlineState = {
   clearData: () => Promise<void>
   exportTable: (args: { table: TableName; format: "csv" | "parquet" }) => Promise<void>
   shareUrl: () => string
+  presets: FilterPreset[]
+  saveCurrentPreset: (name: string) => void
+  applyPreset: (id: string) => void
+  deletePreset: (id: string) => void
+  runSql: (sql: string) => Promise<QueryRow[]>
 }
 
 const EMPTY_FACETS: FilterFacet = {
@@ -117,6 +133,9 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
   const [files, setFiles] = useState<IngestFileRow[]>([])
   const [reports, setReports] = useState<AutoReport[]>([])
   const [rowCounts, setRowCounts] = useState(EMPTY_COUNTS)
+  const [presets, setPresets] = useState<FilterPreset[]>(() =>
+    typeof window === "undefined" ? [] : loadPresets()
+  )
 
   const refreshMeta = useCallback(async () => {
     const fileRows = await queryRows(
@@ -177,10 +196,12 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
     initEngine()
-      .then(() => {
-        if (!cancelled) {
-          setReady(true)
+      .then(async () => {
+        if (cancelled) {
+          return
         }
+        setReady(true)
+        await refreshMeta()
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -241,20 +262,44 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       setLoading(true)
       setError(null)
       try {
-        const batches = await Promise.all(
-          fileList.map(async (file) => {
-            const xml = await file.text()
-            return parseProductionXml({
-              fileName: file.name,
-              xml,
-              byteSize: file.size,
-            })
-          })
+        const accepted = pickIngestFiles(fileList)
+        if (accepted.length === 0) {
+          throw new Error("No .xml, .csv, or .parquet files in that drop")
+        }
+        const xmlFiles = accepted.filter(
+          (file) => classifyIngestName(file.name) === "xml"
         )
-        await ingestBatches(batches)
+        const tabular = accepted.filter((file) => {
+          const kind = classifyIngestName(file.name)
+          return kind === "csv" || kind === "parquet"
+        })
+        if (xmlFiles.length > 0) {
+          const batches = await Promise.all(
+            xmlFiles.map(async (file) => {
+              const xml = await file.text()
+              return parseProductionXml({
+                fileName: file.name,
+                xml,
+                byteSize: file.size,
+              })
+            })
+          )
+          await ingestBatches(batches)
+        }
+        const tables: string[] = []
+        for (const file of tabular) {
+          tables.push(await ingestTabularFile(file))
+        }
         await refreshMeta()
-        const ok = batches.filter((batch) => batch.file.status === "ok").length
-        toast.success(`Ingested ${ok} XML file${ok === 1 ? "" : "s"} into DuckDB`)
+        const parts = [
+          xmlFiles.length > 0
+            ? `${xmlFiles.length} XML`
+            : null,
+          tables.length > 0
+            ? `${tables.length} ${tables.join(", ")}`
+            : null,
+        ].filter((part) => part !== null)
+        toast.success(`Ingested ${parts.join(" + ")} into DuckDB`)
         setViewState("dashboard")
       } catch (err) {
         const message = err instanceof Error ? err.message : "Ingest failed"
@@ -271,6 +316,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     setLoading(true)
     setError(null)
     try {
+      await resetEngine()
       await ingestBatches(parseShareSamples())
       await refreshMeta()
       toast.success("Loaded demo production share (3 XML files)")
@@ -320,6 +366,41 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
     return url
   }, [filters, view])
 
+  const saveCurrentPreset = useCallback(
+    (name: string) => {
+      const next = upsertPreset(presets, name, filters)
+      setPresets(next)
+      savePresets(next)
+      toast.success(`Saved preset ${name.trim()}`)
+    },
+    [filters, presets]
+  )
+
+  const applyPreset = useCallback(
+    (id: string) => {
+      const preset = presets.find((item) => item.id === id)
+      if (!preset) {
+        return
+      }
+      setFiltersState(preset.filters)
+      toast.success(`Applied ${preset.name}`)
+    },
+    [presets]
+  )
+
+  const deletePreset = useCallback(
+    (id: string) => {
+      const next = removePreset(presets, id)
+      setPresets(next)
+      savePresets(next)
+    },
+    [presets]
+  )
+
+  const runSql = useCallback(async (sql: string) => {
+    return queryRows(assertReadOnlySelect(sql))
+  }, [])
+
   const value = useMemo<FloorlineState>(
     () => ({
       ready,
@@ -341,6 +422,11 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       clearData,
       exportTable,
       shareUrl,
+      presets,
+      saveCurrentPreset,
+      applyPreset,
+      deletePreset,
+      runSql,
     }),
     [
       ready,
@@ -361,6 +447,11 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
       clearData,
       exportTable,
       shareUrl,
+      presets,
+      saveCurrentPreset,
+      applyPreset,
+      deletePreset,
+      runSql,
     ]
   )
 

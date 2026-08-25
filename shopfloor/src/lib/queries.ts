@@ -169,6 +169,59 @@ export function explorerSql(args: {
   `
 }
 
+export function oeeSql(filters: ProductionFilters): string {
+  return `
+    WITH span AS (
+      SELECT
+        COALESCE(date_diff('millisecond',
+          CAST(MIN(started_at) AS TIMESTAMP),
+          CAST(MAX(ended_at) AS TIMESTAMP)), 0) AS window_ms,
+        COALESCE(SUM(good_qty + scrap_qty + rework_qty), 0) AS units,
+        COALESCE(SUM(good_qty), 0) AS good_units,
+        COALESCE(AVG(target_cycle_ms), 0) AS target_cycle_ms
+      FROM ${sqlFrom("cycles", filters)}
+    ),
+    losses AS (
+      SELECT COALESCE(SUM(duration_ms), 0) AS unplanned_ms
+      FROM ${sqlFrom("downtime", filters)}
+      WHERE category = 'UNPLANNED'
+    )
+    SELECT
+      span.window_ms,
+      losses.unplanned_ms,
+      span.units,
+      span.good_units,
+      span.target_cycle_ms
+    FROM span, losses
+  `
+}
+
+export function cycleHistogramSql(filters: ProductionFilters): string {
+  return `
+    SELECT (CAST(cycle_ms / 1000 AS INTEGER) * 1000) AS bucket_ms,
+           COUNT(*) AS cycles
+    FROM ${sqlFrom("cycles", filters)}
+    GROUP BY 1
+    ORDER BY 1
+  `
+}
+
+export function shiftCompareSql(filters: ProductionFilters): string {
+  return `
+    SELECT shift, line,
+           COUNT(*) AS cycles,
+           SUM(good_qty) AS good_units,
+           SUM(scrap_qty) AS scrap_units,
+           CASE WHEN SUM(good_qty + scrap_qty + rework_qty) = 0 THEN 0
+                ELSE 100.0 * SUM(good_qty) / SUM(good_qty + scrap_qty + rework_qty)
+           END AS fpy_pct,
+           AVG(cycle_ms) AS avg_cycle_ms
+    FROM ${sqlFrom("cycles", filters)}
+    GROUP BY shift, line
+    ORDER BY shift, fpy_pct ASC
+  `
+}
+
 export function explorerCountSql(args: {
   table: "cycles" | "downtime" | "alarms" | "server_samples" | "controllers" | "ingest_files"
   filters: ProductionFilters

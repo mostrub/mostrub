@@ -35,13 +35,15 @@ camelCase and snake_case attributes both parse.
 
 ## Views
 
-- Ingest — multi-file XML from a share
-- Dashboard — units, FPY, pace, downtime, alarms, charts
+- Ingest — XML folder/share drop, plus CSV/Parquet round-trip
+- Dashboard — OEE (A/P/Q), units, FPY, cycle histogram, shift × line
 - Drill and triage — plant → line → station → machine → controller
 - Servers — MES/HMI/gateway/historian profiles and PLC controllers
-- Explorer — DuckDB table scan, sort, page
-- Reports — auto shift / loss / server reports
+- Explorer — table scan plus a read-only SQL console
+- Reports — auto shift / loss / server reports, print
 - Export — CSV, Parquet, share URL, filter card
+- Local snapshot — IndexedDB parquet so a refresh keeps the last ingest
+- Filter presets and chips — save ASM-2 night, pin/clear from the header
 
 Filters live in the left rail and in the URL hash so a view can be sent to someone else on the same machine.
 

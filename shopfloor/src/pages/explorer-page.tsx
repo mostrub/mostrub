@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import type { QueryRow } from "@/lib/duckdb/engine"
 import { queryRows, queryValue } from "@/lib/duckdb/engine"
 import { explorerCountSql, explorerSql } from "@/lib/queries"
+import { FieldDescription } from "@/components/ui/field"
 import { TABLE_NAMES, type TableName } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,10 +29,24 @@ import { useFloorline } from "@/state/floorline-store"
 
 const PAGE_SIZE = 50
 
+const DEFAULT_SORT: Record<TableName, string> = {
+  ingest_files: "ingested_at",
+  cycles: "started_at",
+  downtime: "started_at",
+  alarms: "raised_at",
+  server_samples: "sampled_at",
+  controllers: "last_seen",
+}
+
 export function ExplorerPage() {
-  const { filters, rowCounts, ready, patchFilters } = useFloorline()
+  const { filters, rowCounts, ready, patchFilters, runSql } = useFloorline()
   const [table, setTable] = useState<TableName>("cycles")
-  const [sortColumn, setSortColumn] = useState("started_at")
+  const [sortColumn, setSortColumn] = useState(DEFAULT_SORT.cycles)
+  const [sqlText, setSqlText] = useState(
+    "SELECT plant, line, result, COUNT(*) AS n FROM cycles GROUP BY 1,2,3 ORDER BY n DESC"
+  )
+  const [sqlRows, setSqlRows] = useState<QueryRow[]>([])
+  const [sqlError, setSqlError] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<"ASC" | "DESC">("DESC")
   const [page, setPage] = useState(0)
   const [rows, setRows] = useState<QueryRow[]>([])
@@ -106,6 +121,7 @@ export function ExplorerPage() {
                 onValueChange={(value) => {
                   if (typeof value === "string" && isTable(value)) {
                     setTable(value)
+                    setSortColumn(DEFAULT_SORT[value])
                   }
                 }}
               >
@@ -202,6 +218,46 @@ export function ExplorerPage() {
               Next
             </Button>
           </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>SQL console</CardTitle>
+          <CardDescription>
+            Read-only SELECT / WITH against the same DuckDB tables.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <Field>
+            <FieldLabel htmlFor="sql">Query</FieldLabel>
+            <textarea
+              id="sql"
+              value={sqlText}
+              onChange={(event) => setSqlText(event.target.value)}
+              rows={5}
+              className="min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 font-mono text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+            <FieldDescription>
+              Writes, COPY, and multiple statements are blocked.
+            </FieldDescription>
+          </Field>
+          {sqlError ? (
+            <p className="text-sm text-destructive">{sqlError}</p>
+          ) : null}
+          <Button
+            onClick={() => {
+              setSqlError(null)
+              void runSql(sqlText)
+                .then((rows) => setSqlRows(rows))
+                .catch((err: unknown) => {
+                  setSqlRows([])
+                  setSqlError(err instanceof Error ? err.message : "Query failed")
+                })
+            }}
+          >
+            Run
+          </Button>
+          <DataTable rows={sqlRows} maxHeight="20rem" />
         </CardContent>
       </Card>
     </div>

@@ -25,8 +25,9 @@ export function IngestPage() {
       <div>
         <h2 className="font-heading text-lg font-medium">XML share ingest</h2>
         <p className="text-sm text-muted-foreground">
-          Drop one or more MES XML files from a mapped Windows share. Parsing
-          stays in the browser. DuckDB holds the tables.
+          Drop XML from a mapped Windows share, a whole folder, or CSV/Parquet
+          exported from this app. DuckDB keeps a local snapshot so a refresh
+          does not wipe the shift.
         </p>
       </div>
       {error ? (
@@ -45,9 +46,7 @@ export function IngestPage() {
         onDrop={(event) => {
           event.preventDefault()
           setDragOver(false)
-          const dropped = [...event.dataTransfer.files].filter((file) =>
-            file.name.toLowerCase().endsWith(".xml")
-          )
+          const dropped = [...event.dataTransfer.files]
           if (dropped.length > 0) {
             void ingestFiles(dropped)
           }
@@ -64,13 +63,28 @@ export function IngestPage() {
           <label className="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed px-6 py-10 text-center">
             <FolderUpIcon className="size-8 text-muted-foreground" />
             <span className="text-sm font-medium">
-              Choose XML files or drop them here
+              Choose XML, CSV, or Parquet files
             </span>
             <input
               type="file"
-              accept=".xml,text/xml,application/xml"
+              accept=".xml,.csv,.parquet,.pq,text/xml,application/xml,text/csv"
               multiple
               className="sr-only"
+              onChange={(event) => {
+                const list = event.target.files
+                if (list && list.length > 0) {
+                  void ingestFiles([...list])
+                }
+              }}
+            />
+          </label>
+          <label className="flex cursor-pointer items-center justify-center rounded-lg border px-3 py-2 text-sm">
+            Ingest a share folder
+            <input
+              type="file"
+              multiple
+              className="sr-only"
+              {...{ webkitdirectory: "", directory: "" }}
               onChange={(event) => {
                 const list = event.target.files
                 if (list && list.length > 0) {

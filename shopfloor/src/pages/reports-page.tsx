@@ -25,20 +25,25 @@ export function ReportsPage() {
             page or export a text pack.
           </p>
         </div>
-        <Button
-          variant="outline"
-          disabled={reports.length === 0}
-          onClick={() => {
-            const text = reports.map(reportToText).join("\n\n---\n\n")
-            downloadText({
-              text,
-              fileName: "floorline-reports.txt",
-              mime: "text/plain",
-            })
-          }}
-        >
-          Export report pack
-        </Button>
+        <div className="flex gap-2 print:hidden">
+          <Button
+            variant="outline"
+            disabled={reports.length === 0}
+            onClick={() => {
+              const text = reports.map(reportToText).join("\n\n---\n\n")
+              downloadText({
+                text,
+                fileName: "floorline-reports.txt",
+                mime: "text/plain",
+              })
+            }}
+          >
+            Export report pack
+          </Button>
+          <Button variant="outline" onClick={() => window.print()}>
+            Print
+          </Button>
+        </div>
       </div>
       {files.length === 0 ? (
         <p className="text-sm text-muted-foreground">
