@@ -34,3 +34,10 @@ logs/
 *.temp
 temp/
 tmp/
+
+# App
+node_modules/
+dist/
+dist-ssr
+.netlify/
+*.local
