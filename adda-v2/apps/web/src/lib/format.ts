@@ -39,6 +39,13 @@ export function formatRate(value: number | null): string {
   return `${formatCount(Number(whole))},${frac}`;
 }
 
+export function nearestTimelineMark<T extends { x: number }>(marks: T[], x: number): T | null {
+  if (marks.length === 0) return null;
+  return marks.reduce((best, mark) =>
+    Math.abs(mark.x - x) < Math.abs(best.x - x) ? mark : best,
+  );
+}
+
 export function timelineOffset(at: string | Date, from: string | Date, to: string | Date): number {
   const start = +new Date(from);
   const end = +new Date(to);

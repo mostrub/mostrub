@@ -18,6 +18,7 @@ import {
   formatPercent,
   formatRate,
   formatWhen,
+  nearestTimelineMark,
   timelineAxis,
   timelineOffset,
   verdictLabel,
@@ -604,7 +605,15 @@ function Zeitlinie({
         <span>{de.taktHint}</span>
       </div>
       <div className="zeitlinie">
-        <div className="zeitlinie-rail">
+        <div
+          className="zeitlinie-rail"
+          onClick={(event) => {
+            const box = event.currentTarget.getBoundingClientRect();
+            if (box.width <= 0) return;
+            const nearest = nearestTimelineMark(marks, (event.clientX - box.left) / box.width);
+            if (nearest) onPick(nearest.dmc);
+          }}
+        >
           {marks.map((mark, index) => {
             const label = `${mark.dmc} ${mark.nio ? de.io.nio : de.io.io} ${formatWhen(mark.at)}`;
             return (
@@ -620,7 +629,10 @@ function Zeitlinie({
                 .join(" ")}
               style={{ left: `${mark.x * 100}%`, zIndex: index + 1 }}
               title={label}
-              onClick={() => onPick(mark.dmc)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onPick(mark.dmc);
+              }}
             />
             );
           })}
