@@ -59,6 +59,9 @@ func New(st *store.Store, col *reader.Collector, eng *alert.Engine, br *brief.Wr
 
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
 	mux.HandleFunc("/api/health", s.handleHealth)
 	mux.HandleFunc("/api/board", s.handleBoard)
 	mux.HandleFunc("/api/nodes/", s.handleNode)

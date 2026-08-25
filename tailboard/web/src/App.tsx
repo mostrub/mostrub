@@ -3,40 +3,8 @@ import { ackAlert, fetchBoard, fetchNode, pinMemo, postMemo, refreshBrief, subsc
 import { Sparkline } from "./sparkline";
 import type { Board, Filter, Node, NodeDetail, Sample, Signal } from "./types";
 
-const emptyBoard: Board = {
-  signal: "clear",
-  snapshot: {
-    collectedAt: new Date().toISOString(),
-    source: "fixture",
-    tailnet: "waiting",
-    magicDns: "",
-    magicDnsEnabled: false,
-    backendState: "",
-    health: [],
-    nameservers: [],
-    selfId: "",
-    nodes: [],
-  },
-  kpi: {
-    online: 0,
-    total: 0,
-    jails: 0,
-    jailsDown: 0,
-    exits: 0,
-    exitsDown: 0,
-    routers: 0,
-    routersDown: 0,
-    latencyP95: null,
-    keysSoon: 0,
-    health: 0,
-  },
-  alerts: [],
-  memos: [],
-  events: [],
-};
-
 export function App() {
-  const [board, setBoard] = useState<Board>(emptyBoard);
+  const [board, setBoard] = useState<Board | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<string>("");
   const [detail, setDetail] = useState<NodeDetail | null>(null);
@@ -58,7 +26,7 @@ export function App() {
     return () => window.clearInterval(t);
   }, []);
 
-  const nodes = board.snapshot.nodes ?? [];
+  const nodes = board?.snapshot.nodes ?? [];
   const visible = useMemo(() => nodes.filter((n) => matchFilter(n, filter)), [nodes, filter]);
 
   useEffect(() => {
@@ -72,11 +40,11 @@ export function App() {
   }, [selected, visible]);
 
   useEffect(() => {
-    if (!selected) {
+    if (!selected || !board) {
       return;
     }
     void fetchNode(selected).then(setDetail).catch(() => setDetail(null));
-  }, [selected, board.snapshot.collectedAt]);
+  }, [selected, board?.snapshot.collectedAt]);
 
   useEffect(() => {
     if (!kiosk || locked || visible.length === 0) {
@@ -93,6 +61,9 @@ export function App() {
   }, [kiosk, locked, visible]);
 
   useEffect(() => {
+    if (!board) {
+      return;
+    }
     for (const a of board.alerts) {
       if (a.severity !== "critical" || a.ackedAt || seenCritical.current.has(a.id)) {
         continue;
@@ -102,7 +73,7 @@ export function App() {
         beep();
       }
     }
-  }, [board.alerts]);
+  }, [board]);
 
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
@@ -121,7 +92,7 @@ export function App() {
       } else if (ev.key === "k") {
         setKiosk((v) => !v);
       } else if (ev.key === "a") {
-        const first = board.alerts.find((x) => !x.ackedAt);
+        const first = board?.alerts.find((x) => !x.ackedAt);
         if (first) {
           void ackAlert(first.id);
         }
@@ -131,7 +102,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [board.alerts, visible]);
+  }, [board, visible]);
 
   function step(dir: number) {
     if (visible.length === 0) {
@@ -152,6 +123,10 @@ export function App() {
     }
     return m;
   }, [detail]);
+
+  if (!board) {
+    return <div className="board loading">acquiring signal…</div>;
+  }
 
   return (
     <div
@@ -190,33 +165,28 @@ export function App() {
           <div className="alert-empty">No open alerts. Collector is still watching every jail and exit.</div>
         ) : (
           board.alerts.map((a) => (
-            <button
-              key={a.id}
-              className={`alert sev-${a.severity}${a.ackedAt ? " acked" : ""}`}
-              onClick={() => {
-                if (a.nodeId) {
-                  setSelected(a.nodeId);
-                  setLocked(true);
-                }
-              }}
-            >
-              <span className="alert-sev">{a.severity}</span>
-              <span className="alert-title">{a.title}</span>
-              <span className="alert-age">{age(a.openedAt, clock)}</span>
-              {!a.ackedAt ? (
-                <span
-                  className="alert-ack"
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    void ackAlert(a.id);
-                  }}
-                >
-                  ACK
-                </span>
-              ) : (
+            <div key={a.id} className={`alert sev-${a.severity}${a.ackedAt ? " acked" : ""}`}>
+              <button
+                className="alert-main"
+                onClick={() => {
+                  if (a.nodeId) {
+                    setSelected(a.nodeId);
+                    setLocked(true);
+                  }
+                }}
+              >
+                <span className="alert-sev">{a.severity}</span>
+                <span className="alert-title">{a.title}</span>
+                <span className="alert-age">{age(a.openedAt, clock)}</span>
+              </button>
+              {a.ackedAt ? (
                 <span className="alert-ack done">HELD</span>
+              ) : (
+                <button className="alert-ack" onClick={() => void ackAlert(a.id)}>
+                  ACK
+                </button>
               )}
-            </button>
+            </div>
           ))
         )}
       </section>
