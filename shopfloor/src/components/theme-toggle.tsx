@@ -12,7 +12,7 @@ function themeLabel(theme: (typeof ORDER)[number]): string {
     case "dark":
       return "Dunkel"
     case "system":
-      return "System"
+      return "Automatisch"
     default: {
       const _exhaustive: never = theme
       return _exhaustive

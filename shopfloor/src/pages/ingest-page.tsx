@@ -29,7 +29,7 @@ export function IngestPage() {
           XML aus der Freigabe, einem Ordner oder CSV/Parquet aus dieser App
           ablegen. Floorline liest <code>ShopfloorExport</code> mit Cycle,
           Downtime, Alarm, ServerSample und Controller — Attribute oder
-          Kindknoten, auch mit Namespace. Ein SAP-Export in derselben Form
+          Kindknoten, auch mit Namensraum. Eine SAP-Datei in derselben Form
           einfach ablegen. Passt die Datei nicht, bleibt sie hier mit einer
           Fehlermeldung. DuckDB-Stände als <code>.floorline</code> auf die
           Freigabe legen. Start und Stopp über die Desktop-Symbole.
@@ -37,7 +37,7 @@ export function IngestPage() {
       </div>
       {error ? (
         <Alert variant="destructive">
-          <AlertTitle>Importfehler</AlertTitle>
+          <AlertTitle>Ladefehler</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}

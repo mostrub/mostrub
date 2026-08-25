@@ -1,3 +1,5 @@
+import { valueLabel } from "@/lib/labels"
+
 export function formatNumber(value: number, digits = 0): string {
   return new Intl.NumberFormat("de-DE", {
     maximumFractionDigits: digits,
@@ -13,10 +15,6 @@ export function formatPct(value: number): string {
   return `${formatNumber(value, 1)} %`
 }
 
-export function formatMoney(value: number): string {
-  return `${formatNumber(value, 2)} $`
-}
-
 export function cellText(value: string | number | boolean | null): string {
   if (value === null) {
     return ""
@@ -24,5 +22,5 @@ export function cellText(value: string | number | boolean | null): string {
   if (typeof value === "number") {
     return Number.isInteger(value) ? formatNumber(value) : formatNumber(value, 2)
   }
-  return String(value)
+  return valueLabel(String(value))
 }

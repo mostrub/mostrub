@@ -18,7 +18,7 @@ function pick<T>(rng: Rng, values: readonly T[]): T {
   const index = Math.floor(rng() * values.length)
   const value = values[index]
   if (value === undefined) {
-    throw new Error("empty pick")
+    throw new Error("leere Auswahl")
   }
   return value
 }
@@ -91,7 +91,7 @@ const DT_REASONS = [
   { code: "E-STOP", text: "Not-Halt vom Bediener", category: "UNPLANNED" },
   { code: "JAM", text: "Förderstau", category: "UNPLANNED" },
   { code: "TOOL", text: "Werkzeugwechsel", category: "PLANNED" },
-  { code: "CO", text: "SKU-Wechsel", category: "CHANGEOVER" },
+  { code: "CO", text: "Artikelwechsel", category: "CHANGEOVER" },
   { code: "STARVE", text: "vorgelagerte Linie hat diese Station ausgehungert", category: "UNPLANNED" },
 ] as const
 
@@ -100,7 +100,7 @@ const ALARM_BANK = [
   { severity: "WARN", code: "W210", message: "Scanzeit driftet" },
   { severity: "WARN", code: "W088", message: "Luftdruck niedrig" },
   { severity: "INFO", code: "I012", message: "Charge fertig" },
-  { severity: "CRITICAL", code: "E512", message: "Gateway-Heartbeat verloren" },
+  { severity: "CRITICAL", code: "E512", message: "Gateway-Takt verloren" },
 ] as const
 
 function attrs(record: Record<string, string | number>): string {

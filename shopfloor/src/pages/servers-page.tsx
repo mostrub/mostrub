@@ -30,7 +30,7 @@ import { useFloorline } from "@/state/floorline-store"
 
 const seriesConfig = {
   cpu_pct: { label: "CPU %", color: "var(--chart-2)" },
-  plc_scan_ms: { label: "PLC scan ms", color: "var(--chart-4)" },
+  plc_scan_ms: { label: "SPS-Scan ms", color: "var(--chart-4)" },
   queue_depth: { label: "Warteschlange", color: "var(--chart-5)" },
 } satisfies ChartConfig
 
@@ -110,8 +110,8 @@ export function ServersPage() {
           Serverprofile und Steuerungen
         </h2>
         <p className="text-sm text-muted-foreground">
-          Neueste MES-, HMI-, Gateway- und Historienproben plus PLC-Scan,
-          I/O-Fehler und Betriebsart. Server anklicken, um ihn zu pinnen und
+          Neueste MES-, HMI-, Gateway- und Historienproben plus SPS-Scan,
+          E/A-Fehler und Betriebsart. Server anklicken, um ihn zu pinnen und
           die Reihe zu zeichnen.
         </p>
       </div>
@@ -123,7 +123,7 @@ export function ServersPage() {
       ) : null}
       <Card>
         <CardHeader>
-          <CardTitle>Servers</CardTitle>
+          <CardTitle>Server</CardTitle>
           <CardDescription>
             {selected ? (
               <Badge>gewählt {selected}</Badge>
@@ -151,7 +151,7 @@ export function ServersPage() {
         <Card>
           <CardHeader>
             <CardTitle>Profil {selected}</CardTitle>
-            <CardDescription>CPU, PLC-Scan und Warteschlange</CardDescription>
+            <CardDescription>CPU, SPS-Scan und Warteschlange</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={seriesConfig} className="h-64 w-full">
@@ -187,7 +187,7 @@ export function ServersPage() {
         <CardHeader>
           <CardTitle>Steuerungen</CardTitle>
           <CardDescription>
-            Hersteller, Firmware, Rack/Slot, Scan P95, I/O-Fehler, letzter Fehler
+            Hersteller, Firmware, Rack/Slot, Scan P95, E/A-Fehler, letzter Fehler
           </CardDescription>
         </CardHeader>
         <CardContent>

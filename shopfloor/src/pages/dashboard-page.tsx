@@ -18,6 +18,7 @@ import {
 import type { QueryRow } from "@/lib/duckdb/engine"
 import { queryRows } from "@/lib/duckdb/engine"
 import { formatMinutes, formatNumber, formatPct } from "@/lib/format"
+import { valueLabel } from "@/lib/labels"
 import { computeOee } from "@/lib/oee"
 import {
   cycleHistogramSql,
@@ -239,7 +240,7 @@ export function DashboardPage() {
           onClick={() => setView("triage")}
         />
         <Kpi
-          label="STARVE"
+          label="Hunger"
           value={formatMinutes(Number(kpis?.starve_ms ?? 0))}
           busy={busy}
           tone={Number(kpis?.starve_ms ?? 0) > 0 ? "bad" : "ok"}
@@ -251,7 +252,7 @@ export function DashboardPage() {
         <CardHeader>
           <CardTitle>Andon · Linienstatus</CardTitle>
           <CardDescription>
-            Grün läuft, Gelb Grenzbereich, Rot FPY unter 90 % oder Takt über
+            Grün läuft, Gelb Grenzbereich, Rot Erstausbeute unter 90 % oder Takt über
             Soll. Klick öffnet Drill.
           </CardDescription>
         </CardHeader>
@@ -321,7 +322,12 @@ export function DashboardPage() {
             <ChartContainer config={dtConfig} className="h-56 w-full">
               <ComposedChart data={paretoPoints}>
                 <CartesianGrid vertical={false} />
-                <XAxis dataKey="reason_code" tickLine={false} axisLine={false} />
+                <XAxis
+                  dataKey="reason_code"
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => valueLabel(String(value))}
+                />
                 <YAxis tickLine={false} axisLine={false} />
                 <YAxis
                   yAxisId="cum"
@@ -375,7 +381,7 @@ export function DashboardPage() {
           <CardHeader>
             <CardTitle>Stunde × Linie</CardTitle>
             <CardDescription>
-              Andon-Heatmap der FPY. Grün ab 95 %, Gelb ab 90 %, Rot darunter.
+              Andon-Heatmap der Erstausbeute. Grün ab 95 %, Gelb ab 90 %, Rot darunter.
               Klick filtert die Linie.
             </CardDescription>
           </CardHeader>
@@ -405,7 +411,9 @@ export function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Schicht × Linie</CardTitle>
-            <CardDescription>FPY und Tempo der Schichten vergleichen</CardDescription>
+            <CardDescription>
+              Erstausbeute und Tempo der Schichten vergleichen
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <DataTable rows={compare} />
@@ -415,7 +423,7 @@ export function DashboardPage() {
           <CardHeader>
             <CardTitle>Abhängige Linien</CardTitle>
             <CardDescription>
-              Ungeplanter Stillstand vorne und STARVE-Minuten auf der nächsten
+              Ungeplanter Stillstand vorne und Hunger-Minuten auf der nächsten
               Linie. Klick öffnet Verluste.
             </CardDescription>
           </CardHeader>

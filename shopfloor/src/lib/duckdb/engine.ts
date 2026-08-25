@@ -197,7 +197,7 @@ export async function ingestTabularFile(file: File): Promise<TableName> {
   const table = guessTable(columns)
   if (!table) {
     throw new Error(
-      `${file.name} passt zu keiner Floorline-Tabelle. CSV/Parquet aus dieser App exportieren oder ShopfloorExport-XML nutzen.`
+      `${file.name} passt zu keiner Floorline-Tabelle. CSV/Parquet aus dieser App ausgeben oder ShopfloorExport-XML nutzen.`
     )
   }
   const pk = TABLE_PRIMARY_KEY[table]

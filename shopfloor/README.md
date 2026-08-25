@@ -1,6 +1,6 @@
 # Floorline
 
-Lokaler Fertigungsviewer für die Shopfloor. Läuft im Browser, liest MES-XML aus einer Windows-Freigabe und nutzt DuckDB-WASM für Filter, Diagramme, Berichte und Parquet/CSV-Export.
+Lokaler Fertigungsviewer für die Shopfloor. Läuft im Browser, liest MES-XML aus einer Windows-Freigabe und nutzt DuckDB-WASM für Filter, Diagramme, Berichte und Parquet- oder CSV-Ausgabe.
 
 Native DuckDB unter Windows ist nicht nötig. Dieselbe Engine läuft in der Seite.
 
@@ -32,7 +32,7 @@ Danach brauchen die Leute an der Linie nur zwei Desktop-Symbole und die Notiz **
 
 Im Kopf gibt es zusätzlich **Vollbild**, falls jemand die Fensteransicht verlässt.
 
-Hell, Dunkel und System stehen im Kopf. Die Taste `d` wechselt Hell und Dunkel, wenn der Fokus nicht in einem Eingabefeld liegt.
+Hell, Dunkel und Automatisch stehen im Kopf. Die Taste `d` wechselt Hell und Dunkel, wenn der Fokus nicht in einem Eingabefeld liegt.
 
 ## Im Shopfloor-LAN teilen
 
@@ -48,7 +48,7 @@ npm run dev
 
 Gemappte Laufwerke und UNC-Freigaben funktionieren über den Dateidialog (`Z:\produktion\xml` oder `\\mes-aus-01\production\xml`). Mehrere `.xml`-Dateien wählen oder **Demo-Produktion laden** klicken.
 
-DuckDB-Stände liegen als portable `.floorline`-Datei (Parquet-Pack) auf derselben Freigabe oder lokal. Unter Import **Stand-Ordner wählen**, dann **Auf Freigabe speichern**. Liegen mehrere Stände im Ordner, einen mit **Laden** öffnen. Edge und Chrome unter Windows schreiben direkt auf das gemappte Laufwerk. Andere Browser: **Datei herunterladen** und später **Stand-Datei laden**, oder die Datei auf Import ablegen. Ein Refresh behält den zuletzt geladenen Stand in IndexedDB.
+DuckDB-Stände liegen als portable `.floorline`-Datei (Parquet-Pack) auf derselben Freigabe oder lokal. Unter Laden **Stand-Ordner wählen**, dann **Auf Freigabe speichern**. Liegen mehrere Stände im Ordner, einen mit **Laden** öffnen. Edge und Chrome unter Windows schreiben direkt auf das gemappte Laufwerk. Andere Browser: **Datei herunterladen** und später **Stand-Datei laden**, oder die Datei auf Laden ablegen. Ein Refresh behält den zuletzt geladenen Stand in IndexedDB.
 
 `npm run build` und danach `npm run preview` ist das Offline-Paket.
 
@@ -70,22 +70,22 @@ DuckDB-Stände liegen als portable `.floorline`-Datei (Parquet-Pack) auf derselb
 camelCase- und snake_case-Attribute werden beide gelesen. Namespace-Präfixe
 (`n0:Cycle`) und dieselben Felder als Kindknoten gehen auch. Fehlen
 `cycleMs` oder `durationMs`, nimmt Floorline die Differenz aus Start und Ende.
-Eine XML ohne diese Knoten bleibt auf Import mit einer Fehlermeldung — kein
-still leerer Stand. SAP-Exporte in genau dieser Form ablegen; andere IDoc-
+Eine XML ohne diese Knoten bleibt unter Laden mit einer Fehlermeldung — kein
+still leerer Stand. SAP-Dateien in genau dieser Form ablegen; andere IDoc-
 Formen erst, wenn eine echte Datei da ist.
 
 ## Ansichten
 
-- Import. XML-Ordner oder Freigabe, CSV/Parquet-Rundlauf, DuckDB-Stand (`.floorline`) auf die Freigabe oder als Datei
-- Übersicht. Andon-Linienstatus, OEE-Ringe, gestapelter Durchsatzmix, Stillstand-Pareto mit kumuliert %, Takt gegen Soll, Stunde×Linie-Heatmap, STARVE, abhängige Linien
+- Laden. XML-Ordner oder Freigabe, CSV/Parquet-Rundlauf, DuckDB-Stand (`.floorline`) auf die Freigabe oder als Datei
+- Übersicht. Andon-Linienstatus, OEE-Ringe, gestapelter Durchsatzmix, Stillstand-Pareto mit kumuliert %, Takt gegen Soll, Stunde×Linie-Heatmap, Hunger, abhängige Linien
 - Drill und Triage. Werk → Linie → Station → Maschine → Steuerung
-- OLAP. DuckDB-Würfel über den aktuellen Filter
-- Verluste. OEE-Verlustminuten, Stationsengpass, Fehler-Pareto, Zulauf und STARVE
-- Server. MES/HMI/Gateway/Historie und PLC-Steuerungen
+- Würfel. DuckDB-Würfel über den aktuellen Filter
+- Verluste. OEE-Verlustminuten, Stationsengpass, Fehler-Pareto, Zulauf und Hunger
+- Server. MES/HMI/Gateway/Historie und SPS-Steuerungen
 - Tabellen. Tabellenscan plus schreibgeschützte SQL-Konsole
 - Berichte. Automatische Schicht-, Verlust- und Serverberichte, Druck
-- Export. CSV, Parquet, Freigabe-URL, Filterkarte
-- Lokaler Stand. IndexedDB-Parquet, damit ein Refresh den letzten Import behält
+- Ausgabe. CSV, Parquet, Freigabe-URL, Filterkarte
+- Lokaler Stand. IndexedDB-Parquet, damit ein Refresh den letzten Ladevorgang behält
 - DuckDB-Stand. Eine `.floorline`-Datei für die Freigabe; mehrere Stände, einen davon laden
 - Filtervorlagen und Chips. CELL-1 Nacht speichern, aus dem Kopf pinnen oder leeren
 

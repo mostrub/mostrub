@@ -134,7 +134,7 @@ export function LossesPage() {
         <h2 className="font-heading text-lg font-medium">Verluste und Engpässe</h2>
         <p className="text-sm text-muted-foreground">
           Wo die Schicht Zeit verliert: Stillstand, zu langsamer Takt,
-          Ausschuss, und STARVE auf der nächsten Linie. Klick würfelt.
+          Ausschuss, und Hunger auf der nächsten Linie. Klick würfelt.
         </p>
       </div>
       {loadError ? (
@@ -154,7 +154,7 @@ export function LossesPage() {
         </Card>
         <Card size="sm">
           <CardHeader>
-            <CardDescription>STARVE hinten</CardDescription>
+            <CardDescription>Hunger hinten</CardDescription>
             <CardTitle className="font-mono text-xl">
               {formatNumber(starveMin, 1)} Min
             </CardTitle>
@@ -254,7 +254,7 @@ export function LossesPage() {
             <CardTitle>Zulauf und Aushungern</CardTitle>
             <CardDescription>
               CELL-1 speist MOD-1 speist PACK-1. Ungeplanter Stillstand vorne
-              und STARVE-Minuten hinten.
+              und Hunger-Minuten hinten.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">

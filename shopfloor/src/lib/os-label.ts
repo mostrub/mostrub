@@ -57,7 +57,7 @@ export function parsePresenceOs(data: unknown): string | null {
 
 export function formatPeerLabel(peer: NetworkPeer): string {
   if (peer.role === "host") {
-    return `${peer.os} · host`
+    return `${peer.os} · Host-Rechner`
   }
   if (peer.ip === "127.0.0.1" || peer.ip === "::1") {
     return `${peer.os} · dieser Rechner`

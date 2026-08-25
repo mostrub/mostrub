@@ -11,6 +11,7 @@ import { Field, FieldGroup, FieldLabel, FieldSet, FieldLegend } from "@/componen
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
+import { valueLabel } from "@/lib/labels"
 import { useFloorline } from "@/state/floorline-store"
 
 function OptionList(args: {
@@ -38,7 +39,7 @@ function OptionList(args: {
               id={`f-${args.legend}-${option}`}
             />
             <FieldLabel htmlFor={`f-${args.legend}-${option}`} className="font-mono text-xs">
-              {option}
+              {valueLabel(option)}
             </FieldLabel>
           </Field>
         ))}
@@ -255,7 +256,7 @@ export function FilterRail() {
             }
           />
           <OptionList
-            legend="SKU"
+            legend="Artikel"
             options={facets.skus}
             selected={filters.skus}
             onToggle={(value) =>

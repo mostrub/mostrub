@@ -31,7 +31,7 @@ export function EmptyProduction(args: {
             Demo-Produktion laden
           </Button>
           <Button variant="outline" onClick={() => setView("ingest")}>
-            Zum Import
+            Zum Laden
           </Button>
         </div>
       </EmptyContent>

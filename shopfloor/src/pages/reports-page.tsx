@@ -23,7 +23,7 @@ export function ReportsPage() {
           <h2 className="font-heading text-lg font-medium">Autoberichte</h2>
           <p className="text-sm text-muted-foreground">
             Baut sich aus DuckDB neu, wenn Daten oder Filter wechseln. Diese
-            Seite drucken oder als Textpaket exportieren.
+            Seite drucken oder als Textpaket ausgeben.
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
@@ -39,7 +39,7 @@ export function ReportsPage() {
               })
             }}
           >
-            Berichtspaket exportieren
+            Berichtspaket ausgeben
           </Button>
           <Button variant="outline" onClick={() => window.print()}>
             Drucken

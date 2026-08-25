@@ -51,6 +51,7 @@ import {
   sqlFrom,
   viewHash,
 } from "@/lib/filters"
+import { tableLabel } from "@/lib/labels"
 import { FACET_SQL } from "@/lib/queries"
 import { buildAutoReports } from "@/lib/reports"
 import {
@@ -480,7 +481,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
         }
         setViewState("dashboard")
       } catch (err) {
-        const message = err instanceof Error ? err.message : "Import fehlgeschlagen"
+        const message = err instanceof Error ? err.message : "Laden fehlgeschlagen"
         setError(message)
         toast.error(message)
       } finally {
@@ -684,7 +685,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
             ? "application/vnd.apache.parquet"
             : "text/csv",
       })
-      toast.success(`Exportiert ${args.table}.${args.format}`)
+      toast.success(`Ausgegeben ${tableLabel(args.table)}.${args.format}`)
     },
     [filters]
   )
@@ -831,7 +832,7 @@ export function FloorlineProvider({ children }: { children: ReactNode }) {
 export function useFloorline(): FloorlineState {
   const ctx = useContext(FloorlineContext)
   if (!ctx) {
-    throw new Error("useFloorline must be used inside FloorlineProvider")
+    throw new Error("useFloorline nur innerhalb von FloorlineProvider")
   }
   return ctx
 }

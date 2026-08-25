@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { tableLabel } from "@/lib/labels"
 import { downloadShareCard, useFloorline } from "@/state/floorline-store"
 
 export function ExportPage() {
@@ -21,7 +22,7 @@ export function ExportPage() {
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">Export und Freigabe</h2>
+        <h2 className="font-heading text-lg font-medium">Ausgabe und Freigabe</h2>
         <p className="text-sm text-muted-foreground">
           DuckDB schreibt den aktuellen Filter als CSV oder Parquet. Eine URL
           stellt dieselben Steuerungen und Filter wieder her.
@@ -63,7 +64,7 @@ export function ExportPage() {
         <CardHeader>
           <CardTitle>Gefilterte Tabellen</CardTitle>
           <CardDescription>
-            COPY über DuckDB. Parquet ist das Standardpaket für Historien.
+            Ausgabe über DuckDB. Parquet ist das Standardpaket für Historien.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
@@ -130,7 +131,7 @@ function ExportRow(args: {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2">
       <div>
-        <p className="font-mono text-sm">{args.table}</p>
+        <p className="font-mono text-sm">{tableLabel(args.table)}</p>
         <p className="text-xs text-muted-foreground">{args.count} Zeilen</p>
       </div>
       <div className="flex gap-2">

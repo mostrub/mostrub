@@ -36,7 +36,7 @@ const DIM_LABEL: Record<OlapDimensionId, string> = {
   station: "Station",
   machine: "Maschine",
   shift: "Schicht",
-  sku: "SKU",
+  sku: "Artikel",
   result: "Ergebnis",
   hour: "Stunde",
 }
@@ -46,7 +46,7 @@ const MEASURE_LABEL: Record<OlapMeasureId, string> = {
   units: "Stück",
   good_units: "Gutteile",
   scrap_units: "Ausschuss",
-  fpy_pct: "FPY %",
+  fpy_pct: "Erstausbeute %",
   avg_cycle_ms: "Mittl. Takt",
   downtime_min: "Stillstand Min",
   open_alarms: "Offene Alarme",
@@ -96,7 +96,7 @@ export function OlapPage() {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "OLAP-Abfrage fehlgeschlagen")
+          setLoadError(err instanceof Error ? err.message : "Würfelabfrage fehlgeschlagen")
         }
       })
     return () => {
@@ -116,7 +116,7 @@ export function OlapPage() {
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h2 className="font-heading text-lg font-medium">OLAP-Würfel</h2>
+        <h2 className="font-heading text-lg font-medium">Datenwürfel</h2>
         <p className="text-sm text-muted-foreground">
           DuckDB gruppiert den aktuellen Filter, den Schnitt. Dimensionen
           ergänzen den Drill. Klick auf eine Zeile würfelt die Werte in den
@@ -174,7 +174,7 @@ export function OlapPage() {
           {dropped.length > 0 ? (
             <p className="text-sm text-muted-foreground">
               Auf dieser Körnung ausgeblendet:{" "}
-              {dropped.map((id) => MEASURE_LABEL[id]).join(", ")}. SKU und
+              {dropped.map((id) => MEASURE_LABEL[id]).join(", ")}. Artikel und
               Ergebnis leben nur auf Takten.
             </p>
           ) : null}

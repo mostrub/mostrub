@@ -1,5 +1,7 @@
 import { queryRows } from "@/lib/duckdb/engine"
 import { sqlFrom } from "@/lib/filters"
+import { formatMinutes, formatPct } from "@/lib/format"
+import { valueLabel } from "@/lib/labels"
 import { computeOee } from "@/lib/oee"
 import { oeeSql } from "@/lib/queries"
 import type { AutoReport, ProductionFilters } from "@/lib/types"
@@ -16,11 +18,11 @@ function str(value: string | number | boolean | null): string {
 }
 
 function pct(value: number): string {
-  return `${value.toFixed(1)}%`
+  return formatPct(value)
 }
 
 function minutes(ms: number): string {
-  return `${(ms / 60000).toFixed(1)} Min`
+  return formatMinutes(ms)
 }
 
 export async function buildAutoReports(
@@ -101,7 +103,7 @@ async function buildShiftReport(
     summary: `${units.toFixed(0)} Stück im aktuellen Filter, ${scrap.toFixed(0)} Ausschuss.`,
     kpis: [
       { label: "Stück", value: units.toFixed(0), tone: "ok" },
-      { label: "FPY", value: pct(fpy), tone: fpy < 95 ? "bad" : fpy < 98 ? "warn" : "ok" },
+      { label: "Erstausbeute", value: pct(fpy), tone: fpy < 95 ? "bad" : fpy < 98 ? "warn" : "ok" },
       { label: "Tempo vs Ziel", value: pct(pace), tone: pace < 90 ? "warn" : "ok" },
       { label: "Ausschuss", value: scrap.toFixed(0), tone: scrap > 0 ? "warn" : "ok" },
       {
@@ -114,7 +116,7 @@ async function buildShiftReport(
     tables: [
       {
         title: "Ausbeute je Linie",
-        columns: ["Werk", "Linie", "Gutteile", "FPY"],
+        columns: ["Werk", "Linie", "Gutteile", "Erstausbeute"],
         rows: lines.map((row) => [
           str(row.plant),
           str(row.line),
@@ -152,10 +154,10 @@ async function buildTriageReport(
   const top = dt[0]
   if (top) {
     findings.push(
-      `${str(top.reason_code)} ist der größte Verlust mit ${minutes(num(top.duration_ms))} (${str(top.events)} Ereignisse).`
+      `${valueLabel(str(top.reason_code))} ist der größte Verlust mit ${minutes(num(top.duration_ms))} (${str(top.events)} Ereignisse).`
     )
   }
-  findings.push(`${str(open[0]?.n ?? 0)} Alarme sind noch OPEN.`)
+  findings.push(`${str(open[0]?.n ?? 0)} Alarme sind noch offen.`)
   if (critical) {
     findings.push(`${str(critical.n)} kritische Alarme im aktuellen Fenster.`)
   }
@@ -188,8 +190,8 @@ async function buildTriageReport(
         title: "Stillstand-Pareto",
         columns: ["Code", "Kategorie", "Ereignisse", "Minuten"],
         rows: dt.map((row) => [
-          str(row.reason_code),
-          str(row.category),
+          valueLabel(str(row.reason_code)),
+          valueLabel(str(row.category)),
           str(row.events),
           (num(row.duration_ms) / 60000).toFixed(1),
         ]),
@@ -223,22 +225,22 @@ async function buildServerReport(
   const worst = hot[0]
   if (worst) {
     findings.push(
-      `${str(worst.server_id)} liegt im Schnitt bei ${num(worst.cpu_pct).toFixed(1)} % CPU mit ${str(worst.missed)} verpassten Heartbeats.`
+      `${str(worst.server_id)} liegt im Schnitt bei ${num(worst.cpu_pct).toFixed(1)} % CPU mit ${str(worst.missed)} verpassten Impulsen.`
     )
   }
   if (faulted.length > 0) {
     findings.push(
-      `${faulted.length} Steuerungen sind gestört oder zeigen I/O-Fehler.`
+      `${faulted.length} Steuerungen sind gestört oder zeigen E/A-Fehler.`
     )
   } else {
-    findings.push("Keine Steuerung steht gerade auf FAULT.")
+    findings.push("Keine Steuerung steht gerade in Störung.")
   }
 
   return {
     id: "server-health",
     title: "Server- und Steuerungszustand",
     generatedAt,
-    summary: "Profilschnappschuss für MES, HMI, Gateway und PLC-Steuerungen.",
+    summary: "Profilschnappschuss für MES, HMI, Gateway und SPS-Steuerungen.",
     kpis: [
       {
         label: "Heißeste Server-CPU",
@@ -251,7 +253,7 @@ async function buildServerReport(
         tone: faulted.length > 0 ? "bad" : "ok",
       },
       {
-        label: "Verpasste Heartbeats (oben)",
+        label: "Verpasste Impulse (oben)",
         value: str(worst?.missed ?? 0),
         tone: num(worst?.missed ?? 0) > 0 ? "warn" : "ok",
       },
@@ -260,7 +262,7 @@ async function buildServerReport(
     tables: [
       {
         title: "Server",
-        columns: ["Server", "Rolle", "Linie", "CPU", "Scan ms", "Verpasst", "Queue"],
+        columns: ["Server", "Rolle", "Linie", "CPU", "Scan ms", "Verpasst", "Warteschlange"],
         rows: hot.map((row) => [
           str(row.server_id),
           str(row.server_role),
@@ -273,11 +275,11 @@ async function buildServerReport(
       },
       {
         title: "Steuerungen",
-        columns: ["Steuerung", "Linie", "Modus", "I/O-Fehler", "P95-Scan", "Letzter Fehler"],
+        columns: ["Steuerung", "Linie", "Modus", "E/A-Fehler", "P95-Scan", "Letzter Fehler"],
         rows: faulted.map((row) => [
           str(row.controller_id),
           str(row.line),
-          str(row.run_mode),
+          valueLabel(str(row.run_mode)),
           str(row.io_faults),
           num(row.scan_ms_p95).toFixed(1),
           str(row.last_fault_code),

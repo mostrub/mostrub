@@ -29,15 +29,15 @@ const VIEW_META: Record<
   AppView,
   { label: string; short: string; icon: typeof UploadIcon }
 > = {
-  ingest: { label: "Import", short: "Import", icon: UploadIcon },
+  ingest: { label: "Laden", short: "Laden", icon: UploadIcon },
   dashboard: { label: "Übersicht", short: "Übers", icon: LayoutDashboardIcon },
-  triage: { label: "Drill & Triage", short: "Drill", icon: FilterIcon },
-  olap: { label: "OLAP", short: "OLAP", icon: LayersIcon },
+  triage: { label: "Drill und Triage", short: "Drill", icon: FilterIcon },
+  olap: { label: "Würfel", short: "Würfel", icon: LayersIcon },
   losses: { label: "Verluste", short: "Verlust", icon: TriangleAlertIcon },
   servers: { label: "Server", short: "Server", icon: ServerIcon },
   explorer: { label: "Tabellen", short: "Tab.", icon: TableIcon },
   reports: { label: "Berichte", short: "Ber.", icon: ActivityIcon },
-  export: { label: "Export", short: "Export", icon: FileDownIcon },
+  export: { label: "Ausgabe", short: "Ausg.", icon: FileDownIcon },
 }
 
 const HIDE_RAIL: AppView[] = ["ingest", "dashboard", "export"]
@@ -119,7 +119,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               Demo laden
             </Button>
             <Button size="sm" variant="outline" onClick={() => setView("ingest")}>
-              Zum Import
+              Zum Laden
             </Button>
             <Button size="sm" variant="ghost" onClick={dismissRestoreFailed}>
               Schließen

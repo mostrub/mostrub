@@ -26,6 +26,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { DataTable } from "@/components/data-table"
 import { EmptyProduction } from "@/components/empty-production"
+import { columnLabel, tableLabel } from "@/lib/labels"
 import { useFloorline } from "@/state/floorline-store"
 
 const PAGE_SIZE = 50
@@ -121,7 +122,7 @@ export function ExplorerPage() {
         <h2 className="font-heading text-lg font-medium">Tabellen</h2>
         <p className="text-sm text-muted-foreground">
           Gefilterter Tabellenscan mit Sortierung und Seiten. Die Suche trifft
-          Textspalten über ILIKE.
+          Textspalten unscharf.
         </p>
       </div>
       <Card>
@@ -151,7 +152,7 @@ export function ExplorerPage() {
                   <SelectGroup>
                     {TABLE_NAMES.map((name) => (
                       <SelectItem key={name} value={name}>
-                        {name} ({rowCounts[name]})
+                        {tableLabel(name)} ({rowCounts[name]})
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -175,7 +176,7 @@ export function ExplorerPage() {
                   <SelectGroup>
                     {columns.map((column) => (
                       <SelectItem key={column} value={column}>
-                        {column}
+                        {columnLabel(column)}
                       </SelectItem>
                     ))}
                   </SelectGroup>
@@ -191,8 +192,8 @@ export function ExplorerPage() {
                 }
               }}
             >
-              <ToggleGroupItem value="ASC">ASC</ToggleGroupItem>
-              <ToggleGroupItem value="DESC">DESC</ToggleGroupItem>
+              <ToggleGroupItem value="ASC">Auf</ToggleGroupItem>
+              <ToggleGroupItem value="DESC">Ab</ToggleGroupItem>
             </ToggleGroup>
             <Field className="min-w-56 flex-1">
               <FieldLabel htmlFor="rail-search">Schnellsuche</FieldLabel>
@@ -261,7 +262,7 @@ export function ExplorerPage() {
               className="min-h-24 w-full rounded-lg border border-input bg-transparent px-2.5 py-2 font-mono text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
             <FieldDescription>
-              Schreiben, COPY und mehrere Anweisungen sind gesperrt.
+              Schreiben, COPY-Befehle und mehrere Anweisungen sind gesperrt.
             </FieldDescription>
           </Field>
           {sqlError ? (

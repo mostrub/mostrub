@@ -2,6 +2,7 @@ import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import type { TooltipValueType } from "recharts"
 
+import { valueLabel } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -31,7 +32,7 @@ function useChart() {
   const context = React.useContext(ChartContext)
 
   if (!context) {
-    throw new Error("useChart must be used within a <ChartContainer />")
+    throw new Error("useChart nur innerhalb von ChartContainer")
   }
 
   return context
@@ -154,7 +155,7 @@ function ChartTooltipContent({
     const itemConfig = getPayloadConfigFromPayload(config, item, key)
     const value =
       !labelKey && typeof label === "string"
-        ? (config[label]?.label ?? label)
+        ? (config[label]?.label ?? valueLabel(label))
         : itemConfig?.label
 
     if (labelFormatter) {
@@ -247,13 +248,16 @@ function ChartTooltipContent({
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label ?? item.name}
+                          {itemConfig?.label ??
+                            (typeof item.name === "string"
+                              ? valueLabel(item.name)
+                              : item.name)}
                         </span>
                       </div>
                       {item.value != null && (
                         <span className="font-mono font-medium text-foreground tabular-nums">
                           {typeof item.value === "number"
-                            ? item.value.toLocaleString()
+                            ? item.value.toLocaleString("de-DE")
                             : String(item.value)}
                         </span>
                       )}

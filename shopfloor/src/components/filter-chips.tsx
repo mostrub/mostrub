@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button"
+import { valueLabel } from "@/lib/labels"
 import { useFloorline } from "@/state/floorline-store"
 
 function chip(
@@ -11,7 +12,7 @@ function chip(
   }
   return (
     <Button key={label} size="xs" variant="secondary" onClick={onClear}>
-      {label}: {values.slice(0, 3).join(", ")}
+      {label}: {values.slice(0, 3).map(valueLabel).join(", ")}
       {values.length > 3 ? ` +${values.length - 3}` : ""}
     </Button>
   )
@@ -33,7 +34,7 @@ export function FilterChips() {
       )}
       {chip("Server", filters.servers, () => patchFilters({ servers: [] }))}
       {chip("Schicht", filters.shifts, () => patchFilters({ shifts: [] }))}
-      {chip("SKU", filters.skus, () => patchFilters({ skus: [] }))}
+      {chip("Artikel", filters.skus, () => patchFilters({ skus: [] }))}
       {chip("AO", filters.workOrders, () => patchFilters({ workOrders: [] }))}
       {chip("Ergebnis", filters.results, () => patchFilters({ results: [] }))}
       {chip("Stufe", filters.severities, () =>

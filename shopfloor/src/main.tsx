@@ -10,7 +10,7 @@ import { FloorlineProvider } from "@/state/floorline-store"
 
 const root = document.getElementById("root")
 if (!root) {
-  throw new Error("root element missing")
+    throw new Error("Wurzelelement fehlt")
 }
 
 createRoot(root).render(

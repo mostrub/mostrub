@@ -44,7 +44,7 @@ describe("parsePresenceOs", () => {
 describe("peer labels", () => {
   it("formats host, loopback, and LAN clients", () => {
     expect(formatPeerLabel({ os: "Windows", ip: "host", role: "host" })).toBe(
-      "Windows · host"
+      "Windows · Host-Rechner"
     )
     expect(formatPeerLabel({ os: "macOS", ip: "127.0.0.1", role: "client" })).toBe(
       "macOS · dieser Rechner"

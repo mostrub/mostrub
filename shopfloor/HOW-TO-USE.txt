@@ -22,7 +22,7 @@ ANDERER RECHNER
   Sie kann Windows, einen Mac oder Linux nutzen.
 
 DUCKDB-STAND
-  Unter Import den Stand auf die Freigabe schreiben
+  Unter Laden den Stand auf die Freigabe schreiben
   (Stand-Ordner wählen, dann Auf Freigabe speichern)
   oder die .floorline-Datei herunterladen.
   Mehrere Stände: den gewünschten in der Liste laden.
