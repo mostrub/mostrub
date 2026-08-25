@@ -75,6 +75,7 @@ describe("pricingSql", () => {
       shifts: ["B"],
     })
     expect(sql).toContain("CELL-2170")
+    expect(sql).toContain("CAST(4.85 AS DOUBLE)")
     expect(sql).toContain("list_price")
     expect(sql).toContain("unit_cost")
     expect(sql).toContain("margin_pct")

@@ -121,13 +121,13 @@ export function starvedDownstream(args: {
 function skuCatalogSql(): string {
   const rows = BATTERY_SKUS.map(
     (sku) =>
-      `('${sku.sku}', ${sku.listPrice}, ${sku.materialCost})`
+      `('${sku.sku}', CAST(${sku.listPrice} AS DOUBLE), CAST(${sku.materialCost} AS DOUBLE))`
   ).join(", ")
   return `(VALUES ${rows}) AS catalog(sku, list_price, material_cost)`
 }
 
 function shiftLaborSql(): string {
-  return `(VALUES ('A', ${SHIFT_LABOR_RATE.A}), ('B', ${SHIFT_LABOR_RATE.B})) AS labor(shift, rate_per_hour)`
+  return `(VALUES ('A', CAST(${SHIFT_LABOR_RATE.A} AS DOUBLE)), ('B', CAST(${SHIFT_LABOR_RATE.B} AS DOUBLE))) AS labor(shift, rate_per_hour)`
 }
 
 function lineEdgesSql(): string {
