@@ -114,6 +114,7 @@ export function SoftwarePage() {
                 </Button>
                 <ConfirmDelete
                   label={recordLabel(row.inventoryNumber, row.name)}
+                  confirmText={row.inventoryNumber || row.name}
                   onConfirm={() => {
                     const error = deleteSoftware(row.id)
                     if (error) {

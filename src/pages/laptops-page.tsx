@@ -218,6 +218,7 @@ export function LaptopsPage() {
                 </Button>
                 <ConfirmDelete
                   label={recordLabel(row.inventoryNumber, row.assetTag)}
+                  confirmText={row.inventoryNumber || row.assetTag}
                   onConfirm={() => {
                     const error = deleteLaptop(row.id)
                     if (error) {

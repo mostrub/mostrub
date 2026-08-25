@@ -139,6 +139,7 @@ export function DestructionPage() {
                 </Button>
                 <ConfirmDelete
                   label={recordLabel(row.inventoryNumber, row.assetTag)}
+                  confirmText={row.inventoryNumber || row.assetTag}
                   description="Der Vernichtungseintrag wird entfernt. War es der letzte Eintrag zum Gerät, geht der Status zurück auf Im Einsatz."
                   onConfirm={() => {
                     const error = deleteDestruction(row.id)

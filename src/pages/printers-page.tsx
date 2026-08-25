@@ -153,6 +153,7 @@ export function PrintersPage() {
                 </Button>
                 <ConfirmDelete
                   label={recordLabel(row.inventoryNumber, row.assetTag)}
+                  confirmText={row.inventoryNumber || row.assetTag}
                   onConfirm={() => {
                     const error = deletePrinter(row.id)
                     if (error) {
