@@ -75,18 +75,32 @@ chmod +x "$ROOT/install-macos.sh" "$ROOT/install-macos.command" \
 xattr -dr com.apple.quarantine "$ROOT"/*.command "$ROOT"/*.sh 2>/dev/null || true
 
 if DESKTOP="$(desktop_dir)"; then
-  cat > "$DESKTOP/Floorline.command" <<EOF
+  PACK="$DESKTOP/Floorline"
+  mkdir -p "$PACK"
+  cp -f "$ROOT/HOW-TO-USE.txt" "$DESKTOP/How to use Floorline.txt"
+  cp -f "$ROOT/HOW-TO-USE.txt" "$PACK/How to use Floorline.txt"
+
+  if command -v osacompile >/dev/null 2>&1; then
+    osacompile -o "$DESKTOP/Floorline.app" -e "do shell script quoted form of \"$ROOT/start-floorline.command\""
+    osacompile -o "$DESKTOP/Stop Floorline.app" -e "do shell script quoted form of \"$ROOT/stop-floorline.command\""
+    osacompile -o "$PACK/Start Floorline.app" -e "do shell script quoted form of \"$ROOT/start-floorline.command\""
+    osacompile -o "$PACK/Stop Floorline.app" -e "do shell script quoted form of \"$ROOT/stop-floorline.command\""
+    echo "Desktop icons: Floorline and Stop Floorline"
+  else
+    cat > "$DESKTOP/Floorline.command" <<EOF
 #!/usr/bin/env bash
 exec "$ROOT/start-floorline.command"
 EOF
-  cat > "$DESKTOP/Stop Floorline.command" <<EOF
+    cat > "$DESKTOP/Stop Floorline.command" <<EOF
 #!/usr/bin/env bash
 exec "$ROOT/stop-floorline.command"
 EOF
-  chmod +x "$DESKTOP/Floorline.command" "$DESKTOP/Stop Floorline.command"
-  xattr -dr com.apple.quarantine "$DESKTOP/Floorline.command" "$DESKTOP/Stop Floorline.command" 2>/dev/null || true
-  echo "Desktop shortcuts: Floorline and Stop Floorline"
-  echo "If macOS still blocks a shortcut: right-click → Open."
+    chmod +x "$DESKTOP/Floorline.command" "$DESKTOP/Stop Floorline.command"
+    echo "Desktop shortcuts: Floorline and Stop Floorline"
+    echo "If macOS still blocks a shortcut: right-click → Open."
+  fi
+  xattr -dr com.apple.quarantine "$DESKTOP/Floorline.app" "$DESKTOP/Stop Floorline.app" \
+    "$DESKTOP/Floorline.command" "$DESKTOP/Stop Floorline.command" 2>/dev/null || true
 else
   echo "Desktop folder not found. Use start-floorline.command in this folder."
 fi

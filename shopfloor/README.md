@@ -25,7 +25,12 @@ chmod +x install-macos.sh
 
 That installs Homebrew and Node.js if they are missing, runs `npm install`, and puts **Floorline** and **Stop Floorline** on the Desktop (including localized Desktop folders). If macOS blocks a `.command` file: right-click → Open.
 
-After that, people on the floor only need the Desktop icons. **Floorline** starts the server and opens Edge or Chrome full screen. **Stop Floorline** quits it. The header also has **Full screen**.
+After that, people on the floor only need two Desktop icons (and a **How to use Floorline** note):
+
+- **Floorline** — starts the app in full screen. No black window.
+- **Stop Floorline** — closes it and says so in a short message.
+
+The header also has **Full screen** if someone leaves the windowed view.
 
 Light, Dark, and System live in the header. The `d` key still flips light and dark when focus is not in an input.
 

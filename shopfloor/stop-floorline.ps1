@@ -3,6 +3,17 @@
 $ErrorActionPreference = "SilentlyContinue"
 $Port = 5173
 
+function Show-FloorlineMessage {
+  param([string] $Text)
+  Add-Type -AssemblyName System.Windows.Forms
+  [void][System.Windows.Forms.MessageBox]::Show(
+    $Text,
+    "Floorline",
+    [System.Windows.Forms.MessageBoxButtons]::OK,
+    [System.Windows.Forms.MessageBoxIcon]::Information
+  )
+}
+
 $pids = @()
 try {
   $pids = @(
@@ -21,11 +32,11 @@ try {
 
 $pids = $pids | Where-Object { $_ -and $_ -ne 0 } | Select-Object -Unique
 if (-not $pids) {
-  Write-Host "Floorline is not running."
+  Show-FloorlineMessage "Floorline is already closed."
   exit 0
 }
 
 foreach ($processId in $pids) {
   Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
 }
-Write-Host "Floorline stopped."
+Show-FloorlineMessage "Floorline is closed. You can use this PC for something else."

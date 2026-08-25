@@ -27,7 +27,8 @@ export function IngestPage() {
         <p className="text-sm text-muted-foreground">
           Drop XML from a mapped Windows share, a whole folder, or CSV/Parquet
           exported from this app. DuckDB keeps a local snapshot so a refresh
-          does not wipe the shift.
+          does not wipe the shift. On this PC, start and stop with the Desktop
+          Floorline icons. Use Full screen at the top if the window is small.
         </p>
       </div>
       {error ? (

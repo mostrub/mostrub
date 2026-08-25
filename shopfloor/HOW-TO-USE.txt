@@ -1,0 +1,24 @@
+FLOORLINE — how to use this PC
+
+You do not need to open folders or type commands.
+
+START
+  Double-click Floorline on the Desktop.
+  Wait a few seconds. The app opens full screen.
+
+STOP
+  Click Exit at the top, or press Esc.
+  Then double-click Stop Floorline on the Desktop.
+
+FIRST TIME
+  Click "Load demo production share", or choose XML files from the share.
+
+FULL SCREEN
+  Floorline opens full screen by itself.
+  If you can see the Windows or Mac desktop behind it, click Full screen at the top.
+
+ANOTHER PC
+  Click Share at the top and send that person the address.
+  They can use Windows, a Mac, or Linux.
+
+If Floorline does not open, double-click the installer once (install-windows.cmd or install-macos.command) and try Floorline again.
