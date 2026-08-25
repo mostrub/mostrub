@@ -109,10 +109,16 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
     );
   });
 
+  app.get("/api/linie", async (c) => {
+    return c.json(await c.get("ledger").lineBoard());
+  });
+
   app.get("/api/schicht", async (c) => {
-    const from = c.req.query("from") ?? defaultShiftWindow().from;
-    const to = c.req.query("to") ?? defaultShiftWindow().to;
-    return c.json(await c.get("ledger").shiftReport({ from, to }));
+    const from = c.req.query("from");
+    const to = c.req.query("to");
+    const window =
+      from && to ? { from, to } : await c.get("ledger").latestShiftWindow();
+    return c.json(await c.get("ledger").shiftReport(window));
   });
 
   app.get("/api/cases", async (c) => {
@@ -215,16 +221,3 @@ async function readJson(c: { req: { raw: Request } }): Promise<unknown> {
   }
 }
 
-function defaultShiftWindow(): { from: string; to: string } {
-  const now = new Date();
-  const zurich = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Zurich",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
-  return {
-    from: `${zurich}T00:00:00+02:00`,
-    to: `${zurich}T23:59:59+02:00`,
-  };
-}

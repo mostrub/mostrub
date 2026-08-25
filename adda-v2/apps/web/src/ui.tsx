@@ -1,43 +1,47 @@
 import type { ReactNode } from "react";
 
-export function Stamp({ kind }: { kind: "IO" | "NIO" | "OFFEN" }) {
-  const tone =
-    kind === "NIO"
-      ? "border-nio text-nio"
-      : kind === "IO"
-        ? "border-io text-io"
-        : "border-muted text-muted";
+export function Lamp({ on }: { on: boolean }) {
   return (
-    <span className={`inline-flex border px-2 py-0.5 font-serif text-xs tracking-[0.18em] ${tone}`}>
-      {kind}
+    <span
+      className={`inline-block size-2 rounded-full ${on ? "bg-nio" : "bg-io"}`}
+      aria-hidden
+    />
+  );
+}
+
+export function Pill({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span
+      className={`px-1.5 py-0.5 font-display text-sm tracking-wide ${
+        ok ? "bg-io/15 text-io" : "bg-nio/15 text-nio"
+      }`}
+    >
+      {label}
     </span>
   );
 }
 
-export function Panel({
-  title,
-  kicker,
-  children,
+export function Hud({
+  label,
+  value,
+  warn,
 }: {
-  title: string;
-  kicker?: string;
-  children: ReactNode;
+  label: string;
+  value: string;
+  warn?: boolean;
 }) {
   return (
-    <section className="border border-rule bg-paper p-5 shadow-[4px_4px_0_0_rgba(27,23,19,0.08)]">
-      {kicker ? (
-        <p className="mb-1 text-xs uppercase tracking-[0.2em] text-muted">{kicker}</p>
-      ) : null}
-      <h2 className="mb-4 font-serif text-2xl">{title}</h2>
-      {children}
-    </section>
+    <div className="min-w-28 border border-line bg-panel px-3 py-2">
+      <p className="font-display text-xs tracking-[0.2em] text-mist uppercase">{label}</p>
+      <p className={`font-display text-3xl leading-none ${warn ? "text-nio" : "text-amber"}`}>
+        {value}
+      </p>
+    </div>
   );
 }
 
 export function EmptyNote({ children }: { children: ReactNode }) {
-  return (
-    <p className="border border-dashed border-rule px-4 py-6 text-muted">{children}</p>
-  );
+  return <p className="border border-dashed border-line px-4 py-6 text-mist">{children}</p>;
 }
 
 export function Field({
@@ -49,13 +53,13 @@ export function Field({
 }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
-      <span className="text-xs uppercase tracking-[0.16em] text-muted">{label}</span>
+      <span className="font-display tracking-[0.16em] text-mist uppercase">{label}</span>
       {children}
     </label>
   );
 }
 
 export const inputClass =
-  "border border-rule bg-paper px-3 py-2 text-ink outline-none focus:border-ink";
+  "border border-line bg-steel px-3 py-2 text-white outline-none focus:border-amber";
 export const buttonClass =
-  "border border-ink bg-ink px-3 py-2 text-sm text-paper hover:bg-transparent hover:text-ink";
+  "border border-amber bg-amber px-3 py-2 font-display tracking-wide text-floor hover:bg-transparent hover:text-amber";

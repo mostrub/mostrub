@@ -10,7 +10,14 @@ export {
 } from "./postgres.ts";
 export { buildSeedRows, seedLedger } from "./seed.ts";
 export { loadDossier, loadDossierAt, type CellDossier } from "./dossier.ts";
-export { shiftReport, loadChronik, type ShiftReport } from "./analytics.ts";
+export {
+  shiftReport,
+  loadChronik,
+  lineBoard,
+  latestShiftWindow,
+  type ShiftReport,
+  type LineBoard,
+} from "./analytics.ts";
 export {
   openCase,
   pinCase,

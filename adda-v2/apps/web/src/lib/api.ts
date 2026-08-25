@@ -112,8 +112,35 @@ export type Chronik = {
   }[];
 };
 
+export type LineBoard = {
+  snapshotId: number;
+  inspected: number;
+  nio: number;
+  yield: number | null;
+  taktPerHour: number | null;
+  spanMean: number | null;
+  hours: { hour: number; inspected: number; nio: number }[];
+  defects: { defectClass: string; count: number }[];
+  stations: {
+    station: "anode" | "cathode" | "oqc";
+    inspected: number;
+    nio: number;
+    nioRate: number | null;
+    last: {
+      dmc: string;
+      capturedAt: string;
+      station: "anode" | "cathode" | "oqc";
+      partOk: boolean;
+      spanMm: number | null;
+      defectClass: string | null;
+    }[];
+  }[];
+  _provenance: { store: string; query: string; snapshotId: number };
+};
+
 export const api = {
   health: () => request<{ ok: boolean; snapshotId: number }>("/health"),
+  linie: () => request<LineBoard>("/api/linie"),
   cases: (status?: string) =>
     request<{ cases: CaseRecord[] }>(status ? `/api/cases?status=${status}` : "/api/cases"),
   case: (id: string) => request<CaseRecord>(`/api/cases/${id}`),
@@ -130,7 +157,11 @@ export const api = {
   cellAt: (snapshotId: number, dmc: string) =>
     request<Dossier>(`/api/see/at/${snapshotId}/cells/${encodeURIComponent(dmc)}`),
   chronik: () => request<Chronik>("/api/chronik?limit=120"),
-  schicht: (from: string, to: string) =>
-    request<ShiftReport>(`/api/schicht?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`),
+  schicht: (from?: string, to?: string) =>
+    request<ShiftReport>(
+      from && to
+        ? `/api/schicht?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+        : "/api/schicht",
+    ),
   lake: () => request<LakeStatus>("/api/lake/status"),
 };

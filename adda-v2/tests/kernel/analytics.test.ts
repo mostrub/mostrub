@@ -48,5 +48,15 @@ describe("shift analytics and seed", () => {
     const chronik = await ledger.chronik({ limit: 10 });
     expect(chronik.events.length).toBeGreaterThan(0);
     expect(chronik.events[0]?.dmc.startsWith("HLL2-")).toBe(true);
+    const line = await ledger.lineBoard();
+    expect(line.stations).toHaveLength(3);
+    expect(line.inspected).toBe(72);
+    expect(line._provenance.query).toBe("line_board");
+    expect(line.stations.some((station) => station.last.length > 0)).toBe(true);
+    expect(line.hours.length).toBeGreaterThan(0);
+    expect(line.defects.length).toBe(11);
+    expect(line.stations.every((station) => station.inspected > 0)).toBe(true);
+    const window = await ledger.latestShiftWindow();
+    expect(window.from.startsWith("2026-08-24")).toBe(true);
   });
 });

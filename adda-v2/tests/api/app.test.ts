@@ -81,4 +81,27 @@ describe("ledger api", () => {
     });
     expect(opened.status).toBe(201);
   });
+
+  it("serves the line board after seed", async () => {
+    if (!ledger) throw new Error("missing ledger");
+    await ledger.seed("2026-08-24");
+    const app = createApp(ledger, {
+      host: "127.0.0.1",
+      port: 5757,
+      ingestToken: "secret",
+      operatorToken: "op",
+    });
+    const line = await app.request("/api/linie");
+    expect(line.status).toBe(200);
+    const board = (await line.json()) as { inspected: number; stations: unknown[]; hours: unknown[] };
+    expect(board.inspected).toBe(72);
+    expect(board.stations).toHaveLength(3);
+    expect(board.hours.length).toBeGreaterThan(0);
+
+    const schicht = await app.request("/api/schicht");
+    expect(schicht.status).toBe(200);
+    const report = (await schicht.json()) as { inspected: number; from: string };
+    expect(report.inspected).toBe(72);
+    expect(report.from.startsWith("2026-08-24")).toBe(true);
+  });
 });
