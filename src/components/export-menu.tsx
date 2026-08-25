@@ -31,7 +31,7 @@ export function ExportMenu() {
         ref={fileRef}
         type="file"
         accept="application/json"
-        className="sr-only"
+        hidden
         onChange={async (event) => {
           const file = event.target.files?.[0]
           event.target.value = ""
