@@ -589,7 +589,27 @@ textarea {
   gap: 0.75rem;
 }
 
+.bericht-actions,
+.bericht-opts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.bericht-opts {
+  margin: 0.45rem 0 0.7rem;
+}
+
+.bericht-opts button.is-on,
+.bericht-actions button.is-on {
+  box-shadow: inset 3px 0 0 var(--color-pick);
+  color: var(--color-pick);
+}
+
 .bericht-head button,
+.bericht-actions button,
+.bericht-opts button,
 .coupon-actions button,
 .lens-opt {
   border: 1px solid #254055;

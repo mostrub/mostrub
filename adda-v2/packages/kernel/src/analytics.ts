@@ -2,14 +2,26 @@ import { asSnapshotId, type SnapshotId } from "@ledger/types";
 import { asSafeInt, sqlLiteral } from "./duck.ts";
 import type { Lake } from "./lake.ts";
 
+export type ShiftStation = {
+  station: LineCell["station"];
+  inspected: number;
+  nio: number;
+  nioRate: number | null;
+};
+
 export type ShiftReport = {
   from: string;
   to: string;
+  day: string;
   inspected: number;
   io: number;
   nio: number;
   yield: number | null;
   defects: { defectClass: string; count: number }[];
+  hours: LineHour[];
+  stations: ShiftStation[];
+  spanWindow: SpanWindow;
+  nioCells: LineCell[];
   _provenance: {
     store: "ducklake";
     query: "shift_report";
@@ -17,46 +29,41 @@ export type ShiftReport = {
   };
 };
 
+export function shiftWindowForDay(day: string): { from: string; to: string } {
+  return zurichCivilDay(day);
+}
+
+export async function listShiftDays(lake: Lake): Promise<string[]> {
+  const rows = await lake.query<{ day: string }>(
+    `SELECT DISTINCT strftime(timezone('Europe/Zurich', captured_at), '%Y-%m-%d') AS day
+     FROM lake.inspections
+     ORDER BY day DESC`,
+  );
+  return rows.map((row) => row.day).filter(Boolean);
+}
+
 export async function shiftReport(
   lake: Lake,
   window: { from: string; to: string },
 ): Promise<ShiftReport> {
   const snapshotId = await lake.currentSnapshot();
-  const from = sqlLiteral(window.from);
-  const to = sqlLiteral(window.to);
-  const totals = await lake.query<{ inspected: number; io: number; nio: number }>(
-    `SELECT
-       COUNT(*)::INTEGER AS inspected,
-       COUNT(*) FILTER (WHERE part_ok)::INTEGER AS io,
-       COUNT(*) FILTER (WHERE NOT part_ok)::INTEGER AS nio
-     FROM lake.inspections
-     WHERE captured_at >= TIMESTAMPTZ '${from}'
-       AND captured_at < TIMESTAMPTZ '${to}'`,
-  );
-  const defects = await lake.query<{ defect_class: string; count: number }>(
-    `SELECT f.defect_class, COUNT(*)::INTEGER AS count
-     FROM lake.findings f
-     JOIN lake.inspections i ON i.inspection_id = f.inspection_id
-     WHERE i.captured_at >= TIMESTAMPTZ '${from}'
-       AND i.captured_at < TIMESTAMPTZ '${to}'
-     GROUP BY f.defect_class
-     ORDER BY count DESC, f.defect_class`,
-  );
-  const row = totals[0] ?? { inspected: 0, io: 0, nio: 0 };
-  const inspected = Number(row.inspected);
-  const io = Number(row.io);
-  const nio = Number(row.nio);
+  const facts = await queryWindow(lake, window);
   return {
     from: window.from,
     to: window.to,
-    inspected,
-    io,
-    nio,
-    yield: inspected === 0 ? null : io / inspected,
-    defects: defects.map((item) => ({
-      defectClass: item.defect_class,
-      count: Number(item.count),
-    })),
+    day: window.from.slice(0, 10),
+    inspected: facts.inspected,
+    io: facts.io,
+    nio: facts.nio,
+    yield: facts.inspected === 0 ? null : facts.io / facts.inspected,
+    defects: facts.defects,
+    hours: facts.hours,
+    stations: facts.stations,
+    spanWindow: facts.spanWindow,
+    nioCells: facts.cells
+      .filter((cell) => !cell.partOk)
+      .slice()
+      .sort((a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt)),
     _provenance: {
       store: "ducklake",
       query: "shift_report",
@@ -190,20 +197,32 @@ export async function latestShiftWindow(lake: Lake): Promise<{ from: string; to:
   return zurichCivilDay(rows[0]?.day ?? zurichToday());
 }
 
-export async function lineBoard(lake: Lake): Promise<LineBoard> {
-  const snapshotId = await lake.currentSnapshot();
-  const window = await latestShiftWindow(lake);
+type WindowFacts = {
+  inspected: number;
+  io: number;
+  nio: number;
+  hoursSpan: number;
+  spanWindow: SpanWindow;
+  hours: LineHour[];
+  defects: { defectClass: string; count: number }[];
+  cells: LineCell[];
+  stations: ShiftStation[];
+};
+
+async function queryWindow(lake: Lake, window: { from: string; to: string }): Promise<WindowFacts> {
   const from = sqlLiteral(window.from);
   const to = sqlLiteral(window.to);
   const inShift = (alias: string) =>
     `${alias}.captured_at >= TIMESTAMPTZ '${from}' AND ${alias}.captured_at < TIMESTAMPTZ '${to}'`;
   const totals = await lake.query<{
     inspected: number;
+    io: number;
     nio: number;
     hours: number;
   }>(
     `SELECT
        COUNT(*)::INTEGER AS inspected,
+       COUNT(*) FILTER (WHERE part_ok)::INTEGER AS io,
        COUNT(*) FILTER (WHERE NOT part_ok)::INTEGER AS nio,
        GREATEST(1, date_diff('hour', MIN(captured_at), MAX(captured_at)))::DOUBLE AS hours
      FROM lake.inspections i
@@ -223,7 +242,7 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
             AVG(m.span_mm) AS span_mean
      FROM lake.measurements m
      JOIN lake.inspections i ON i.inspection_id = m.inspection_id
-     WHERE ${inShift("i")}`
+     WHERE ${inShift("i")}`,
   );
   const stationRates = await lake.query<{
     station: string;
@@ -273,10 +292,10 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
      WHERE ${inShift("i")}
      ORDER BY i.tray, i.slot, i.captured_at`,
   );
-  const total = totals[0] ?? { inspected: 0, nio: 0, hours: 1 };
+  const total = totals[0] ?? { inspected: 0, io: 0, nio: 0, hours: 1 };
   const inspected = Number(total.inspected);
+  const io = Number(total.io);
   const nio = Number(total.nio);
-  const spanHours = Number(total.hours) || 1;
   const spanRow = span[0];
   const cells = rawCells.flatMap((row) => {
     const station = asStation(row.station);
@@ -295,14 +314,11 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
       } satisfies LineCell,
     ];
   });
-  const trayNames = [...new Set(cells.map((cell) => cell.tray))].sort();
   return {
-    snapshotId: asSnapshotId(asSafeInt(snapshotId)),
     inspected,
+    io,
     nio,
-    yield: inspected === 0 ? null : (inspected - nio) / inspected,
-    taktPerHour: inspected === 0 ? null : inspected / spanHours,
-    spanMean: asNumber(spanRow?.span_mean),
+    hoursSpan: Number(total.hours) || 1,
     spanWindow: {
       min: asNumber(spanRow?.span_min),
       p50: asNumber(spanRow?.span_p50),
@@ -320,16 +336,6 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
       count: Number(item.count),
     })),
     cells,
-    trays: trayNames.map((tray) => ({
-      tray,
-      slots: Array.from({ length: 12 }, (_, index) => {
-        const slot = index + 1;
-        return {
-          slot,
-          cells: cells.filter((cell) => cell.tray === tray && cell.slot === slot),
-        };
-      }),
-    })),
     stations: STATIONS.map((station) => {
       const rate = stationRates.find((row) => row.station === station);
       const count = Number(rate?.inspected ?? 0);
@@ -339,16 +345,48 @@ export async function lineBoard(lake: Lake): Promise<LineBoard> {
         inspected: count,
         nio: stationNio,
         nioRate: count === 0 ? null : stationNio / count,
-        last: cells
-          .filter((cell) => cell.station === station)
-          .slice()
-          .sort((a, b) => {
-            if (a.partOk !== b.partOk) return a.partOk ? 1 : -1;
-            return +new Date(b.capturedAt) - +new Date(a.capturedAt);
-          })
-          .slice(0, 8),
       };
     }),
+  };
+}
+
+export async function lineBoard(lake: Lake): Promise<LineBoard> {
+  const snapshotId = await lake.currentSnapshot();
+  const window = await latestShiftWindow(lake);
+  const facts = await queryWindow(lake, window);
+  const trayNames = [...new Set(facts.cells.map((cell) => cell.tray))].sort();
+  return {
+    snapshotId: asSnapshotId(asSafeInt(snapshotId)),
+    inspected: facts.inspected,
+    nio: facts.nio,
+    yield: facts.inspected === 0 ? null : (facts.inspected - facts.nio) / facts.inspected,
+    taktPerHour: facts.inspected === 0 ? null : facts.inspected / facts.hoursSpan,
+    spanMean: facts.spanWindow.mean,
+    spanWindow: facts.spanWindow,
+    hours: facts.hours,
+    defects: facts.defects,
+    cells: facts.cells,
+    trays: trayNames.map((tray) => ({
+      tray,
+      slots: Array.from({ length: 12 }, (_, index) => {
+        const slot = index + 1;
+        return {
+          slot,
+          cells: facts.cells.filter((cell) => cell.tray === tray && cell.slot === slot),
+        };
+      }),
+    })),
+    stations: facts.stations.map((station) => ({
+      ...station,
+      last: facts.cells
+        .filter((cell) => cell.station === station.station)
+        .slice()
+        .sort((a, b) => {
+          if (a.partOk !== b.partOk) return a.partOk ? 1 : -1;
+          return +new Date(b.capturedAt) - +new Date(a.capturedAt);
+        })
+        .slice(0, 8),
+    })),
     _provenance: {
       store: "ducklake",
       query: "line_board",

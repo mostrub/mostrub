@@ -9,7 +9,14 @@ import type {
   PinCaseInput,
   SnapshotId,
 } from "@ledger/types";
-import { latestShiftWindow, lineBoard, loadChronik, shiftReport } from "./analytics.ts";
+import {
+  latestShiftWindow,
+  lineBoard,
+  listShiftDays,
+  loadChronik,
+  shiftReport,
+  shiftWindowForDay,
+} from "./analytics.ts";
 import {
   addDisposition,
   listCases,
@@ -105,6 +112,14 @@ export class Ledger {
 
   shiftReport(window: { from: string; to: string }) {
     return shiftReport(this.lake, window);
+  }
+
+  shiftDays() {
+    return listShiftDays(this.lake);
+  }
+
+  shiftWindowForDay(day: string) {
+    return shiftWindowForDay(day);
   }
 
   chronik(filter: { dmc?: string; from?: string; to?: string; limit?: number }) {

@@ -36,7 +36,7 @@ Sieben Prüfungen auf demselben Chassis (`?sicht=`):
 | Fach | Dieselbe Lage über alle Magazine |
 | Fenster | Span-Histogramm, p50/p95, Zellen über der Grenze |
 | Klasse | 11 Fehlerklassen × 24 Zurich-Stunden |
-| Schicht | Bericht des zivilen Tags. Druck blendet Takt, Band und Kupon aus. |
+| Schicht | Bericht mit Tagwahl und Arten (Voll, Stunden, Stationen, Klassen, NIO, Akten). Druck und NIO-Liste. |
 | Zeitreise | Lake-Snapshots der gewählten Zelle |
 
 Takt (24 h, Europe/Zurich) und der Zellkupon bleiben am Instrument. Eine Zelle

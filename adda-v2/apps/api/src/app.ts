@@ -113,9 +113,20 @@ export function createApp(ledger: Ledger, api: ApiConfig = apiConfigFromEnv()): 
     return c.json(await c.get("ledger").lineBoard());
   });
 
+  app.get("/api/schicht/tage", async (c) => {
+    return c.json({ days: await c.get("ledger").shiftDays() });
+  });
+
   app.get("/api/schicht", async (c) => {
+    const tag = c.req.query("tag");
     const from = c.req.query("from");
     const to = c.req.query("to");
+    if (tag) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(tag)) {
+        return c.json({ error: "VALIDATION_FAILED", message: "ungültiger Tag" }, 422);
+      }
+      return c.json(await c.get("ledger").shiftReport(c.get("ledger").shiftWindowForDay(tag)));
+    }
     const window =
       from && to ? { from, to } : await c.get("ledger").latestShiftWindow();
     return c.json(await c.get("ledger").shiftReport(window));

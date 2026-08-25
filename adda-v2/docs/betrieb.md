@@ -50,9 +50,12 @@ Lesefehler: `LAKEHOUSE_READ_UNAVAILABLE`, HTTP 503. Kaliber zeigt
 
 ## Schichtbericht
 
-Prüfung Schicht, Knopf «Bericht drucken». Es druckt den zivilen Tag
-Europe/Zurich: Stunden, Stationen, Span, alle 11 Klassen, offene Akten, alle
-NIO. Lünette, Takt, Band und Kupon bleiben vom Papier weg.
+Prüfung Schicht. Tag vor/zurück über die Tage im Lake. Berichtart wählen
+(Voll, Stunden, Stationen, Klassen, NIO, Akten), dann «Bericht drucken».
+«NIO-Liste kopieren» legt DMC, Klasse und Zeit in die Zwischenablage.
+Lünette, Takt, Band und Kupon bleiben vom Papier weg.
+
+`GET /api/schicht?tag=2026-08-24` und `GET /api/schicht/tage`.
 
 ## Seed
 

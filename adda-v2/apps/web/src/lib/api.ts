@@ -100,11 +100,27 @@ export type LakeStatus = {
 export type ShiftReport = {
   from: string;
   to: string;
+  day: string;
   inspected: number;
   io: number;
   nio: number;
   yield: number | null;
   defects: { defectClass: string; count: number }[];
+  hours: { hour: number; inspected: number; nio: number }[];
+  stations: {
+    station: "anode" | "cathode" | "oqc";
+    inspected: number;
+    nio: number;
+    nioRate: number | null;
+  }[];
+  spanWindow: {
+    min: number | null;
+    p50: number | null;
+    p95: number | null;
+    max: number | null;
+    mean: number | null;
+  };
+  nioCells: LineCell[];
   _provenance: { store: string; query: string; snapshotId: number };
 };
 
@@ -178,11 +194,8 @@ export const api = {
   cellAt: (snapshotId: number, dmc: string) =>
     request<Dossier>(`/api/see/at/${snapshotId}/cells/${encodeURIComponent(dmc)}`),
   chronik: () => request<Chronik>("/api/chronik?limit=120"),
-  schicht: (from?: string, to?: string) =>
-    request<ShiftReport>(
-      from && to
-        ? `/api/schicht?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
-        : "/api/schicht",
-    ),
+  schicht: (tag?: string) =>
+    request<ShiftReport>(tag ? `/api/schicht?tag=${encodeURIComponent(tag)}` : "/api/schicht"),
+  schichtTage: () => request<{ days: string[] }>("/api/schicht/tage"),
   lake: () => request<LakeStatus>("/api/lake/status"),
 };

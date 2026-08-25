@@ -28,6 +28,13 @@ const LENSES = [
 function isLens(value: string | null): value is Lens {
   return value !== null && LENSES.some((id) => id === value);
 }
+
+const BERICHTE = ["voll", "stunden", "maschine", "klassen", "nio", "akten"] as const;
+type Bericht = (typeof BERICHTE)[number];
+
+function isBericht(value: string | null): value is Bericht {
+  return value !== null && BERICHTE.some((id) => id === value);
+}
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const SPAN_LIMIT = 0.12;
 const BIN_W = 0.02;
@@ -118,6 +125,12 @@ export function Floor() {
   const [params, setParams] = useSearchParams();
   const sicht = params.get("sicht");
   const lens: Lens = isLens(sicht) ? sicht : "maschine";
+  const tag = params.get("tag");
+  const bericht: Bericht = isBericht(params.get("bericht")) ? params.get("bericht") : "voll";
+  const nioOnly = params.get("nio") !== "0";
+  const klassePick = params.get("klasse");
+  const aktenFilter =
+    params.get("akten") === "pinned" || params.get("akten") === "alle" ? params.get("akten") : "open";
   const [board, setBoard] = useState<LineBoard | null>(null);
   const [tape, setTape] = useState<Chronik | null>(null);
   const [shift, setShift] = useState<ShiftReport | null>(null);
@@ -134,6 +147,7 @@ export function Floor() {
   const [now, setNow] = useState(() => new Date());
   const [hunt, setHunt] = useState("");
   const [openCases, setOpenCases] = useState<CaseRecord[]>([]);
+  const [days, setDays] = useState<string[]>([]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -146,15 +160,17 @@ export function Floor() {
       void Promise.allSettled([
         api.linie(),
         api.chronik(),
-        api.schicht(),
+        api.schicht(tag ?? undefined),
+        api.schichtTage(),
         api.lake(),
-        api.cases("open"),
+        api.cases(aktenFilter === "alle" ? undefined : aktenFilter),
       ]).then((results) => {
           if (cancelled) return;
-          const [linie, chronik, schicht, lakeStatus, cases] = results;
+          const [linie, chronik, schicht, tage, lakeStatus, cases] = results;
           if (linie.status === "fulfilled") setBoard(linie.value);
           if (chronik.status === "fulfilled") setTape(chronik.value);
           if (schicht.status === "fulfilled") setShift(schicht.value);
+          if (tage.status === "fulfilled") setDays(tage.value.days);
           if (lakeStatus.status === "fulfilled") setLake(lakeStatus.value);
           if (cases.status === "fulfilled") setOpenCases(cases.value.cases);
           const fail = results.find((item) => item.status === "rejected");
@@ -172,7 +188,20 @@ export function Floor() {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, []);
+  }, [tag, aktenFilter]);
+
+  function patchParams(patch: Record<string, string | null>) {
+    const next = new URLSearchParams(params);
+    for (const [key, value] of Object.entries(patch)) {
+      if (!value) next.delete(key);
+      else next.set(key, value);
+    }
+    setParams(next, { replace: true });
+  }
+
+  function setOpt(key: string, value: string | null) {
+    patchParams({ [key]: value });
+  }
 
   useEffect(() => {
     if (routeDmc) setSelected(routeDmc);
@@ -354,6 +383,14 @@ export function Floor() {
           shift={shift}
           lake={lake}
           openCases={openCases}
+          days={days}
+          tag={tag}
+          bericht={bericht}
+          nioOnly={nioOnly}
+          klassePick={klassePick}
+          aktenFilter={aktenFilter}
+          onOpt={setOpt}
+          onPatch={patchParams}
           selected={selected}
           travelId={travelId}
           onPick={pick}
@@ -469,6 +506,14 @@ function LensWell({
   shift,
   lake,
   openCases,
+  days,
+  tag,
+  bericht,
+  nioOnly,
+  klassePick,
+  aktenFilter,
+  onOpt,
+  onPatch,
   selected,
   travelId,
   onPick,
@@ -479,6 +524,14 @@ function LensWell({
   shift: ShiftReport | null;
   lake: LakeStatus | null;
   openCases: CaseRecord[];
+  days: string[];
+  tag: string | null;
+  bericht: Bericht;
+  nioOnly: boolean;
+  klassePick: string | null;
+  aktenFilter: string;
+  onOpt: (key: string, value: string | null) => void;
+  onPatch: (patch: Record<string, string | null>) => void;
   selected: string;
   travelId: string;
   onPick: (dmc: string) => void;
@@ -486,7 +539,7 @@ function LensWell({
 }) {
   switch (lens) {
     case "maschine":
-      return <Maschine board={board} selected={selected} onPick={onPick} />;
+      return <Maschine board={board} selected={selected} nioOnly={nioOnly} onOpt={onOpt} onPick={onPick} />;
     case "tablett":
       return <Tablett board={board} selected={selected} onPick={onPick} />;
     case "fach":
@@ -494,14 +547,19 @@ function LensWell({
     case "fenster":
       return <Fenster board={board} selected={selected} onPick={onPick} />;
     case "klasse":
-      return <Klasse board={board} onPick={onPick} />;
+      return <Klasse board={board} klassePick={klassePick} onOpt={onOpt} onPick={onPick} />;
     case "schicht":
       return (
         <Schicht
-          board={board}
           shift={shift}
           openCases={openCases}
+          days={days}
+          tag={tag}
+          bericht={bericht}
+          aktenFilter={aktenFilter}
           selected={selected}
+          onOpt={onOpt}
+          onPatch={onPatch}
           onPick={onPick}
         />
       );
@@ -517,13 +575,16 @@ function LensWell({
 function Maschine({
   board,
   selected,
+  nioOnly,
+  onOpt,
   onPick,
 }: {
   board: LineBoard | null;
   selected: string;
+  nioOnly: boolean;
+  onOpt: (key: string, value: string | null) => void;
   onPick: (dmc: string) => void;
 }) {
-  const [onlyNio, setOnlyNio] = useState(true);
   return (
     <section>
       <div className="bericht-head">
@@ -533,17 +594,17 @@ function Maschine({
         </div>
         <button
           type="button"
-          className={`lens-opt ${onlyNio ? "is-on" : ""}`}
-          aria-pressed={onlyNio}
-          onClick={() => setOnlyNio((value) => !value)}
+          className={`lens-opt ${nioOnly ? "is-on" : ""}`}
+          aria-pressed={nioOnly}
+          onClick={() => onOpt("nio", nioOnly ? "0" : null)}
         >
-          {onlyNio ? de.nurNio : de.zuletzt}
+          {nioOnly ? de.nurNio : de.zuletzt}
         </button>
       </div>
       <ol className="stations">
         {(board?.stations ?? []).map((st) => {
           const nio = stationNio(board?.cells ?? [], st.station);
-          const rows = onlyNio ? nio : st.last;
+          const rows = nioOnly ? nio : st.last;
           return (
             <li key={st.station}>
               <header>
@@ -554,7 +615,7 @@ function Maschine({
                 <Lcd label={de.kpis.cells} value={formatCount(st.inspected)} />
                 <Lcd label={de.kpis.nio} value={formatCount(st.nio)} warn={st.nio > 0} />
               </div>
-              <h3 className="subhead">{onlyNio ? de.alleNio : de.zuletzt}</h3>
+              <h3 className="subhead">{nioOnly ? de.alleNio : de.zuletzt}</h3>
               <ol className="last-cells">
                 {rows.map((cell) => (
                   <li key={`${cell.dmc}-${cell.capturedAt}`}>
@@ -712,26 +773,37 @@ function Fach({
 }
 
 function Schicht({
-  board,
   shift,
   openCases,
+  days,
+  tag,
+  bericht,
+  aktenFilter,
   selected,
+  onOpt,
+  onPatch,
   onPick,
 }: {
-  board: LineBoard | null;
   shift: ShiftReport | null;
   openCases: CaseRecord[];
+  days: string[];
+  tag: string | null;
+  bericht: Bericht;
+  aktenFilter: string;
   selected: string;
+  onOpt: (key: string, value: string | null) => void;
+  onPatch: (patch: Record<string, string | null>) => void;
   onPick: (dmc: string) => void;
 }) {
+  const [copied, setCopied] = useState(false);
   const classes = DEFECT_CLASSES.map((cls) => ({
     defectClass: cls,
     count: shift?.defects.find((item) => item.defectClass === cls)?.count ?? 0,
   }));
-  const nio = (board?.cells ?? [])
-    .filter((cell) => !cell.partOk)
-    .slice()
-    .sort((a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt));
+  const nio = shift?.nioCells ?? [];
+  const activeDay = tag ?? shift?.day ?? days[0] ?? null;
+  const dayIndex = activeDay ? days.indexOf(activeDay) : -1;
+  const show = (part: Bericht) => bericht === "voll" || bericht === part;
   return (
     <section className="bericht">
       <div className="bericht-head">
@@ -739,8 +811,59 @@ function Schicht({
           <h2>{de.bericht}</h2>
           <p className="lede">{de.schichtLede}</p>
         </div>
-        <button type="button" className="no-print" onClick={() => window.print()}>
-          {de.drucken}
+        <div className="bericht-actions no-print">
+          <button type="button" onClick={() => window.print()}>
+            {de.drucken}
+          </button>
+          <button
+            type="button"
+            disabled={!nio.length}
+            onClick={() => {
+              const text = nio
+                .map((cell) => [cell.dmc, cell.defectClass ?? "", formatWhen(cell.capturedAt)].join("\t"))
+                .join("\n");
+              void navigator.clipboard.writeText(text).then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1500);
+              });
+            }}
+          >
+            {copied ? de.kopiert : de.listeKopieren}
+          </button>
+        </div>
+      </div>
+      <div className="bericht-opts no-print">
+        <button
+          type="button"
+          disabled={dayIndex < 0 || dayIndex >= days.length - 1}
+          onClick={() => onOpt("tag", days[dayIndex + 1] ?? null)}
+        >
+          {de.tagVor}
+        </button>
+        <span className="mono">{activeDay ?? "—"}</span>
+        <button
+          type="button"
+          disabled={dayIndex <= 0}
+          onClick={() => onOpt("tag", dayIndex === 1 ? null : (days[dayIndex - 1] ?? null))}
+        >
+          {de.tagNach}
+        </button>
+        {BERICHTE.map((id) => (
+          <button
+            key={id}
+            type="button"
+            className={id === bericht ? "is-on" : undefined}
+            onClick={() => onOpt("bericht", id === "voll" ? null : id)}
+          >
+            {de.berichtArt[id]}
+          </button>
+        ))}
+        <button
+          type="button"
+          className={!tag && bericht === "voll" ? "is-on" : undefined}
+          onClick={() => onPatch({ tag: null, bericht: null, akten: null })}
+        >
+          {de.see.current}
         </button>
       </div>
       {shift ? (
@@ -754,100 +877,151 @@ function Schicht({
           <p className="hint">
             {formatDay(shift.from)} → {formatWhen(shift.to)}
           </p>
-          <h3 className="subhead">{de.stunden}</h3>
-          <table className="bericht-table">
-            <thead>
-              <tr>
-                <th>{de.stunden}</th>
-                <th>{de.kpis.cells}</th>
-                <th>{de.kpis.nio}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {HOURS.map((hour) => {
-                const row = board?.hours.find((item) => item.hour === hour);
-                return (
-                  <tr key={hour}>
-                    <td className="mono">{String(hour).padStart(2, "0")}</td>
-                    <td className="mono">{formatCount(row?.inspected ?? 0)}</td>
-                    <td className="mono">{formatCount(row?.nio ?? 0)}</td>
+          {show("stunden") ? (
+            <>
+              <h3 className="subhead">{de.stunden}</h3>
+              <table className="bericht-table">
+                <thead>
+                  <tr>
+                    <th>{de.stunden}</th>
+                    <th>{de.kpis.cells}</th>
+                    <th>{de.kpis.nio}</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <h3 className="subhead">{de.lenses.maschine}</h3>
-          <table className="bericht-table">
-            <thead>
-              <tr>
-                <th>{de.lenses.maschine}</th>
-                <th>{de.kpis.cells}</th>
-                <th>{de.kpis.nio}</th>
-                <th>{de.kpis.yield}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(board?.stations ?? []).map((st) => (
-                <tr key={st.station}>
-                  <td>{de.stations[st.station]}</td>
-                  <td className="mono">{formatCount(st.inspected)}</td>
-                  <td className="mono">{formatCount(st.nio)}</td>
-                  <td className="mono">{formatPercent(st.nioRate === null ? null : 1 - st.nioRate)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <h3 className="subhead">{de.span.title}</h3>
-          <div className="span-readouts">
-            <Lcd label={de.span.min} value={fmtMm(board?.spanWindow.min ?? null)} />
-            <Lcd label={de.span.p50} value={fmtMm(board?.spanWindow.p50 ?? null)} />
-            <Lcd label={de.span.p95} value={fmtMm(board?.spanWindow.p95 ?? null)} warn={(board?.spanWindow.p95 ?? 0) > SPAN_LIMIT} />
-            <Lcd label={de.span.max} value={fmtMm(board?.spanWindow.max ?? null)} warn={(board?.spanWindow.max ?? 0) > SPAN_LIMIT} />
-          </div>
-          <h3 className="subhead">{de.klasse.title}</h3>
-          <ol className="schicht-defects">
-            {classes.map((item) => {
-              const hit = board?.cells.find((cell) => cell.defectClass === item.defectClass && !cell.partOk);
-              return (
-                <li key={item.defectClass}>
-                  <button type="button" disabled={!hit} onClick={() => hit && onPick(hit.dmc)}>
-                    <span>{defectLabel(item.defectClass)}</span>
-                    <span className="mono">{formatCount(item.count)}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
-          <h3 className="subhead">{de.aktenOffen}</h3>
-          {openCases.length ? (
-            <ol className="akten">
-              {openCases.map((record) => (
-                <li key={record.id}>
-                  <button type="button" onClick={() => onPick(record.dmc)}>
-                    <span className="mono">{record.dmc}</span>
-                    <span>
-                      {de.akteNr} {record.id} · {record.status}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="hint">{de.keineAkten}</p>
-          )}
-          <h3 className="subhead">{de.alleNio}</h3>
-          <ol className="last-cells">
-            {nio.map((cell) => (
-              <li key={`${cell.dmc}-${cell.capturedAt}`}>
-                <CellRow
-                  cell={cell}
-                  selected={selected}
-                  onPick={onPick}
-                  extra={cell.defectClass ? defectLabel(cell.defectClass) : undefined}
+                </thead>
+                <tbody>
+                  {HOURS.map((hour) => {
+                    const row = shift.hours.find((item) => item.hour === hour);
+                    return (
+                      <tr key={hour}>
+                        <td className="mono">{String(hour).padStart(2, "0")}</td>
+                        <td className="mono">{formatCount(row?.inspected ?? 0)}</td>
+                        <td className="mono">{formatCount(row?.nio ?? 0)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
+          ) : null}
+          {show("maschine") ? (
+            <>
+              <h3 className="subhead">{de.lenses.maschine}</h3>
+              <table className="bericht-table">
+                <thead>
+                  <tr>
+                    <th>{de.lenses.maschine}</th>
+                    <th>{de.kpis.cells}</th>
+                    <th>{de.kpis.nio}</th>
+                    <th>{de.kpis.yield}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shift.stations.map((st) => (
+                    <tr key={st.station}>
+                      <td>{de.stations[st.station]}</td>
+                      <td className="mono">{formatCount(st.inspected)}</td>
+                      <td className="mono">{formatCount(st.nio)}</td>
+                      <td className="mono">{formatPercent(st.nioRate === null ? null : 1 - st.nioRate)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <h3 className="subhead">{de.span.title}</h3>
+              <div className="span-readouts">
+                <Lcd label={de.span.min} value={fmtMm(shift.spanWindow.min)} />
+                <Lcd label={de.span.p50} value={fmtMm(shift.spanWindow.p50)} />
+                <Lcd
+                  label={de.span.p95}
+                  value={fmtMm(shift.spanWindow.p95)}
+                  warn={(shift.spanWindow.p95 ?? 0) > SPAN_LIMIT}
                 />
-              </li>
-            ))}
-          </ol>
+                <Lcd
+                  label={de.span.max}
+                  value={fmtMm(shift.spanWindow.max)}
+                  warn={(shift.spanWindow.max ?? 0) > SPAN_LIMIT}
+                />
+              </div>
+            </>
+          ) : null}
+          {show("klassen") ? (
+            <>
+              <h3 className="subhead">{de.klasse.title}</h3>
+              <ol className="schicht-defects">
+                {classes.map((item) => {
+                  const hit = nio.find((cell) => cell.defectClass === item.defectClass);
+                  return (
+                    <li key={item.defectClass}>
+                      <button type="button" disabled={!hit} onClick={() => hit && onPick(hit.dmc)}>
+                        <span>{defectLabel(item.defectClass)}</span>
+                        <span className="mono">{formatCount(item.count)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </>
+          ) : null}
+          {show("akten") ? (
+            <>
+              <h3 className="subhead">{de.aktenOffen}</h3>
+              <div className="bericht-opts no-print">
+                <button
+                  type="button"
+                  className={aktenFilter === "open" ? "is-on" : undefined}
+                  onClick={() => onOpt("akten", null)}
+                >
+                  {de.aktenOffen}
+                </button>
+                <button
+                  type="button"
+                  className={aktenFilter === "pinned" ? "is-on" : undefined}
+                  onClick={() => onOpt("akten", "pinned")}
+                >
+                  {de.aktenPin}
+                </button>
+                <button
+                  type="button"
+                  className={aktenFilter === "alle" ? "is-on" : undefined}
+                  onClick={() => onOpt("akten", "alle")}
+                >
+                  {de.aktenAlle}
+                </button>
+              </div>
+              {openCases.length ? (
+                <ol className="akten">
+                  {openCases.map((record) => (
+                    <li key={record.id}>
+                      <button type="button" onClick={() => onPick(record.dmc)}>
+                        <span className="mono">{record.dmc}</span>
+                        <span>
+                          {de.akteNr} {record.id} · {record.status}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="hint">{de.keineAkten}</p>
+              )}
+            </>
+          ) : null}
+          {show("nio") ? (
+            <>
+              <h3 className="subhead">{de.alleNio}</h3>
+              <ol className="last-cells">
+                {nio.map((cell) => (
+                  <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                    <CellRow
+                      cell={cell}
+                      selected={selected}
+                      onPick={onPick}
+                      extra={cell.defectClass ? defectLabel(cell.defectClass) : undefined}
+                    />
+                  </li>
+                ))}
+              </ol>
+            </>
+          ) : null}
         </>
       ) : (
         <p className="hint">{de.empty}</p>
@@ -945,9 +1119,13 @@ function Fenster({
 
 function Klasse({
   board,
+  klassePick,
+  onOpt,
   onPick,
 }: {
   board: LineBoard | null;
+  klassePick: string | null;
+  onOpt: (key: string, value: string | null) => void;
   onPick: (dmc: string) => void;
 }) {
   const grid = useMemo(() => {
@@ -959,11 +1137,23 @@ function Klasse({
       return { cls, counts, total: counts.reduce((a, b) => a + b, 0) };
     });
   }, [board]);
+  const visible = klassePick ? grid.filter((row) => row.cls === klassePick) : grid;
   const max = Math.max(1, ...grid.flatMap((row) => row.counts));
   return (
     <section>
-      <h2>{de.lenses.klasse}</h2>
-      <p className="lede">{de.klasseLede}</p>
+      <div className="bericht-head">
+        <div>
+          <h2>{de.lenses.klasse}</h2>
+          <p className="lede">{de.klasseLede}</p>
+        </div>
+        {klassePick ? (
+          <button type="button" className="lens-opt is-on" onClick={() => onOpt("klasse", null)}>
+            {de.klasseAlle}
+          </button>
+        ) : (
+          <span className="hint">{de.klasseNur}</span>
+        )}
+      </div>
       <div className="matrix-wrap">
         <table className="matrix">
           <thead>
@@ -976,9 +1166,13 @@ function Klasse({
             </tr>
           </thead>
           <tbody>
-            {grid.map((row) => (
+            {visible.map((row) => (
               <tr key={row.cls}>
-                <th>{defectLabel(row.cls)}</th>
+                <th>
+                  <button type="button" className="heat" onClick={() => onOpt("klasse", row.cls === klassePick ? null : row.cls)}>
+                    {defectLabel(row.cls)}
+                  </button>
+                </th>
                 {row.counts.map((n, i) => {
                   const hour = HOURS[i] ?? 0;
                   return (

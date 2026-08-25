@@ -3,7 +3,15 @@
 Ein Chassis. Sieben Prüfungen. Kein ADDA.
 
 Die aktive Prüfung steht in `?sicht=`. Eine Zelle wählen ändert den Pfad auf
-`/zelle/<dmc>`, die Prüfung bleibt.
+`/zelle/<dmc>`, die Prüfung bleibt. Weitere Optionen in der URL:
+
+| Parameter | Wirkung |
+| --- | --- |
+| `tag=2026-08-24` | Schichtbericht dieses zivilen Tags |
+| `bericht=stunden` | Nur Stunden, oder `maschine`, `klassen`, `nio`, `akten` |
+| `nio=0` | Maschine zeigt letzte Ticks statt alle NIO |
+| `klasse=Span` | Klasse filtert auf eine Fehlerklasse |
+| `akten=pinned` | Aktenliste gepinnt, oder `alle` |
 
 ## Prüfungen
 
@@ -14,7 +22,7 @@ Die aktive Prüfung steht in `?sicht=`. Eine Zelle wählen ändert den Pfad auf
 | Fach | Dieselbe Lage über alle Magazine. Eine heisse Lage ist Prozess, nicht eine Zelle. |
 | Fenster | Spanfenster min/p50/p95/max, Histogramm, Grenze 0,12 mm, jede Zelle darüber. |
 | Klasse | Elf Klassen über 24 Zurich-Stunden. Antippen einer Stunde öffnet eine Zelle. |
-| Schicht | Ziviler Tag: IO/NIO, Ausbeute, Stunden, Stationen, Span, Klassen, offene Akten, alle NIO. Druckbar. |
+| Schicht | Ziviler Tag mit Wahl. Berichte: Voll, Stunden, Stationen, Klassen, NIO, Akten. Druck und NIO-Liste. |
 | Zeitreise | Film der Lake-Snapshots. Der Kupon zeigt nur den gewählten Stand. Fehlt der Stand: «kein Stand», kein Rückfall auf live. |
 
 Takt oben: 24 Stunden Europe/Zurich. Band unten: letzte DMCs, NIO magenta.

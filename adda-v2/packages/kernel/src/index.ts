@@ -12,6 +12,8 @@ export { buildSeedRows, seedLedger } from "./seed.ts";
 export { loadDossier, loadDossierAt, type CellDossier } from "./dossier.ts";
 export {
   shiftReport,
+  shiftWindowForDay,
+  listShiftDays,
   loadChronik,
   lineBoard,
   latestShiftWindow,

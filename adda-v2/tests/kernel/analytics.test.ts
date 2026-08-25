@@ -46,6 +46,12 @@ describe("shift analytics and seed", () => {
     expect(report._provenance.store).toBe("ducklake");
     expect(report._provenance.snapshotId).toBeGreaterThan(0);
     expect(report.defects.length).toBeGreaterThan(0);
+    expect(report.day).toBe("2026-08-24");
+    expect(report.hours.map((row) => row.hour).sort((a, b) => a - b)).toEqual([6, 14, 22]);
+    expect(report.stations).toHaveLength(3);
+    expect(report.nioCells).toHaveLength(report.nio);
+    expect(report.spanWindow.p95).not.toBeNull();
+    expect(await ledger.shiftDays()).toEqual(["2026-08-24"]);
     const chronik = await ledger.chronik({ limit: 10 });
     expect(chronik.events.length).toBeGreaterThan(0);
     expect(chronik.events[0]?.dmc.startsWith("HLL2-")).toBe(true);
@@ -83,5 +89,31 @@ describe("shift analytics and seed", () => {
     ]);
     const window = await ledger.latestShiftWindow();
     expect(window.from.startsWith("2026-08-24")).toBe(true);
+  });
+
+  it("scopes a Schichtbericht to the asked Zurich day", async () => {
+    if (!ledger) throw new Error("ledger missing");
+    await ledger.seed("2026-08-24");
+    await ledger.ingestInspections([
+      inspectionIngestSchema.parse({
+        dmc: "HLL2-20260823-0099",
+        capturedAt: "2026-08-23T10:00:00+02:00",
+        station: "oqc",
+        tray: "T-9",
+        slot: 1,
+        partOk: false,
+        source: "seed",
+        measurements: { phiDeg: 0.1, widthMm: 11.5, heightMm: 5.4, spanMm: 0.2 },
+        findings: [{ defectClass: "Span", score: 0.9 }],
+      }),
+    ]);
+    const days = await ledger.shiftDays();
+    expect(days).toEqual(["2026-08-24", "2026-08-23"]);
+    const earlier = await ledger.shiftReport(ledger.shiftWindowForDay("2026-08-23"));
+    expect(earlier.inspected).toBe(1);
+    expect(earlier.nio).toBe(1);
+    expect(earlier.nioCells[0]?.dmc).toBe("HLL2-20260823-0099");
+    const latest = await ledger.shiftReport(await ledger.latestShiftWindow());
+    expect(latest.inspected).toBe(72);
   });
 });

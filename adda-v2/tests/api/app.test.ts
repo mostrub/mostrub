@@ -140,8 +140,29 @@ describe("ledger api", () => {
 
     const schicht = await app.request("/api/schicht");
     expect(schicht.status).toBe(200);
-    const report = (await schicht.json()) as { inspected: number; from: string };
+    const report = (await schicht.json()) as {
+      inspected: number;
+      from: string;
+      day: string;
+      hours: unknown[];
+      nioCells: unknown[];
+    };
     expect(report.inspected).toBe(72);
     expect(report.from.startsWith("2026-08-24")).toBe(true);
+    expect(report.day).toBe("2026-08-24");
+    expect(report.hours.length).toBeGreaterThan(0);
+    expect(report.nioCells.length).toBeGreaterThan(0);
+
+    const tage = await app.request("/api/schicht/tage");
+    expect(tage.status).toBe(200);
+    const listed = (await tage.json()) as { days: string[] };
+    expect(listed.days).toContain("2026-08-24");
+
+    const tagged = await app.request("/api/schicht?tag=2026-08-24");
+    expect(tagged.status).toBe(200);
+    expect(((await tagged.json()) as { inspected: number }).inspected).toBe(72);
+
+    const bad = await app.request("/api/schicht?tag=gestern");
+    expect(bad.status).toBe(422);
   });
 });
