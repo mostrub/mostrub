@@ -365,6 +365,7 @@ async function queryWindow(lake: Lake, window: { from: string; to: string }): Pr
 }
 
 export function floorTimeline(cells: LineCell[], now = new Date()): FloorTimeline {
+  const seen = new Set<string>();
   const events = cells
     .map((cell) => ({
       at: new Date(cell.capturedAt),
@@ -372,7 +373,13 @@ export function floorTimeline(cells: LineCell[], now = new Date()): FloorTimelin
       nio: !cell.partOk,
       station: cell.station,
     }))
-    .sort((a, b) => +a.at - +b.at);
+    .sort((a, b) => +a.at - +b.at)
+    .filter((event) => {
+      const key = `${event.dmc}|${+event.at}|${event.station}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   const first = events[0]?.at ?? now;
   const last = events[events.length - 1]?.at ?? now;
   const to = now > last ? now : last;

@@ -618,7 +618,7 @@ function Zeitlinie({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              style={{ left: `${mark.x * 100}%` }}
+              style={{ left: `${mark.x * 100}%`, zIndex: index + 1 }}
               title={label}
               onClick={() => onPick(mark.dmc)}
             />

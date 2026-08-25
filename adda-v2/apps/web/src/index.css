@@ -545,10 +545,11 @@ textarea {
 .zeitlinie-rail button {
   position: absolute;
   bottom: 0.2rem;
-  width: 3px;
-  min-width: 3px;
-  padding: 0;
+  width: 9px;
+  min-width: 9px;
+  padding: 0 3px;
   border: 0;
+  background-clip: content-box;
   transform: translateX(-50%);
 }
 

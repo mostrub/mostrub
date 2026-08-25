@@ -1,10 +1,31 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { inspectionIngestSchema } from "../../packages/types/src/index.ts";
+import { floorTimeline, type LineCell } from "../../packages/kernel/src/analytics.ts";
 import { configFromEnv } from "../../packages/kernel/src/config.ts";
 import { Ledger } from "../../packages/kernel/src/ledger.ts";
 import { createPool, resetControlForTests } from "../../packages/kernel/src/postgres.ts";
 import { resetLakeForTests } from "../../packages/kernel/src/lake.ts";
 import { buildSeedRows } from "../../packages/kernel/src/seed.ts";
+
+describe("floor timeline", () => {
+  it("keeps one mark per capture, not stacked copies", () => {
+    const at = new Date("2026-08-25T13:07:00+02:00");
+    const cell: LineCell = {
+      dmc: "HLL2-DUP-1",
+      capturedAt: at,
+      station: "anode",
+      tray: "T-1",
+      slot: 1,
+      partOk: false,
+      spanMm: 0.2,
+      defectClass: "Span",
+      source: "seed",
+    };
+    const timeline = floorTimeline([cell, { ...cell }], new Date("2026-08-25T13:20:00+02:00"));
+    expect(timeline.events).toHaveLength(1);
+    expect(timeline.events[0]?.dmc).toBe("HLL2-DUP-1");
+  });
+});
 
 describe("shift analytics and seed", () => {
   let ledger: Ledger | undefined;
