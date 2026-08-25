@@ -4,6 +4,7 @@ import {
   INSERT_SQL,
   deleteByFileIdsSql,
   insertParquetByName,
+  persistExportPath,
 } from "./schema"
 
 describe("INSERT_SQL", () => {
@@ -15,10 +16,21 @@ describe("INSERT_SQL", () => {
 })
 
 describe("insertParquetByName", () => {
-  it("restores a table by column name", () => {
-    expect(insertParquetByName("cycles", "restore-cycles.parquet")).toBe(
-      "INSERT INTO cycles BY NAME SELECT * FROM read_parquet('restore-cycles.parquet')"
-    )
+  it("restores only destination columns so extra parquet fields are ignored", () => {
+    const sql = insertParquetByName("cycles", "restore-cycles.parquet")
+    expect(sql).toContain("INSERT INTO cycles BY NAME SELECT")
+    expect(sql).toContain("cycle_id")
+    expect(sql).toContain("FROM read_parquet('restore-cycles.parquet')")
+    expect(sql).not.toContain("SELECT * FROM")
+    expect(sql).not.toContain("file_name")
+  })
+})
+
+describe("persistExportPath", () => {
+  it("uses a distinct parquet path per table", () => {
+    expect(persistExportPath("ingest_files")).toBe("persist-ingest_files.parquet")
+    expect(persistExportPath("cycles")).toBe("persist-cycles.parquet")
+    expect(persistExportPath("cycles")).not.toBe(persistExportPath("ingest_files"))
   })
 })
 

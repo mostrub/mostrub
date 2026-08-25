@@ -9,6 +9,7 @@ import {
   SCHEMA_SQL,
   deleteByFileIdsSql,
   insertParquetByName,
+  persistExportPath,
 } from "@/lib/duckdb/schema"
 import {
   clearPersisted,
@@ -235,6 +236,7 @@ export async function persistAllTables(): Promise<void> {
     const bytes = await exportCopy({
       sql: `SELECT * FROM ${table}`,
       format: "parquet",
+      path: persistExportPath(table),
     })
     await persistParquet(table, bytes)
   }
@@ -256,15 +258,20 @@ export async function resetEngine(): Promise<void> {
 export async function exportCopy(args: {
   sql: string
   format: "csv" | "parquet"
+  path?: string
 }): Promise<Uint8Array> {
   const { db: instance, conn: connection } = requireConn()
-  const path = args.format === "parquet" ? "export.parquet" : "export.csv"
+  const path =
+    args.path ??
+    (args.format === "parquet" ? "export.parquet" : "export.csv")
   const copy =
     args.format === "parquet"
       ? `COPY (${args.sql}) TO '${path}' (FORMAT PARQUET)`
       : `COPY (${args.sql}) TO '${path}' (HEADER, DELIMITER ',')`
   await connection.query(copy)
-  return instance.copyFileToBuffer(path)
+  const bytes = await instance.copyFileToBuffer(path)
+  await instance.dropFile(path)
+  return bytes
 }
 
 export async function tableCount(table: TableName): Promise<number> {
