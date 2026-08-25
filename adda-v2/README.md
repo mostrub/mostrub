@@ -32,7 +32,7 @@ Seven Prüfungen on the same chassis (`?sicht=`):
 | Fach | Same slot across all magazines |
 | Fenster | Span histogram, p50/p95, over-limit cells |
 | Klasse | 11 defect classes × 24 Zurich hours |
-| Schicht | Civil-day IO/NIO, yield, class list |
+| Schicht | Civil-day report: hours, stations, span, 11 classes, open cases, all NIO. Print hides the bezel. |
 | Zeitreise | Lake snapshots on the selected cell |
 
 Takt (24 h, Europe/Zurich) and the cell coupon stay on the bezel. Opening a

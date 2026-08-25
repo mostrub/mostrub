@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { de, type Lens } from "../i18n/de.ts";
 import {
@@ -73,6 +73,13 @@ function defectLabel(value: string): string {
   return value.replaceAll("_", " ");
 }
 
+function stationName(station: string): string {
+  if (station === "anode" || station === "cathode" || station === "oqc") {
+    return de.stations[station];
+  }
+  return station;
+}
+
 function latestInspection(dossier: Dossier | null) {
   const rows = dossier?.inspections ?? [];
   return rows.reduce<(typeof rows)[number] | null>((best, row) => {
@@ -88,6 +95,22 @@ function latestCell(cells: LineCell[], dmc: string): LineCell | null {
     return +new Date(cell.capturedAt) >= +new Date(best.capturedAt) ? cell : best;
   }, null);
 }
+
+function stationNio(cells: LineCell[], station: LineCell["station"]): LineCell[] {
+  return cells
+    .filter((cell) => cell.station === station && !cell.partOk)
+    .slice()
+    .sort((a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt));
+}
+
+function inspectionsNewestFirst(dossier: Dossier | null) {
+  return [...(dossier?.inspections ?? [])].sort(
+    (a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt),
+  );
+}
+
+const DECISIONS = ["hold", "release", "scrap", "needs_line"] as const;
+type Decision = (typeof DECISIONS)[number];
 
 export function Floor() {
   const { dmc: routeDmc, id: caseId } = useParams();
@@ -109,6 +132,8 @@ export function Floor() {
   const [akteBusy, setAkteBusy] = useState(false);
   const [akteError, setAkteError] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date());
+  const [hunt, setHunt] = useState("");
+  const [openCases, setOpenCases] = useState<CaseRecord[]>([]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 1000);
@@ -118,14 +143,20 @@ export function Floor() {
   useEffect(() => {
     let cancelled = false;
     const load = () => {
-      void Promise.allSettled([api.linie(), api.chronik(), api.schicht(), api.lake()]).then(
-        (results) => {
+      void Promise.allSettled([
+        api.linie(),
+        api.chronik(),
+        api.schicht(),
+        api.lake(),
+        api.cases("open"),
+      ]).then((results) => {
           if (cancelled) return;
-          const [linie, chronik, schicht, lakeStatus] = results;
+          const [linie, chronik, schicht, lakeStatus, cases] = results;
           if (linie.status === "fulfilled") setBoard(linie.value);
           if (chronik.status === "fulfilled") setTape(chronik.value);
           if (schicht.status === "fulfilled") setShift(schicht.value);
           if (lakeStatus.status === "fulfilled") setLake(lakeStatus.value);
+          if (cases.status === "fulfilled") setOpenCases(cases.value.cases);
           const fail = results.find((item) => item.status === "rejected");
           if (fail && fail.status === "rejected") {
             const err = fail.reason;
@@ -133,8 +164,7 @@ export function Floor() {
           } else {
             setError(null);
           }
-        },
-      );
+        });
     };
     load();
     const timer = window.setInterval(load, 8000);
@@ -209,7 +239,17 @@ export function Floor() {
     setTravel(null);
     setTravelMissing(false);
     setAkteError(null);
-    navigate(`/zelle/${dmc}`);
+    navigate({ pathname: `/zelle/${dmc}`, search: params.toString() });
+  }
+
+  function huntCell(event: FormEvent) {
+    event.preventDefault();
+    const q = hunt.trim();
+    if (!q) return;
+    const hit =
+      board?.cells.find((cell) => cell.dmc === q) ??
+      board?.cells.find((cell) => cell.dmc.toLowerCase().includes(q.toLowerCase()));
+    pick(hit?.dmc ?? q);
   }
 
   return (
@@ -239,6 +279,19 @@ export function Floor() {
             </button>
           ))}
         </nav>
+        <form className="hunt" onSubmit={huntCell}>
+          <label>
+            {de.suche}
+            <input
+              value={hunt}
+              onChange={(event) => setHunt(event.target.value)}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+            />
+          </label>
+          <button type="submit">{de.suchen}</button>
+        </form>
         {board ? (
           <div className="bezel-readouts">
             <Lcd label={de.kpis.cells} value={formatCount(board.inspected)} />
@@ -247,6 +300,14 @@ export function Floor() {
             <Lcd label={de.kpis.takt} value={formatRate(board.taktPerHour)} />
             <Lcd label={de.kpis.snap} value={String(board.snapshotId)} />
             <Lcd label={de.kpis.clock} value={zurichClock(now)} />
+            {board.stations.map((st) => (
+              <Lcd
+                key={st.station}
+                label={de.stations[st.station]}
+                value={formatPercent(st.nioRate)}
+                warn={(st.nioRate ?? 0) > 0}
+              />
+            ))}
           </div>
         ) : null}
       </header>
@@ -292,6 +353,7 @@ export function Floor() {
           board={board}
           shift={shift}
           lake={lake}
+          openCases={openCases}
           selected={selected}
           travelId={travelId}
           onPick={pick}
@@ -310,6 +372,45 @@ export function Floor() {
           akte={akte}
           akteBusy={akteBusy}
           akteError={akteError}
+          onPin={async () => {
+            if (!akte) return;
+            setAkteBusy(true);
+            setAkteError(null);
+            try {
+              setAkte(
+                await api.pinCase(akte.id, {
+                  label: `Snap ${board?.snapshotId ?? ""}`,
+                  pinnedBy: "kaliber",
+                }),
+              );
+              const next = await api.cases("open");
+              setOpenCases(next.cases);
+            } catch (err: unknown) {
+              setAkteError(err instanceof ApiError ? err.message : de.lakeDown);
+            } finally {
+              setAkteBusy(false);
+            }
+          }}
+          onDispose={async (decision) => {
+            if (!akte) return;
+            setAkteBusy(true);
+            setAkteError(null);
+            try {
+              setAkte(
+                await api.dispose(akte.id, {
+                  decision,
+                  note: `${de.entscheid[decision]} ${selected}`,
+                  decidedBy: "kaliber",
+                }),
+              );
+              const next = await api.cases("open");
+              setOpenCases(next.cases);
+            } catch (err: unknown) {
+              setAkteError(err instanceof ApiError ? err.message : de.lakeDown);
+            } finally {
+              setAkteBusy(false);
+            }
+          }}
           onOpen={async () => {
             if (!selected) return;
             setAkteBusy(true);
@@ -321,6 +422,8 @@ export function Floor() {
                 openedBy: "kaliber",
               });
               setAkte(opened);
+              const next = await api.cases("open");
+              setOpenCases(next.cases);
             } catch (err: unknown) {
               setAkteError(err instanceof ApiError ? err.message : de.lakeDown);
             } finally {
@@ -347,6 +450,15 @@ export function Floor() {
       </aside>
 
       {tape ? <Band events={tape.events} selected={selected} onPick={pick} /> : null}
+      <footer className="provenance">
+        <span>{de.quellen}</span>
+        <span>{board?._provenance.store ?? "—"}</span>
+        <span>{board?._provenance.query ?? "—"}</span>
+        <span>
+          {de.kpis.snap} {board?.snapshotId ?? "—"}
+        </span>
+        <span>{zurichClock(now)}</span>
+      </footer>
     </div>
   );
 }
@@ -356,6 +468,7 @@ function LensWell({
   board,
   shift,
   lake,
+  openCases,
   selected,
   travelId,
   onPick,
@@ -365,6 +478,7 @@ function LensWell({
   board: LineBoard | null;
   shift: ShiftReport | null;
   lake: LakeStatus | null;
+  openCases: CaseRecord[];
   selected: string;
   travelId: string;
   onPick: (dmc: string) => void;
@@ -382,7 +496,15 @@ function LensWell({
     case "klasse":
       return <Klasse board={board} onPick={onPick} />;
     case "schicht":
-      return <Schicht board={board} shift={shift} onPick={onPick} />;
+      return (
+        <Schicht
+          board={board}
+          shift={shift}
+          openCases={openCases}
+          selected={selected}
+          onPick={onPick}
+        />
+      );
     case "see":
       return <See lake={lake} selected={selected} travelId={travelId} onTravelId={onTravelId} />;
     default: {
@@ -401,30 +523,48 @@ function Maschine({
   selected: string;
   onPick: (dmc: string) => void;
 }) {
+  const [onlyNio, setOnlyNio] = useState(true);
   return (
     <section>
-      <h2>{de.lenses.maschine}</h2>
-      <p className="lede">{de.maschineLede}</p>
+      <div className="bericht-head">
+        <div>
+          <h2>{de.lenses.maschine}</h2>
+          <p className="lede">{de.maschineLede}</p>
+        </div>
+        <button
+          type="button"
+          className={`lens-opt ${onlyNio ? "is-on" : ""}`}
+          aria-pressed={onlyNio}
+          onClick={() => setOnlyNio((value) => !value)}
+        >
+          {onlyNio ? de.nurNio : de.zuletzt}
+        </button>
+      </div>
       <ol className="stations">
-        {(board?.stations ?? []).map((st) => (
-          <li key={st.station}>
-            <header>
-              <strong>{de.stations[st.station]}</strong>
-              <span>{formatPercent(st.nioRate)}</span>
-            </header>
-            <div className="station-lcd">
-              <Lcd label={de.kpis.cells} value={formatCount(st.inspected)} />
-              <Lcd label={de.kpis.nio} value={formatCount(st.nio)} warn={st.nio > 0} />
-            </div>
-            <ol className="last-cells">
-              {st.last.map((cell) => (
-                <li key={`${cell.dmc}-${cell.capturedAt}`}>
-                  <CellRow cell={cell} selected={selected} onPick={onPick} />
-                </li>
-              ))}
-            </ol>
-          </li>
-        ))}
+        {(board?.stations ?? []).map((st) => {
+          const nio = stationNio(board?.cells ?? [], st.station);
+          const rows = onlyNio ? nio : st.last;
+          return (
+            <li key={st.station}>
+              <header>
+                <strong>{de.stations[st.station]}</strong>
+                <span>{formatPercent(st.nioRate)}</span>
+              </header>
+              <div className="station-lcd">
+                <Lcd label={de.kpis.cells} value={formatCount(st.inspected)} />
+                <Lcd label={de.kpis.nio} value={formatCount(st.nio)} warn={st.nio > 0} />
+              </div>
+              <h3 className="subhead">{onlyNio ? de.alleNio : de.zuletzt}</h3>
+              <ol className="last-cells">
+                {rows.map((cell) => (
+                  <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                    <CellRow cell={cell} selected={selected} onPick={onPick} />
+                  </li>
+                ))}
+              </ol>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
@@ -574,16 +714,35 @@ function Fach({
 function Schicht({
   board,
   shift,
+  openCases,
+  selected,
   onPick,
 }: {
   board: LineBoard | null;
   shift: ShiftReport | null;
+  openCases: CaseRecord[];
+  selected: string;
   onPick: (dmc: string) => void;
 }) {
+  const classes = DEFECT_CLASSES.map((cls) => ({
+    defectClass: cls,
+    count: shift?.defects.find((item) => item.defectClass === cls)?.count ?? 0,
+  }));
+  const nio = (board?.cells ?? [])
+    .filter((cell) => !cell.partOk)
+    .slice()
+    .sort((a, b) => +new Date(b.capturedAt) - +new Date(a.capturedAt));
   return (
-    <section>
-      <h2>{de.lenses.schicht}</h2>
-      <p className="lede">{de.schichtLede}</p>
+    <section className="bericht">
+      <div className="bericht-head">
+        <div>
+          <h2>{de.bericht}</h2>
+          <p className="lede">{de.schichtLede}</p>
+        </div>
+        <button type="button" className="no-print" onClick={() => window.print()}>
+          {de.drucken}
+        </button>
+      </div>
       {shift ? (
         <>
           <div className="span-readouts">
@@ -595,8 +754,59 @@ function Schicht({
           <p className="hint">
             {formatDay(shift.from)} → {formatWhen(shift.to)}
           </p>
+          <h3 className="subhead">{de.stunden}</h3>
+          <table className="bericht-table">
+            <thead>
+              <tr>
+                <th>{de.stunden}</th>
+                <th>{de.kpis.cells}</th>
+                <th>{de.kpis.nio}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {HOURS.map((hour) => {
+                const row = board?.hours.find((item) => item.hour === hour);
+                return (
+                  <tr key={hour}>
+                    <td className="mono">{String(hour).padStart(2, "0")}</td>
+                    <td className="mono">{formatCount(row?.inspected ?? 0)}</td>
+                    <td className="mono">{formatCount(row?.nio ?? 0)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <h3 className="subhead">{de.lenses.maschine}</h3>
+          <table className="bericht-table">
+            <thead>
+              <tr>
+                <th>{de.lenses.maschine}</th>
+                <th>{de.kpis.cells}</th>
+                <th>{de.kpis.nio}</th>
+                <th>{de.kpis.yield}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(board?.stations ?? []).map((st) => (
+                <tr key={st.station}>
+                  <td>{de.stations[st.station]}</td>
+                  <td className="mono">{formatCount(st.inspected)}</td>
+                  <td className="mono">{formatCount(st.nio)}</td>
+                  <td className="mono">{formatPercent(st.nioRate === null ? null : 1 - st.nioRate)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <h3 className="subhead">{de.span.title}</h3>
+          <div className="span-readouts">
+            <Lcd label={de.span.min} value={fmtMm(board?.spanWindow.min ?? null)} />
+            <Lcd label={de.span.p50} value={fmtMm(board?.spanWindow.p50 ?? null)} />
+            <Lcd label={de.span.p95} value={fmtMm(board?.spanWindow.p95 ?? null)} warn={(board?.spanWindow.p95 ?? 0) > SPAN_LIMIT} />
+            <Lcd label={de.span.max} value={fmtMm(board?.spanWindow.max ?? null)} warn={(board?.spanWindow.max ?? 0) > SPAN_LIMIT} />
+          </div>
+          <h3 className="subhead">{de.klasse.title}</h3>
           <ol className="schicht-defects">
-            {shift.defects.map((item) => {
+            {classes.map((item) => {
               const hit = board?.cells.find((cell) => cell.defectClass === item.defectClass && !cell.partOk);
               return (
                 <li key={item.defectClass}>
@@ -607,6 +817,36 @@ function Schicht({
                 </li>
               );
             })}
+          </ol>
+          <h3 className="subhead">{de.aktenOffen}</h3>
+          {openCases.length ? (
+            <ol className="akten">
+              {openCases.map((record) => (
+                <li key={record.id}>
+                  <button type="button" onClick={() => onPick(record.dmc)}>
+                    <span className="mono">{record.dmc}</span>
+                    <span>
+                      {de.akteNr} {record.id} · {record.status}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="hint">{de.keineAkten}</p>
+          )}
+          <h3 className="subhead">{de.alleNio}</h3>
+          <ol className="last-cells">
+            {nio.map((cell) => (
+              <li key={`${cell.dmc}-${cell.capturedAt}`}>
+                <CellRow
+                  cell={cell}
+                  selected={selected}
+                  onPick={onPick}
+                  extra={cell.defectClass ? defectLabel(cell.defectClass) : undefined}
+                />
+              </li>
+            ))}
           </ol>
         </>
       ) : (
@@ -693,7 +933,7 @@ function Fenster({
       </p>
       <h3 className="subhead">{de.span.offenders}</h3>
       <ol className="last-cells">
-        {offenders.slice(0, 12).map((cell) => (
+        {offenders.map((cell) => (
           <li key={`${cell.dmc}-${cell.capturedAt}`}>
             <CellRow cell={cell} selected={selected} onPick={onPick} extra={fmtMm(cell.spanMm)} />
           </li>
@@ -893,6 +1133,8 @@ function Coupon({
   akteBusy,
   akteError,
   onOpen,
+  onPin,
+  onDispose,
 }: {
   selected: string;
   selectedCell: LineCell | null;
@@ -904,6 +1146,8 @@ function Coupon({
   akteBusy: boolean;
   akteError: string | null;
   onOpen: () => Promise<void>;
+  onPin: () => Promise<void>;
+  onDispose: (decision: Decision) => Promise<void>;
 }) {
   if (!selected) return <p className="hint">{de.pick}</p>;
   const live = latestInspection(dossier);
@@ -913,6 +1157,7 @@ function Coupon({
     : (selectedCell?.spanMm ?? shown?.measurements?.spanMm ?? null);
   const nio = shown ? !shown.partOk : Boolean(selectedCell && !selectedCell.partOk);
   const source = shown?.source ?? selectedCell?.source;
+  const history = inspectionsNewestFirst(travelId && !travelMissing ? travel : dossier);
   return (
     <article>
       <h3>{de.coupon}</h3>
@@ -942,20 +1187,45 @@ function Coupon({
         )}
       </ul>
       {source === "seed" ? <p className="hint">{de.seed}</p> : null}
+      {history.length ? (
+        <>
+          <h3 className="subhead">{de.historie}</h3>
+          <ol className="historie">
+            {history.map((row) => (
+              <li key={row.inspectionId}>
+                <span>{row.partOk ? de.io.io : de.io.nio}</span>
+                <span>{stationName(row.station)}</span>
+                <span className="mono">{formatWhen(row.capturedAt)}</span>
+              </li>
+            ))}
+          </ol>
+        </>
+      ) : null}
       {akte ? (
         <p className="hint">
           {de.akteNr} {akte.id} · {akte.status}
+          {akte.pins.length ? ` · ${akte.pins[akte.pins.length - 1]?.label}` : ""}
         </p>
       ) : null}
       {akteError ? <Note>{akteError}</Note> : null}
-      <button
-        type="button"
-        className="mt-3 w-full border border-ice bg-well px-2 py-1.5 text-xs uppercase tracking-[0.16em] text-ice"
-        disabled={akteBusy}
-        onClick={() => void onOpen()}
-      >
-        {akteBusy ? de.openingCase : de.openCase}
-      </button>
+      <div className="coupon-actions">
+        <button type="button" disabled={akteBusy} onClick={() => void onOpen()}>
+          {akteBusy ? de.openingCase : de.openCase}
+        </button>
+        <button type="button" disabled={akteBusy || !akte} onClick={() => void onPin()}>
+          {de.pin}
+        </button>
+        {DECISIONS.map((decision) => (
+          <button
+            key={decision}
+            type="button"
+            disabled={akteBusy || !akte || akte.status === "closed"}
+            onClick={() => void onDispose(decision)}
+          >
+            {de.entscheid[decision]}
+          </button>
+        ))}
+      </div>
     </article>
   );
 }
