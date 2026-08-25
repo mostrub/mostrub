@@ -20,15 +20,15 @@ export function ThemeToggle() {
     >
       <ToggleGroupItem value="light" aria-label="Light mode">
         <SunIcon data-icon="inline-start" />
-        Light
+        <span className="hidden xl:inline">Light</span>
       </ToggleGroupItem>
       <ToggleGroupItem value="dark" aria-label="Dark mode">
         <MoonIcon data-icon="inline-start" />
-        Dark
+        <span className="hidden xl:inline">Dark</span>
       </ToggleGroupItem>
       <ToggleGroupItem value="system" aria-label="System theme">
         <MonitorIcon data-icon="inline-start" />
-        System
+        <span className="hidden xl:inline">System</span>
       </ToggleGroupItem>
     </ToggleGroup>
   )

@@ -1,7 +1,7 @@
 # Floorline one-script install for Windows 11.
-# Installs Node.js LTS if missing, installs dependencies, and starts the local app.
-# Double-click install-windows.cmd, or run:
+# Double-click install-windows.cmd, or:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
+# Creates Desktop shortcuts: Floorline (start, full screen) and Stop Floorline.
 
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -35,13 +35,35 @@ function Ensure-Node {
   }
 }
 
+function New-DesktopShortcut {
+  param(
+    [Parameter(Mandatory = $true)][string] $Name,
+    [Parameter(Mandatory = $true)][string] $TargetPath
+  )
+  $desktop = [Environment]::GetFolderPath("Desktop")
+  $shell = New-Object -ComObject WScript.Shell
+  $shortcut = $shell.CreateShortcut((Join-Path $desktop "$Name.lnk"))
+  $shortcut.TargetPath = $TargetPath
+  $shortcut.WorkingDirectory = $Root
+  $shortcut.WindowStyle = 1
+  $shortcut.Description = $Name
+  $shortcut.Save()
+  Write-Host "Desktop shortcut: $Name"
+}
+
 Ensure-Node
 Write-Host "node $(node -v)  npm $(npm -v)"
 Write-Host "Installing npm packages in $Root ..."
 npm install
 
-$Port = 5173
-$Url = "http://127.0.0.1:$Port/"
-Write-Host "Starting Floorline at $Url"
-Start-Process $Url
-npm run dev -- --host 127.0.0.1 --port $Port
+New-DesktopShortcut -Name "Floorline" -TargetPath (Join-Path $Root "start-floorline.cmd")
+New-DesktopShortcut -Name "Stop Floorline" -TargetPath (Join-Path $Root "stop-floorline.cmd")
+
+Write-Host ""
+Write-Host "Install finished. Daily use:"
+Write-Host "  Double-click Floorline on the Desktop (starts the app full screen)."
+Write-Host "  Double-click Stop Floorline when the shift is done."
+Write-Host "  Other PCs and Macs on the same network can open the Share URLs in the header."
+Write-Host ""
+
+& (Join-Path $Root "start-floorline.ps1")

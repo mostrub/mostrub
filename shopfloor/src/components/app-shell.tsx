@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { FilterChips } from "@/components/filter-chips"
 import { FilterRail } from "@/components/filter-rail"
+import { FullscreenToggle } from "@/components/fullscreen-toggle"
+import { LanShare } from "@/components/lan-share"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useFloorline } from "@/state/floorline-store"
 
@@ -67,6 +69,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ThemeToggle />
+          <LanShare />
+          <FullscreenToggle />
           <Badge variant="outline">
             <DatabaseIcon data-icon="inline-start" />
             {ready ? "DuckDB ready" : "starting"}

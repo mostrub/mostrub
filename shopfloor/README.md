@@ -4,18 +4,36 @@ Local-first shopfloor production viewer. It runs in the browser, parses MES XML 
 
 Native DuckDB on Windows is not required. The same engine runs inside the page.
 
-## Run on Windows 11
+## One-time install
 
-One script: double-click `install-windows.cmd`, or from PowerShell:
+**Windows 11:** double-click `install-windows.cmd`, or:
 
 ```powershell
 cd shopfloor
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
 ```
 
-That installs Node.js LTS with winget if it is missing, runs `npm install`, opens `http://127.0.0.1:5173/`, and starts the Vite server. If winget is unavailable, install Node.js LTS from https://nodejs.org and re-run the script.
+That installs Node.js LTS with winget if it is missing, runs `npm install`, puts **Floorline** and **Stop Floorline** on the Desktop, and opens the app full screen. If winget is unavailable, install Node.js LTS from https://nodejs.org and re-run the script.
 
-Manual equivalent:
+**macOS:** double-click `install-macos.command`, or:
+
+```bash
+cd shopfloor
+chmod +x install-macos.sh
+./install-macos.sh
+```
+
+That installs Node.js with Homebrew if it is missing, runs `npm install`, and puts the same Desktop shortcuts on the Mac. If macOS blocks a `.command` file: right-click → Open.
+
+After that, people on the floor only need the Desktop icons. **Floorline** starts the server and opens Edge or Chrome full screen. **Stop Floorline** quits it. The header also has **Full screen**.
+
+Light, Dark, and System live in the header. The `d` key still flips light and dark when focus is not in an input.
+
+## Share on the shopfloor LAN
+
+The installer and Desktop launcher bind all network interfaces. Other Windows, macOS, and Linux machines on the same LAN open Floorline in a browser — use **Share** in the header and copy a `http://<this-pc>:5173/` address. Production data stays on the host PC.
+
+Manual equivalent (this PC only, or LAN if you keep the default Vite host):
 
 ```powershell
 cd shopfloor
@@ -23,11 +41,9 @@ npm install
 npm run dev
 ```
 
-Open the printed localhost URL. Mapped drives and UNC shares work through the file picker (`Z:\production\xml` or `\\mes-aus-01\production\xml`). Select multiple `.xml` files, or click **Load demo production share**.
+Mapped drives and UNC shares work through the file picker (`Z:\production\xml` or `\\mes-aus-01\production\xml`). Select multiple `.xml` files, or click **Load demo production share**.
 
 `npm run build` then `npm run preview` is the offline bundle.
-
-Light, Dark, and System live in the header. The `d` key still flips light and dark when focus is not in an input.
 
 ## XML shape
 

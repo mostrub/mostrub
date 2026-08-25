@@ -8,11 +8,8 @@
 
 Local shopfloor production prototype in [`shopfloor/`](./shopfloor). Browser + DuckDB-WASM. Ingests MES XML from a Windows share, drills production and server profiles, exports Parquet/CSV.
 
-```powershell
-cd shopfloor
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1
-```
+Windows 11: double-click `shopfloor/install-windows.cmd`. macOS: double-click `shopfloor/install-macos.command`. That puts **Floorline** / **Stop Floorline** on the Desktop and opens the app full screen.
 
-Or double-click `shopfloor/install-windows.cmd`. Light, Dark, and System are in the header.
+Light, Dark, and System are in the header. **Share** copies LAN URLs so other Windows, Mac, and Linux PCs on the same network can join the running instance.
 
 ---
