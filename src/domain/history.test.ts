@@ -1,0 +1,120 @@
+import { describe, expect, it } from "vitest"
+
+import { emptyInventory, upsertLaptop } from "./catalog"
+import { queryDeviceHistory } from "./history"
+import type { Laptop } from "./types"
+
+function laptop(overrides: Partial<Laptop> = {}): Laptop {
+  return {
+    id: "lap-1",
+    inventoryNumber: "",
+    assetTag: "LT-1001",
+    serialNumber: "SN-AA11",
+    hostname: "ops-lt-01",
+    make: "Dell",
+    model: "Latitude 5550",
+    laptopType: "standard",
+    operatingSystem: "windows-11",
+    department: "operations",
+    assignedTo: "A. Rivera",
+    location: "Plant 1",
+    status: "in-service",
+    purchaseDate: "2024-03-12",
+    warrantyEnd: "2027-03-12",
+    notes: "",
+    ...overrides,
+  }
+}
+
+describe("queryDeviceHistory", () => {
+  it("returns events for an inventory number", () => {
+    const created = upsertLaptop(emptyInventory(), laptop())
+    if (!created.ok) {
+      throw new Error(created.error)
+    }
+    const inventoryNumber = created.state.laptops[0]!.inventoryNumber
+    const updated = upsertLaptop(
+      created.state,
+      laptop({ inventoryNumber, assignedTo: "B. Jones" }),
+    )
+    if (!updated.ok) {
+      throw new Error(updated.error)
+    }
+
+    const rows = queryDeviceHistory(updated.state, inventoryNumber)
+    expect(rows.length).toBe(2)
+    expect(rows.every((event) => event.inventoryNumber === inventoryNumber)).toBe(
+      true,
+    )
+  })
+
+  it("does not treat INV-0001 as a match for INV-00010", () => {
+    const created = upsertLaptop(
+      emptyInventory(),
+      laptop({ inventoryNumber: "INV-00010", assetTag: "LT-1010", serialNumber: "SN-XX" }),
+    )
+    if (!created.ok) {
+      throw new Error(created.error)
+    }
+    expect(queryDeviceHistory(created.state, "INV-0001")).toHaveLength(0)
+    expect(queryDeviceHistory(created.state, "INV-00010")).toHaveLength(1)
+  })
+
+  it("keeps the full trail after an inventory number change", () => {
+    const created = upsertLaptop(emptyInventory(), laptop())
+    if (!created.ok) {
+      throw new Error(created.error)
+    }
+    const renamed = upsertLaptop(created.state, {
+      ...created.state.laptops[0]!,
+      inventoryNumber: "INV-7777",
+    })
+    if (!renamed.ok) {
+      throw new Error(renamed.error)
+    }
+
+    const rows = queryDeviceHistory(renamed.state, "INV-7777")
+    expect(rows.map((event) => event.action).sort()).toEqual(["created", "updated"])
+  })
+
+  it("does not mix a reused inventory number with the previous device trail", () => {
+    const first = upsertLaptop(emptyInventory(), laptop({ inventoryNumber: "INV-0001" }))
+    if (!first.ok) {
+      throw new Error(first.error)
+    }
+    const renamed = upsertLaptop(first.state, {
+      ...first.state.laptops[0]!,
+      inventoryNumber: "INV-7777",
+    })
+    if (!renamed.ok) {
+      throw new Error(renamed.error)
+    }
+    const second = upsertLaptop(
+      renamed.state,
+      laptop({
+        id: "lap-2",
+        inventoryNumber: "INV-0001",
+        assetTag: "LT-2002",
+        serialNumber: "SN-BB22",
+      }),
+    )
+    if (!second.ok) {
+      throw new Error(second.error)
+    }
+
+    const rows = queryDeviceHistory(second.state, "INV-0001")
+    expect(rows.every((event) => event.recordId === "lap-2")).toBe(true)
+    expect(rows.some((event) => event.recordId === "lap-1")).toBe(false)
+  })
+
+  it("finds history by serial number", () => {
+    const created = upsertLaptop(emptyInventory(), laptop())
+    if (!created.ok) {
+      throw new Error(created.error)
+    }
+
+    const rows = queryDeviceHistory(created.state, "sn-aa11")
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.action).toBe("created")
+  })
+})

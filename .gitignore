@@ -35,6 +35,13 @@ logs/
 temp/
 tmp/
 
+# App
+node_modules/
+dist/
+dist-ssr
+.netlify/
+*.local
+
 # Tailboard
 tailboard/web/node_modules/
 tailboard/tailboard
