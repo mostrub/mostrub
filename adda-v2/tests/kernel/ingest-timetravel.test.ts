@@ -45,6 +45,12 @@ describe("ingest and time travel", () => {
     await ledger?.close();
   });
 
+  it("rejects an empty ingest instead of opening a blank snapshot", async () => {
+    if (!ledger) throw new Error("ledger missing");
+    await expect(ledger.ingestInspections([])).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+    await expect(ledger.ingestLineEvents([])).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+  });
+
   it("keeps the first NIO visible at the pinned snapshot after a later IO row", async () => {
     if (!ledger) throw new Error("ledger missing");
     const first = await ledger.ingestInspections([

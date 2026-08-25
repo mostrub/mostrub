@@ -21,6 +21,7 @@ import {
 import type { LedgerConfig } from "./config.ts";
 import { loadDossier, loadDossierAt } from "./dossier.ts";
 import { ingestInspections, ingestLineEvents } from "./ingest.ts";
+import { newAuditId } from "./ids.ts";
 import { Lake } from "./lake.ts";
 import { ControlStore, createPool, migrateControl } from "./postgres.ts";
 import { seedLedger } from "./seed.ts";
@@ -46,12 +47,28 @@ export class Ledger {
     await this.pool.end();
   }
 
-  ingestInspections(rows: InspectionIngest[], actor = "ingest") {
-    return ingestInspections(this.lake, rows, actor);
+  async ingestInspections(rows: InspectionIngest[], actor = "ingest") {
+    const result = await ingestInspections(this.lake, rows, actor);
+    await this.control.writeAudit({
+      id: newAuditId(),
+      at: new Date(),
+      actor,
+      action: "ingest.inspections",
+      payload: { count: rows.length, snapshotId: result.snapshotId },
+    });
+    return result;
   }
 
-  ingestLineEvents(rows: LineEventIngest[], actor = "ingest") {
-    return ingestLineEvents(this.lake, rows, actor);
+  async ingestLineEvents(rows: LineEventIngest[], actor = "ingest") {
+    const result = await ingestLineEvents(this.lake, rows, actor);
+    await this.control.writeAudit({
+      id: newAuditId(),
+      at: new Date(),
+      actor,
+      action: "ingest.line_events",
+      payload: { count: rows.length, snapshotId: result.snapshotId },
+    });
+    return result;
   }
 
   loadDossier(dmc: Dmc) {

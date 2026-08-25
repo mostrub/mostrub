@@ -118,24 +118,31 @@ export class Lake {
     }
     return this.currentSnapshot();
   }
+
+  static async attachHistorical(
+    config: LedgerConfig,
+    snapshotId: SnapshotId,
+  ): Promise<Lake> {
+    const db = openMemoryDb();
+    try {
+      await installExtensions(db);
+      await run(
+        db,
+        attachSql(config, { readOnly: true, snapshotVersion: snapshotId }),
+      );
+    } catch (err) {
+      await closeDb(db).catch(() => undefined);
+      throw wrapLakeError(err);
+    }
+    return new Lake(db, config);
+  }
 }
 
 export async function attachAtSnapshot(
   config: LedgerConfig,
   snapshotId: SnapshotId,
 ): Promise<Lake> {
-  const db = openMemoryDb();
-  try {
-    await installExtensions(db);
-    await run(
-      db,
-      attachSql(config, { readOnly: true, snapshotVersion: snapshotId }),
-    );
-  } catch (err) {
-    await closeDb(db).catch(() => undefined);
-    throw wrapLakeError(err);
-  }
-  return new Lake(db, config);
+  return Lake.attachHistorical(config, snapshotId);
 }
 
 export async function resetLakeForTests(config: LedgerConfig): Promise<void> {
@@ -166,6 +173,8 @@ function attachSql(
   config: LedgerConfig,
   options: { readOnly: boolean; snapshotVersion?: SnapshotId },
 ): string {
+  // Official ATTACH parameters: DATA_PATH, METADATA_SCHEMA, READ_ONLY, SNAPSHOT_VERSION
+  // https://ducklake.select/docs/stable/duckdb/usage/connecting.html
   const catalog = postgresCatalog(config.pgUrl);
   const parts = [
     `DATA_PATH '${sqlLiteral(resolve(config.lakePath))}/'`,
